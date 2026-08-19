@@ -1,0 +1,130 @@
+---
+title: "Methodology"
+subtitle: "From product level cash flows to a per share fair value"
+---
+
+This page describes how each pipeline product is modelled, how probability weighting is applied, and how the product rNPVs are aggregated into an enterprise value and a per share value.
+
+## The rNPV formula
+
+For each product, the risk adjusted NPV is:
+
+$rNPV = \sum_{t=T_0}^{T_{end}} \frac{CF_t \times PoS_{cumulative}}{(1+r)^t} \; - \; \sum_{t=0}^{T_0-1} \frac{DevCost_t}{(1+r)^t}$$
+
+Where:
+
+- $CF_t$ = operating cash flow in year $t$ = $Sales_t \times \text{OpMargin}$
+- $PoS_{cumulative}$ = cumulative probability that the product reaches the market from its current phase
+- $r$ = discount rate (biotech WACC)
+- $DevCost_t$ = remaining clinical development cost in year $t$
+- $T_0$ = expected launch year, $T_{end}$ = end of exclusivity window (post patent cliff)
+
+## Probability of success (PoS)
+
+Phase to market probabilities are sourced from published academic benchmarks (Wong, Siah & Lo 2019, MIT; BIO Industry Analysis reports). Indicative values used as starting points:
+
+| Current phase | PoS to market |
+|---|---|
+| Phase I | ~10 % |
+| Phase II | ~15–20 % |
+| Phase III | ~50–60 % |
+| Filed | ~85–90 % |
+| Marketed / approved | 100 % |
+
+Exact values used in the model are stored in `src/assumptions.py` with source citations for each product.
+
+## Revenue curve
+
+For each product we model annual sales as:
+
+1. **Ramp phase**, linear (or S curve) buildup over ~5–7 years from launch to peak.
+2. **Peak phase**, plateau at the estimated peak sales figure.
+3. **Patent cliff**, sharp decline (typically –80 % to –90 % over 1–2 years) at loss of exclusivity.
+
+Peak sales are constructed bottom up where possible:
+
+$$\text{Peak Sales} = \text{Target patient population} \times \text{Penetration rate} \times \text{Annual price}$$
+
+Every number is sourced (annual report, published analyst estimates, epidemiology literature) and the source is recorded next to the value in `assumptions.py`.
+
+## Operating margin and cash flow
+
+Sales are converted to operating cash flow using an EBIT margin appropriate for a specialty biotech at maturity (indicative range: 25–40 %). The margin is sourced/hypothesised and disclosed. Working capital and capex are treated as netting to zero over the forecast horizon (standard rNPV simplification, discussed in Limitations).
+
+## Development costs
+
+For products not yet on the market, the remaining clinical development cost (Phase III trials, filing) is subtracted as an unweighted expense in the years before launch (i.e. spent regardless of approval outcome). Indicative per phase costs are sourced from published benchmarks.
+
+## Discount rate
+
+A biotech appropriate WACC in the 11–13 % range is used. The base case is set in `assumptions.py` and the value is stress tested in the sensitivity section.
+
+## Modelling conventions
+
+Two non obvious choices sit under the rNPV that would produce materially different numbers if flipped. Both are documented here for transparency.
+
+### Discounting convention: mid year
+
+Cash flows in year $t$ are discounted by $(1+r)^{-(t - t_0 + 0.5)}$, the **mid year convention**. This is the textbook rNPV default: cash is assumed to flow evenly through the year, so the current year cash flow gets half a year of discounting. Two alternatives exist:
+
+| Convention | Formula | Effect on base case (CHF/share) |
+|---|---|---|
+| Start of year | $(1+r)^{-(t - t_0)}$ | ~ +6 % higher (no discount on t₀ CF) |
+| **Mid year (used here)** | $(1+r)^{-(t - t_0 + 0.5)}$ | base |
+| End of year | $(1+r)^{-(t - t_0 + 1)}$ | ~ −6 % lower (full year of discount on t₀ CF) |
+
+The convention is exposed as a keyword argument on `discount_factors()` in `rnpv.py` so it can be flipped in one line for stress testing.
+
+### QUVIVIQ ramp trajectory: 8 years to peak
+
+The model interpolates linearly from the last anchored sales figure (CHF 200 M guidance for 2026) to the peak of CHF 600 M by 2030, a 4-year interpolation from the anchor, or an 8-year ramp counted from the 2022 launch year. This produces the sequence 200 → 300 → 400 → 500 → 600 (2026-2030), consistent with the ~+50 % YoY growth Idorsia has been delivering and guides for 2026.
+
+An earlier draft used `ramp_years = 6` (peak in 2028), which would imply 200 → 400 → 600 in two years, 100 % then 50 % YoY growth. Defensible only under an aggressive combined US descheduling + pediatric approval + European reimbursement bull case. The current setting is deliberately more conservative and can be retightened via the tornado / heatmap.
+
+### What is NOT modelled
+
+Consistent with the "order of magnitude" tool ambition:
+
+- **Taxes**, subsumed into the operating margin. A separate effective tax layer would trim EV by ~10–20 %.
+- **Working capital and capex**, netted to zero over the forecast horizon.
+- **Product outcome correlation**, treated as independent (no portfolio effect).
+- **J&J convertible optionality**, the CHF 335 M convertible loan is treated as pure debt at its ~CHF 11.55 strike. Rerating toward the strike would introduce dilution.
+- **SARL cash flow priorities**, the ring fenced debt at Idorsia Investments SARL is excluded from the parent bridge in the base case; the residual reversion to the parent is set to zero and stressed only in scenarios.
+
+## Aggregation
+
+$$EV = \sum_{i \in products} rNPV_i + \text{NetCash}$$
+
+$$\text{Value per share} = \frac{EV}{\text{Shares outstanding}}$$
+
+Net cash and shares outstanding are taken from the most recent Idorsia balance sheet and share count disclosures.
+
+## Sensitivity
+
+The model is stress tested along the axes that dominate rNPV in practice:
+
+- Discount rate (10 % → 14 %)
+- PoS of the lead clinical candidate (±20 %)
+- Peak sales of the top revenue driver (±30 %)
+- A tornado chart ranks the sensitivities.
+
+## Data sources
+
+All inputs are public. No Bloomberg / paid analyst data is republished.
+
+| Input | Source |
+|---|---|
+| Share price, market cap, shares outstanding | `yfinance` (IDIA.SW), SIX, Idorsia IR |
+| Cash, debt, burn rate | Idorsia annual report, quarterly releases |
+| Pipeline composition, phase | Idorsia IR pipeline page, trial press releases |
+| Regulatory status | FDA / EMA / Swissmedic press releases |
+| PoS benchmarks | Wong, Siah & Lo (2019); BIO Industry Analysis |
+| Prices, market size | Published analyst notes, specialty press, epidemiology |
+
+## Limitations
+
+- rNPV is an order of magnitude tool, not a precise valuation.
+- Assumes independence of product level outcomes (no portfolio correlation modelling).
+- Working capital and capex are netted to zero.
+- No explicit tax treatment beyond an EBIT margin proxy.
+- Sensitive to peak sales assumptions, which are inherently uncertain.

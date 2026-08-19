@@ -1,0 +1,25 @@
+---
+title: "rNPV Valuation, Idorsia (SIX: IDIA)"
+subtitle: "A risk adjusted NPV valuation of a Swiss biotech pipeline, product by product"
+author: "PROUVOST Dimitri"
+date: today
+---
+
+## Research question
+
+What is the fair per share value of Idorsia, a Swiss biotech (SIX: IDIA), when its clinical pipeline is valued product by product using phase specific probabilities of success, and how does that fair value compare to the current market capitalisation?
+
+## Summary
+
+**Method**: Risk adjusted NPV. Each pipeline product is projected as a revenue curve (ramp → peak → plateau → patent cliff), converted into operating cash flows via an EBIT margin, discounted at a biotech WACC, and probability weighted using phase specific success rates from published benchmarks. Enterprise value = sum of product rNPVs + net cash. Per share value = EV / shares outstanding.
+
+**Scope**: QUVIVIQ (daridorexant, marketed), lucerastat (Phase 3, Fabry disease), and three Phase 2 candidates (CCR6, CXCR7, CXCR3 antagonists). The three assets transferred in 2025 to the ring fenced Idorsia Investments SARL (aprocitentan, selatogrel, cenerimod) are deliberately excluded from the base case and treated as an option like residual, see [Methodology](methodology.qmd) §*Structural note*.
+
+**Main finding**: Base case fair value **CHF 0.89 / share** vs market **CHF 4.35** (mid June 2026). The ~80 % apparent gap is not a claim IDIA is overvalued 5×, it decomposes cleanly into three catalysts the base case excludes: (1) SARL residual value, (2) QUVIVIQ blockbuster trajectory, (3) J&J convertible optionality. Reconciled fair value across scenarios: **CHF 0.9 – 6.6 / share**. See the full note in [Results](results.qmd).
+
+## Quick links
+
+- 📓 [Interactive notebook](notebook.qmd)
+- 📐 [Methodology](methodology.qmd)
+- 📊 [Results and investment note](results.qmd)
+- 💻 [Source code on GitHub](https://github.com/DimitriPr/rnpv-idorsia-valuation)

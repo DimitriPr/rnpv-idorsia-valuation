@@ -1,0 +1,178 @@
+---
+title: "Results"
+subtitle: "Per share fair value and investment note, base case CHF 0.89 vs market CHF 4.35"
+---
+
+## TL;DR
+
+::: {.callout-important appearance="minimal"}
+**Base case fair value: CHF 0.89 / share.**
+Current market: CHF 4.35 (mid June 2026). Apparent downside: −80 %.
+
+**But the number to remember is not −80 %.** The 80 % apparent gap is
+what the market is paying for three catalysts the base case
+*deliberately* excludes: (1) a residual claim on the ring fenced SARL
+assets (aprocitentan / selatogrel / cenerimod), (2) a QUVIVIQ blockbuster
+trajectory north of CHF 600 M peak, (3) equity optionality on the J&J
+convertible. The reconciled fair value therefore sits anywhere in
+**CHF 0.9 – 6.6 per share** depending on how one weights those catalysts.
+A "Base + modest SARL residual (CHF 400 M)" reads at CHF ~2.5 / share.
+:::
+
+**The four headline numbers**
+
+| Scenario | Value / share | Distance to market |
+|---|---:|---:|
+| Bear (peak QUVIVIQ CHF 400 M, discount 14 %) | CHF −0.64 | −115 % |
+| **Base** (peak CHF 600 M, discount 12 %, no SARL residual) | **CHF 0.89** | **−80 %** |
+| Base + SARL residual CHF 400 M | CHF 2.48 | −43 % |
+| Bull (peak CHF 1 000 M, SARL 600 M, discount 10 %) | CHF 6.65 | +53 % |
+
+![](outputs/figures/fair_value_vs_market.png){fig-alt="Fair value scenarios (Bear, Base, Base+SARL, Bull) vs current market price"}
+
+## Pipeline breakdown
+
+QUVIVIQ (daridorexant) does virtually all the work.
+
+![](outputs/figures/pipeline_overview.png){fig-alt="rNPV contribution per product in the base case"}
+
+| Product | Phase | PoS | rNPV (CHF M) | Comment |
+|---|---|---:|---:|---|
+| QUVIVIQ | marketed | 100 % | +776 | Full commercial base case, US exclusivity to 2036 |
+| Lucerastat | Phase 3 | 58 % | +152 | Filing target 2029; base case peak CHF 400 M |
+| CCR6 antagonist | Phase 2 | 21 % | −61 | Placeholder peak, negative rNPV = conservative peak sales assumption, not a claim to shelve |
+| CXCR7 antagonist | Phase 2 | 21 % | −64 | Same |
+| CXCR3 antagonist | Phase 2 | 21 % | −77 | Same |
+
+The three early stage negative rNPVs reflect the arithmetic of applying
+a 21 % Phase 2 to approval probability against remaining development
+costs. They should be read as *"peak sales assumption too conservative
+to justify the ongoing spend"*, not as *"the program should be
+discontinued"*, Phase 2 PoC readouts (CCR6 in Q4 2026) will reanchor
+those figures materially in either direction.
+
+## From cash to per share value
+
+![](outputs/figures/waterfall_ev.png){fig-alt="Bridge from parent net cash to enterprise value to value per share"}
+
+```
+Sum of product rNPVs      : CHF   727 M
++ Parent net cash          : CHF  −504 M   (cash 69 M − attributable debt 573 M)
++ SARL residual (base = 0) : CHF     0 M
+= Enterprise value (parent): CHF   223 M
+÷ Shares outstanding       :        250.7 M
+= Fair value / share       : CHF   0.89
+```
+
+**Parent net cash is negative** because we conservatively attribute
+CHF 573 M of debt (J&J convertible + convertible bonds + other financial
+debt including R-Bridge royalty monetization) to the parent equity holder
+against only ~CHF 69 M of usable cash. The CHF 762 M of SARL notes are
+excluded, they are non recourse to IDIA shareholders and are serviced
+by the SARL assets (see [Methodology](methodology.qmd)).
+
+## Key assumptions and sources
+
+::: {.callout-note appearance="simple"}
+Every number in [`src/assumptions.py`](https://github.com/DimitriPr/rnpv-idorsia-valuation/blob/main/src/assumptions.py)
+carries an inline `# source:` comment. The table below highlights the
+inputs that dominate the result.
+:::
+
+| Input | Base case | Source |
+|---|---:|---|
+| Discount rate (mid year convention) | 12 % | Standard biotech WACC 11-13 %; stressed 10 % / 14 % |
+| PoS Phase 3 → approval | 58.1 % | Wong, Siah & Lo (2019), *Biostatistics* 20(2):273–286 |
+| PoS Phase 2 → approval | 20.9 % | idem |
+| QUVIVIQ peak sales | CHF 600 M | Bracketed vs Belsomra (~USD 300 M plateau) and GlobalData 7MM DORA class projection (USD 4.1 bn by 2032) |
+| QUVIVIQ ramp (launch → peak) | 8 years (peak 2030) | Consistent with historical ~+50 % YoY 2024→2025→2026 |
+| QUVIVIQ US / EU exclusivity | 2036 / 2037 | Idorsia investor presentation, June 2026, p.15 |
+| QUVIVIQ 2026 revenue guidance | CHF 200 M | Idorsia investor presentation, June 2026, p.45 |
+| Lucerastat peak sales | CHF 400 M | Idorsia disclosure of USD ~4 bn addressable market (Fabry, June 2026 pres. p.30); Fabrazyme / Galafold comparables |
+| Group cash 31/12/25 | CHF 89 M | Idorsia Annual Report 2025, p.145 |
+| Parent attributable debt | CHF 573 M | AR 2025 p.145: convertible loan 335 + bonds 49 + other 189 |
+| SARL ring fenced debt (excl.) | CHF 840 M | AR 2025 p.145: notes 762 + facility 78 |
+| Shares outstanding | 250.7 M | AR 2025, p.8 |
+| Current share price | CHF 4.35 | Yahoo Finance / IDIA.SW mid June 2026 midpoint |
+
+## What the valuation rides on
+
+![](outputs/figures/tornado.png){fig-alt="Tornado chart of variables ranked by impact on value per share"}
+
+Two variables dominate, nearly tied, **the SARL residual assumption**
+(0 vs CHF 400 M swings the model from CHF 0.89 to CHF 2.48 / share) and
+**QUVIVIQ peak sales** (±30 % swings from CHF 0.09 to CHF 1.69). Third
+is the QUVIVIQ operating margin (±5 pp). Discount rate is a mid tier
+lever; lucerastat peak sales and PoS matter but do not move the needle
+on their own.
+
+**Critical read of the tornado**: no single variable at its stress case
+reaches the current market price. Closing the gap requires **multiple
+positive assumptions simultaneously**, that is the market's implicit
+bet.
+
+![](outputs/figures/sensitivity_heatmap.png){fig-alt="Value per share heatmap over QUVIVIQ peak sales and discount rate"}
+
+To reach the current CHF 4.35 with QUVIVIQ alone requires peak sales
+CHF ~1 000-1 100 M *and* a discount rate at the low end of the WACC
+range (9-10 %). That is not implausible, descheduling in the US,
+IDSIQ label enhancement, and pediatric approval, if all three land,
+plausibly get QUVIVIQ into that territory, but each is a separate
+probabilistic event.
+
+## Verdict
+
+**The market is not wrong; the base case is not wrong.** They price
+different things.
+
+The base case values *only* the parent owned assets, uses industry standard
+Phase 2 to approval and Phase 3 to approval probabilities, and applies a
+conservative peak sales estimate to a genuinely differentiated but
+uncertain commercial asset. It answers the question:
+*"If none of the three catalysts materialise, what is Idorsia worth?"*
+The answer is CHF ~0.9 / share.
+
+The market answers the different question:
+*"What is Idorsia worth on a probability weighted basis, including some
+credit for the SARL reversion and for QUVIVIQ becoming a genuine
+blockbuster?"* The reconciled fair value in that framework sits
+somewhere in CHF 2.5 – 5 / share. The market is at CHF 4.35, the upper
+end of that range.
+
+**My reconciled personal read**: at CHF 4.35, IDIA is pricing in a
+material SARL residual *plus* a QUVIVIQ trajectory noticeably above the
+CHF 600 M I use as base. That is a fairly optimistic combination which is not
+irrational, but leaves limited margin of safety at the current level.
+It is not an obvious buy at these levels; it is not obviously a sell
+either. It is a name whose fair value critically depends on things that
+will be known in the next 18-24 months, the CCR6 PoC readout (Q4 2026),
+the US QUVIVIQ commercial trajectory, and progress on repaying the SARL
+notes.
+
+## Limitations
+
+- All figures are constrained by the
+  quality of the peak sales, PoS and discount rate inputs.
+- Peak sales for the three Phase 2 candidates are placeholders and drive
+  their negative rNPVs. A positive CCR6 PoC readout at Q4 2026 would
+  materially reshape those figures.
+- The J&J convertible is treated as pure debt at its CHF ~11.55 strike
+  (deep OTM at current prices). Rerating would turn it into an equity dilution event.
+- Working capital and capex are netted to zero; tax proxied by EBIT
+  margin; product outcomes are assumed independent.
+- The SARL contingent liability to J&J (30 % of aprocitentan proceeds +
+  10 % each of selatogrel and cenerimod) is disclosed but not fully
+  modelled, a known refinement.
+- Modelling conventions (mid year discount, 8 year QUVIVIQ ramp) are
+  documented in [Methodology](methodology.qmd) §*Modelling conventions*.
+
+Don't read the CHF 0.89 as a price target. Read the sourcing and the
+scenarios. Every input is traceable to a public document, every scenario
+has an explicit narrative, and every CHF of the gap between the model
+and the market can be tied to a specific bet.
+
+---
+
+*Full computation trail: [interactive notebook](notebook.qmd) |
+[methodology](methodology.qmd) |
+[source on GitHub](https://github.com/DimitriPr/rnpv-idorsia-valuation).*

@@ -1,0 +1,24 @@
+---
+title: "About"
+---
+
+## Project context
+
+This valuation is a personal research project built by Dimitri Prouvost, MSc Finance at HEC Lausanne (Asset & Risk Management), as a portfolio piece on biotech pipeline valuation.
+
+## Author
+
+- **Prouvost Dimitri**, MSc Finance, HEC Lausanne
+
+## Disclaimer
+
+This is a research exercise, not investment advice. All inputs are public. The valuation is an order of magnitude estimate, not a price target. Idorsia is used as a case study; no position is held or recommended.
+
+## Contact
+
+- **Email**: prouvostdimitri@gmail.com
+- **GitHub**: [@DimitriPr](https://github.com/DimitriPr)
+
+## License
+
+The code in this repository is released under the MIT License. All data used is publicly available (see [Methodology](methodology.qmd)).

@@ -1,0 +1,342 @@
+/*-- scss:rules --*/
+
+/* ============================================
+   Bloomberg / Institutional Finance theme
+   Dark mode by default, dark green accent
+   ============================================ */
+
+/* --- Font imports (Inter for body, IBM Plex Mono for code) --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap');
+
+/* --- CSS variables ---
+   Hairline / strong-text colors flip between light and dark themes so that
+   nothing rendered against the page background becomes invisible. The navbar,
+   footer and code blocks have hardcoded dark backgrounds (see _quarto.yml and
+   the `pre` rule below) so their internal borders stay white-on-dark always.
+*/
+:root {
+  --accent: #2d5f3f;
+  --accent-bright: #4a8b63;
+  --accent-faded: rgba(74, 139, 99, 0.15);
+  --hairline: rgba(0, 0, 0, 0.08);
+  --hairline-faint: rgba(0, 0, 0, 0.05);
+  --strong-color: inherit;
+}
+
+[data-bs-theme="dark"] {
+  --hairline: rgba(255, 255, 255, 0.08);
+  --hairline-faint: rgba(255, 255, 255, 0.05);
+  --strong-color: #fff;
+}
+
+/* --- Body typography --- */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  letter-spacing: -0.005em;
+}
+
+/* --- Headings --- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 1.4rem;
+  margin-top: 2.5rem;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--hairline);
+}
+
+h3 {
+  font-size: 1.1rem;
+  margin-top: 1.8rem;
+  margin-bottom: 0.6rem;
+  color: var(--accent-bright);
+  font-weight: 600;
+}
+
+/* --- Subtitle below title (page metadata) --- */
+.subtitle {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.1rem;
+  color: #999;
+  margin-bottom: 1.5rem;
+}
+
+/* --- Author / date block --- */
+.quarto-title-meta {
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #888;
+}
+
+/* --- Navbar --- */
+.navbar {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.92rem;
+  letter-spacing: 0.01em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.6rem 0;
+}
+
+.navbar-brand {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.navbar a:hover {
+  color: var(--accent-bright) !important;
+}
+
+.navbar-nav .nav-link.active {
+  color: var(--accent-bright) !important;
+}
+
+/* --- Content width --- */
+.content {
+  max-width: 880px;
+}
+
+/* --- Links --- */
+a {
+  color: var(--accent-bright);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(74, 139, 99, 0.3);
+  transition: all 0.15s ease;
+}
+
+a:hover {
+  color: var(--accent-bright);
+  border-bottom-color: var(--accent-bright);
+}
+
+/* Links inside navbar / sidebar : no underline */
+.navbar a, .sidebar a, .toc-actions a, #toc-title + ul a {
+  border-bottom: none;
+}
+
+/* --- Inline code --- */
+code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.88em;
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+  background: rgba(74, 139, 99, 0.1);
+  color: var(--accent-bright);
+  border: 1px solid rgba(74, 139, 99, 0.2);
+}
+
+/* --- Code blocks (pre) --- */
+pre {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  border-left: 3px solid var(--accent);
+  padding: 1rem 1.2rem !important;
+  background: #1a1a1a !important;
+}
+
+pre code {
+  background: transparent;
+  border: none;
+  color: #d4d4d4;
+  padding: 0;
+}
+
+/* --- Blockquotes & callouts --- */
+blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1.2rem;
+  font-style: italic;
+  color: #aaa;
+}
+
+.callout {
+  border-radius: 4px;
+  border-left-width: 3px;
+  font-size: 0.94rem;
+}
+
+.callout.callout-style-default .callout-title {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.callout-note {
+  border-left-color: var(--accent) !important;
+}
+
+.callout-note .callout-title {
+  background: var(--accent-faded) !important;
+  color: var(--accent-bright);
+}
+
+/* --- Tables : Bloomberg-style monospaced data look --- */
+table {
+  font-size: 0.88rem;
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.5rem 0;
+}
+
+table thead {
+  border-bottom: 2px solid var(--accent);
+}
+
+table thead th {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  padding: 0.7rem 0.8rem;
+  text-align: left;
+  color: var(--accent-bright);
+}
+
+table tbody td {
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--hairline-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+table tbody tr:hover {
+  background: rgba(74, 139, 99, 0.05);
+}
+
+/* --- Figures --- */
+.figure, .quarto-figure {
+  margin: 2rem 0;
+}
+
+.figure img, .quarto-figure img {
+  border-radius: 3px;
+  border: 1px solid var(--hairline-faint);
+}
+
+.figure-caption, .quarto-figure-caption, figcaption {
+  font-size: 0.83rem;
+  color: #888;
+  font-style: italic;
+  margin-top: 0.5rem;
+  letter-spacing: 0.005em;
+}
+
+/* --- Table of contents (right sidebar) --- */
+#TOC, .sidebar-toc, nav#TOC {
+  font-size: 0.83rem;
+}
+
+#TOC a, .sidebar-toc a {
+  color: #999;
+  border-bottom: none;
+  letter-spacing: 0.005em;
+}
+
+#TOC a:hover, .sidebar-toc a:hover {
+  color: var(--accent-bright);
+}
+
+#TOC .active, .sidebar-toc .active {
+  color: var(--accent-bright) !important;
+  border-left: 2px solid var(--accent-bright);
+  padding-left: 0.5rem;
+}
+
+#toc-title {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #777;
+}
+
+/* --- Page footer --- */
+.page-footer, footer {
+  font-size: 0.82rem;
+  color: #777;
+  letter-spacing: 0.01em;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.5rem 0;
+  margin-top: 4rem;
+}
+
+.page-footer a {
+  color: #999;
+  border-bottom: none;
+}
+
+.page-footer a:hover {
+  color: var(--accent-bright);
+}
+
+/* --- Code fold button styling --- */
+.code-fold details summary {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--accent-bright);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* --- Section anchors (link icon next to headers) --- */
+.anchorjs-link {
+  color: var(--accent) !important;
+  border-bottom: none !important;
+}
+
+/* --- Horizontal rules --- */
+hr {
+  border: none;
+  border-top: 1px solid var(--hairline);
+  margin: 2.5rem 0;
+}
+
+/* --- Math equations (KaTeX/MathJax) : ensure readability --- */
+.math {
+  font-size: 1em;
+}
+
+/* --- Bullet lists : tighter spacing, lighter bullets --- */
+ul, ol {
+  padding-left: 1.4rem;
+}
+
+ul li, ol li {
+  margin-bottom: 0.3rem;
+}
+
+ul li::marker {
+  color: var(--accent-bright);
+}
+
+/* --- Strong emphasis (bold) ---
+   Color flips per theme via --strong-color so light-mode bold isn't white-on-white.
+*/
+strong, b {
+  color: var(--strong-color);
+  font-weight: 600;
+}
+
+/* --- iframe (for embedded notebook) : style the border --- */
+iframe {
+  border: 1px solid var(--hairline) !important;
+  border-radius: 4px;
+  background: #fff; /* iframe content is the notebook HTML which has its own light theme */
+}

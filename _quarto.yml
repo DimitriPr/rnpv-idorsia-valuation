@@ -1,0 +1,62 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - "*.qmd"
+  resources:
+    - "notebooks/analysis.html"
+    - "notebooks/analysis_files/**"
+    - "outputs/figures/**"
+
+website:
+  title: "rNPV Valuation — Idorsia (SIX: IDIA)"
+  description: "A risk-adjusted NPV valuation of Idorsia's clinical pipeline, product-by-product"
+
+  navbar:
+    background: "#0d0d0d"
+    foreground: "#e0e0e0"
+    left:
+      - href: index.qmd
+        text: Home
+      - href: methodology.qmd
+        text: Methodology
+      - href: results.qmd
+        text: Results
+      - href: notebook.qmd
+        text: Notebook
+      - href: about.qmd
+        text: About
+    right:
+      - icon: github
+        href: https://github.com/DimitriPr/rnpv-idorsia-valuation
+        aria-label: GitHub
+
+  page-footer:
+    background: "#0a0a0a"
+    border: false
+    left: "© 2026 Dimitri Prouvost"
+    right: "Built with [Quarto](https://quarto.org)"
+
+format:
+  html:
+    theme:
+      light: [cosmo, styles.css]
+      dark: [darkly, styles.css]
+    default-image-extension: png
+    toc: true
+    toc-location: right
+    toc-depth: 3
+    toc-title: "On this page"
+    code-fold: true
+    code-tools:
+      source: false
+      toggle: true
+      caption: "code"
+    fig-cap-location: bottom
+    tbl-cap-location: top
+    smooth-scroll: true
+    link-external-newwindow: true
+    anchor-sections: true
+
+execute:
+  freeze: auto
