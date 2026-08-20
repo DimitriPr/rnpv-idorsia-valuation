@@ -1,0 +1,219 @@
+[
+  {
+    "objectID": "results.html",
+    "href": "results.html",
+    "title": "Results",
+    "section": "",
+    "text": "Base case fair value: CHF 0.89 / share. Current market: CHF 4.35 (mid June 2026). Apparent downside: −80 %.\nBut the number to remember is not −80 %. The 80 % apparent gap is what the market is paying for three catalysts the base case deliberately excludes: (1) a residual claim on the ring fenced SARL assets (aprocitentan / selatogrel / cenerimod), (2) a QUVIVIQ blockbuster trajectory north of CHF 600 M peak, (3) equity optionality on the J&J convertible. The reconciled fair value therefore sits anywhere in CHF 0.9 – 6.6 per share depending on how one weights those catalysts. A “Base + modest SARL residual (CHF 400 M)” reads at CHF ~2.5 / share.\n\n\n\nThe four headline numbers\n\n\n\n\n\n\n\n\nScenario\nValue / share\nDistance to market\n\n\n\n\nBear (peak QUVIVIQ CHF 400 M, discount 14 %)\nCHF −0.64\n−115 %\n\n\nBase (peak CHF 600 M, discount 12 %, no SARL residual)\nCHF 0.89\n−80 %\n\n\nBase + SARL residual CHF 400 M\nCHF 2.48\n−43 %\n\n\nBull (peak CHF 1 000 M, SARL 600 M, discount 10 %)\nCHF 6.65\n+53 %"
+  },
+  {
+    "objectID": "results.html#tldr",
+    "href": "results.html#tldr",
+    "title": "Results",
+    "section": "",
+    "text": "Base case fair value: CHF 0.89 / share. Current market: CHF 4.35 (mid June 2026). Apparent downside: −80 %.\nBut the number to remember is not −80 %. The 80 % apparent gap is what the market is paying for three catalysts the base case deliberately excludes: (1) a residual claim on the ring fenced SARL assets (aprocitentan / selatogrel / cenerimod), (2) a QUVIVIQ blockbuster trajectory north of CHF 600 M peak, (3) equity optionality on the J&J convertible. The reconciled fair value therefore sits anywhere in CHF 0.9 – 6.6 per share depending on how one weights those catalysts. A “Base + modest SARL residual (CHF 400 M)” reads at CHF ~2.5 / share.\n\n\n\nThe four headline numbers\n\n\n\n\n\n\n\n\nScenario\nValue / share\nDistance to market\n\n\n\n\nBear (peak QUVIVIQ CHF 400 M, discount 14 %)\nCHF −0.64\n−115 %\n\n\nBase (peak CHF 600 M, discount 12 %, no SARL residual)\nCHF 0.89\n−80 %\n\n\nBase + SARL residual CHF 400 M\nCHF 2.48\n−43 %\n\n\nBull (peak CHF 1 000 M, SARL 600 M, discount 10 %)\nCHF 6.65\n+53 %"
+  },
+  {
+    "objectID": "results.html#pipeline-breakdown",
+    "href": "results.html#pipeline-breakdown",
+    "title": "Results",
+    "section": "Pipeline breakdown",
+    "text": "Pipeline breakdown\nQUVIVIQ (daridorexant) does virtually all the work.\n\n\n\n\n\n\n\n\n\n\n\nProduct\nPhase\nPoS\nrNPV (CHF M)\nComment\n\n\n\n\nQUVIVIQ\nmarketed\n100 %\n+776\nFull commercial base case, US exclusivity to 2036\n\n\nLucerastat\nPhase 3\n58 %\n+152\nFiling target 2029; base case peak CHF 400 M\n\n\nCCR6 antagonist\nPhase 2\n21 %\n−61\nPlaceholder peak, negative rNPV = conservative peak sales assumption, not a claim to shelve\n\n\nCXCR7 antagonist\nPhase 2\n21 %\n−64\nSame\n\n\nCXCR3 antagonist\nPhase 2\n21 %\n−77\nSame\n\n\n\nThe three early stage negative rNPVs reflect the arithmetic of applying a 21 % Phase 2 to approval probability against remaining development costs. They should be read as “peak sales assumption too conservative to justify the ongoing spend”, not as “the program should be discontinued”, Phase 2 PoC readouts (CCR6 in Q4 2026) will reanchor those figures materially in either direction."
+  },
+  {
+    "objectID": "results.html#from-cash-to-per-share-value",
+    "href": "results.html#from-cash-to-per-share-value",
+    "title": "Results",
+    "section": "From cash to per share value",
+    "text": "From cash to per share value\n\nSum of product rNPVs      : CHF   727 M\n+ Parent net cash          : CHF  −504 M   (cash 69 M − attributable debt 573 M)\n+ SARL residual (base = 0) : CHF     0 M\n= Enterprise value (parent): CHF   223 M\n÷ Shares outstanding       :        250.7 M\n= Fair value / share       : CHF   0.89\nParent net cash is negative because we conservatively attribute CHF 573 M of debt (J&J convertible + convertible bonds + other financial debt including R-Bridge royalty monetization) to the parent equity holder against only ~CHF 69 M of usable cash. The CHF 762 M of SARL notes are excluded, they are non recourse to IDIA shareholders and are serviced by the SARL assets (see Methodology)."
+  },
+  {
+    "objectID": "results.html#key-assumptions-and-sources",
+    "href": "results.html#key-assumptions-and-sources",
+    "title": "Results",
+    "section": "Key assumptions and sources",
+    "text": "Key assumptions and sources\n\n\n\n\n\n\nEvery number in src/assumptions.py carries an inline # source: comment. The table below highlights the inputs that dominate the result.\n\n\n\n\n\n\n\n\n\n\n\nInput\nBase case\nSource\n\n\n\n\nDiscount rate (mid year convention)\n12 %\nStandard biotech WACC 11-13 %; stressed 10 % / 14 %\n\n\nPoS Phase 3 → approval\n58.1 %\nWong, Siah & Lo (2019), Biostatistics 20(2):273–286\n\n\nPoS Phase 2 → approval\n20.9 %\nidem\n\n\nQUVIVIQ peak sales\nCHF 600 M\nBracketed vs Belsomra (~USD 300 M plateau) and GlobalData 7MM DORA class projection (USD 4.1 bn by 2032)\n\n\nQUVIVIQ ramp (launch → peak)\n8 years (peak 2030)\nConsistent with historical ~+50 % YoY 2024→2025→2026\n\n\nQUVIVIQ US / EU exclusivity\n2036 / 2037\nIdorsia investor presentation, June 2026, p.15\n\n\nQUVIVIQ 2026 revenue guidance\nCHF 200 M\nIdorsia investor presentation, June 2026, p.45\n\n\nLucerastat peak sales\nCHF 400 M\nIdorsia disclosure of USD ~4 bn addressable market (Fabry, June 2026 pres. p.30); Fabrazyme / Galafold comparables\n\n\nGroup cash 31/12/25\nCHF 89 M\nIdorsia Annual Report 2025, p.145\n\n\nParent attributable debt\nCHF 573 M\nAR 2025 p.145: convertible loan 335 + bonds 49 + other 189\n\n\nSARL ring fenced debt (excl.)\nCHF 840 M\nAR 2025 p.145: notes 762 + facility 78\n\n\nShares outstanding\n250.7 M\nAR 2025, p.8\n\n\nCurrent share price\nCHF 4.35\nYahoo Finance / IDIA.SW mid June 2026 midpoint"
+  },
+  {
+    "objectID": "results.html#what-the-valuation-rides-on",
+    "href": "results.html#what-the-valuation-rides-on",
+    "title": "Results",
+    "section": "What the valuation rides on",
+    "text": "What the valuation rides on\n\nTwo variables dominate, nearly tied, the SARL residual assumption (0 vs CHF 400 M swings the model from CHF 0.89 to CHF 2.48 / share) and QUVIVIQ peak sales (±30 % swings from CHF 0.09 to CHF 1.69). Third is the QUVIVIQ operating margin (±5 pp). Discount rate is a mid tier lever; lucerastat peak sales and PoS matter but do not move the needle on their own.\nCritical read of the tornado: no single variable at its stress case reaches the current market price. Closing the gap requires multiple positive assumptions simultaneously, that is the market’s implicit bet.\n\nTo reach the current CHF 4.35 with QUVIVIQ alone requires peak sales CHF ~1 000-1 100 M and a discount rate at the low end of the WACC range (9-10 %). That is not implausible, descheduling in the US, IDSIQ label enhancement, and pediatric approval, if all three land, plausibly get QUVIVIQ into that territory, but each is a separate probabilistic event."
+  },
+  {
+    "objectID": "results.html#verdict",
+    "href": "results.html#verdict",
+    "title": "Results",
+    "section": "Verdict",
+    "text": "Verdict\nThe market is not wrong; the base case is not wrong. They price different things.\nThe base case values only the parent owned assets, uses industry standard Phase 2 to approval and Phase 3 to approval probabilities, and applies a conservative peak sales estimate to a genuinely differentiated but uncertain commercial asset. It answers the question: “If none of the three catalysts materialise, what is Idorsia worth?” The answer is CHF ~0.9 / share.\nThe market answers the different question: “What is Idorsia worth on a probability weighted basis, including some credit for the SARL reversion and for QUVIVIQ becoming a genuine blockbuster?” The reconciled fair value in that framework sits somewhere in CHF 2.5 – 5 / share. The market is at CHF 4.35, the upper end of that range.\nMy reconciled personal read: at CHF 4.35, IDIA is pricing in a material SARL residual plus a QUVIVIQ trajectory noticeably above the CHF 600 M I use as base. That is a fairly optimistic combination which is not irrational, but leaves limited margin of safety at the current level. It is not an obvious buy at these levels; it is not obviously a sell either. It is a name whose fair value critically depends on things that will be known in the next 18-24 months, the CCR6 PoC readout (Q4 2026), the US QUVIVIQ commercial trajectory, and progress on repaying the SARL notes."
+  },
+  {
+    "objectID": "results.html#limitations",
+    "href": "results.html#limitations",
+    "title": "Results",
+    "section": "Limitations",
+    "text": "Limitations\n\nAll figures are constrained by the quality of the peak sales, PoS and discount rate inputs.\nPeak sales for the three Phase 2 candidates are placeholders and drive their negative rNPVs. A positive CCR6 PoC readout at Q4 2026 would materially reshape those figures.\nThe J&J convertible is treated as pure debt at its CHF ~11.55 strike (deep OTM at current prices). Rerating would turn it into an equity dilution event.\nWorking capital and capex are netted to zero; tax proxied by EBIT margin; product outcomes are assumed independent.\nThe SARL contingent liability to J&J (30 % of aprocitentan proceeds + 10 % each of selatogrel and cenerimod) is disclosed but not fully modelled, a known refinement.\nModelling conventions (mid year discount, 8 year QUVIVIQ ramp) are documented in Methodology §Modelling conventions.\n\nDon’t read the CHF 0.89 as a price target. Read the sourcing and the scenarios. Every input is traceable to a public document, every scenario has an explicit narrative, and every CHF of the gap between the model and the market can be tied to a specific bet.\n\nFull computation trail: interactive notebook | methodology | source on GitHub."
+  },
+  {
+    "objectID": "methodology.html",
+    "href": "methodology.html",
+    "title": "Methodology",
+    "section": "",
+    "text": "This page describes how each pipeline product is modelled, how probability weighting is applied, and how the product rNPVs are aggregated into an enterprise value and a per share value."
+  },
+  {
+    "objectID": "methodology.html#the-rnpv-formula",
+    "href": "methodology.html#the-rnpv-formula",
+    "title": "Methodology",
+    "section": "The rNPV formula",
+    "text": "The rNPV formula\nFor each product, the risk adjusted NPV is:\n\\(rNPV = \\sum_{t=T_0}^{T_{end}} \\frac{CF_t \\times PoS_{cumulative}}{(1+r)^t} \\; - \\; \\sum_{t=0}^{T_0-1} \\frac{DevCost_t}{(1+r)^t}\\)$\nWhere:\n\n\\(CF_t\\) = operating cash flow in year \\(t\\) = \\(Sales_t \\times \\text{OpMargin}\\)\n\\(PoS_{cumulative}\\) = cumulative probability that the product reaches the market from its current phase\n\\(r\\) = discount rate (biotech WACC)\n\\(DevCost_t\\) = remaining clinical development cost in year \\(t\\)\n\\(T_0\\) = expected launch year, \\(T_{end}\\) = end of exclusivity window (post patent cliff)"
+  },
+  {
+    "objectID": "methodology.html#probability-of-success-pos",
+    "href": "methodology.html#probability-of-success-pos",
+    "title": "Methodology",
+    "section": "Probability of success (PoS)",
+    "text": "Probability of success (PoS)\nPhase to market probabilities are sourced from published academic benchmarks (Wong, Siah & Lo 2019, MIT; BIO Industry Analysis reports). Indicative values used as starting points:\n\n\n\nCurrent phase\nPoS to market\n\n\n\n\nPhase I\n~10 %\n\n\nPhase II\n~15–20 %\n\n\nPhase III\n~50–60 %\n\n\nFiled\n~85–90 %\n\n\nMarketed / approved\n100 %\n\n\n\nExact values used in the model are stored in src/assumptions.py with source citations for each product."
+  },
+  {
+    "objectID": "methodology.html#revenue-curve",
+    "href": "methodology.html#revenue-curve",
+    "title": "Methodology",
+    "section": "Revenue curve",
+    "text": "Revenue curve\nFor each product we model annual sales as:\n\nRamp phase, linear (or S curve) buildup over ~5–7 years from launch to peak.\nPeak phase, plateau at the estimated peak sales figure.\nPatent cliff, sharp decline (typically –80 % to –90 % over 1–2 years) at loss of exclusivity.\n\nPeak sales are constructed bottom up where possible:\n\\[\\text{Peak Sales} = \\text{Target patient population} \\times \\text{Penetration rate} \\times \\text{Annual price}\\]\nEvery number is sourced (annual report, published analyst estimates, epidemiology literature) and the source is recorded next to the value in assumptions.py."
+  },
+  {
+    "objectID": "methodology.html#operating-margin-and-cash-flow",
+    "href": "methodology.html#operating-margin-and-cash-flow",
+    "title": "Methodology",
+    "section": "Operating margin and cash flow",
+    "text": "Operating margin and cash flow\nSales are converted to operating cash flow using an EBIT margin appropriate for a specialty biotech at maturity (indicative range: 25–40 %). The margin is sourced/hypothesised and disclosed. Working capital and capex are treated as netting to zero over the forecast horizon (standard rNPV simplification, discussed in Limitations)."
+  },
+  {
+    "objectID": "methodology.html#development-costs",
+    "href": "methodology.html#development-costs",
+    "title": "Methodology",
+    "section": "Development costs",
+    "text": "Development costs\nFor products not yet on the market, the remaining clinical development cost (Phase III trials, filing) is subtracted as an unweighted expense in the years before launch (i.e. spent regardless of approval outcome). Indicative per phase costs are sourced from published benchmarks."
+  },
+  {
+    "objectID": "methodology.html#discount-rate",
+    "href": "methodology.html#discount-rate",
+    "title": "Methodology",
+    "section": "Discount rate",
+    "text": "Discount rate\nA biotech appropriate WACC in the 11–13 % range is used. The base case is set in assumptions.py and the value is stress tested in the sensitivity section."
+  },
+  {
+    "objectID": "methodology.html#modelling-conventions",
+    "href": "methodology.html#modelling-conventions",
+    "title": "Methodology",
+    "section": "Modelling conventions",
+    "text": "Modelling conventions\nTwo non obvious choices sit under the rNPV that would produce materially different numbers if flipped. Both are documented here for transparency.\n\nDiscounting convention: mid year\nCash flows in year \\(t\\) are discounted by \\((1+r)^{-(t - t_0 + 0.5)}\\), the mid year convention. This is the textbook rNPV default: cash is assumed to flow evenly through the year, so the current year cash flow gets half a year of discounting. Two alternatives exist:\n\n\n\n\n\n\n\n\nConvention\nFormula\nEffect on base case (CHF/share)\n\n\n\n\nStart of year\n\\((1+r)^{-(t - t_0)}\\)\n~ +6 % higher (no discount on t₀ CF)\n\n\nMid year (used here)\n\\((1+r)^{-(t - t_0 + 0.5)}\\)\nbase\n\n\nEnd of year\n\\((1+r)^{-(t - t_0 + 1)}\\)\n~ −6 % lower (full year of discount on t₀ CF)\n\n\n\nThe convention is exposed as a keyword argument on discount_factors() in rnpv.py so it can be flipped in one line for stress testing.\n\n\nQUVIVIQ ramp trajectory: 8 years to peak\nThe model interpolates linearly from the last anchored sales figure (CHF 200 M guidance for 2026) to the peak of CHF 600 M by 2030, a 4-year interpolation from the anchor, or an 8-year ramp counted from the 2022 launch year. This produces the sequence 200 → 300 → 400 → 500 → 600 (2026-2030), consistent with the ~+50 % YoY growth Idorsia has been delivering and guides for 2026.\nAn earlier draft used ramp_years = 6 (peak in 2028), which would imply 200 → 400 → 600 in two years, 100 % then 50 % YoY growth. Defensible only under an aggressive combined US descheduling + pediatric approval + European reimbursement bull case. The current setting is deliberately more conservative and can be retightened via the tornado / heatmap.\n\n\nWhat is NOT modelled\nConsistent with the “order of magnitude” tool ambition:\n\nTaxes, subsumed into the operating margin. A separate effective tax layer would trim EV by ~10–20 %.\nWorking capital and capex, netted to zero over the forecast horizon.\nProduct outcome correlation, treated as independent (no portfolio effect).\nJ&J convertible optionality, the CHF 335 M convertible loan is treated as pure debt at its ~CHF 11.55 strike. Rerating toward the strike would introduce dilution.\nSARL cash flow priorities, the ring fenced debt at Idorsia Investments SARL is excluded from the parent bridge in the base case; the residual reversion to the parent is set to zero and stressed only in scenarios."
+  },
+  {
+    "objectID": "methodology.html#aggregation",
+    "href": "methodology.html#aggregation",
+    "title": "Methodology",
+    "section": "Aggregation",
+    "text": "Aggregation\n\\[EV = \\sum_{i \\in products} rNPV_i + \\text{NetCash}\\]\n\\[\\text{Value per share} = \\frac{EV}{\\text{Shares outstanding}}\\]\nNet cash and shares outstanding are taken from the most recent Idorsia balance sheet and share count disclosures."
+  },
+  {
+    "objectID": "methodology.html#sensitivity",
+    "href": "methodology.html#sensitivity",
+    "title": "Methodology",
+    "section": "Sensitivity",
+    "text": "Sensitivity\nThe model is stress tested along the axes that dominate rNPV in practice:\n\nDiscount rate (10 % → 14 %)\nPoS of the lead clinical candidate (±20 %)\nPeak sales of the top revenue driver (±30 %)\nA tornado chart ranks the sensitivities."
+  },
+  {
+    "objectID": "methodology.html#data-sources",
+    "href": "methodology.html#data-sources",
+    "title": "Methodology",
+    "section": "Data sources",
+    "text": "Data sources\nAll inputs are public. No Bloomberg / paid analyst data is republished.\n\n\n\n\n\n\n\nInput\nSource\n\n\n\n\nShare price, market cap, shares outstanding\nyfinance (IDIA.SW), SIX, Idorsia IR\n\n\nCash, debt, burn rate\nIdorsia annual report, quarterly releases\n\n\nPipeline composition, phase\nIdorsia IR pipeline page, trial press releases\n\n\nRegulatory status\nFDA / EMA / Swissmedic press releases\n\n\nPoS benchmarks\nWong, Siah & Lo (2019); BIO Industry Analysis\n\n\nPrices, market size\nPublished analyst notes, specialty press, epidemiology"
+  },
+  {
+    "objectID": "methodology.html#limitations",
+    "href": "methodology.html#limitations",
+    "title": "Methodology",
+    "section": "Limitations",
+    "text": "Limitations\n\nrNPV is an order of magnitude tool, not a precise valuation.\nAssumes independence of product level outcomes (no portfolio correlation modelling).\nWorking capital and capex are netted to zero.\nNo explicit tax treatment beyond an EBIT margin proxy.\nSensitive to peak sales assumptions, which are inherently uncertain."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "This valuation is a personal research project built by Dimitri Prouvost, MSc Finance at HEC Lausanne (Asset & Risk Management), as a portfolio piece on biotech pipeline valuation."
+  },
+  {
+    "objectID": "about.html#project-context",
+    "href": "about.html#project-context",
+    "title": "About",
+    "section": "",
+    "text": "This valuation is a personal research project built by Dimitri Prouvost, MSc Finance at HEC Lausanne (Asset & Risk Management), as a portfolio piece on biotech pipeline valuation."
+  },
+  {
+    "objectID": "about.html#author",
+    "href": "about.html#author",
+    "title": "About",
+    "section": "Author",
+    "text": "Author\n\nProuvost Dimitri, MSc Finance, HEC Lausanne"
+  },
+  {
+    "objectID": "about.html#disclaimer",
+    "href": "about.html#disclaimer",
+    "title": "About",
+    "section": "Disclaimer",
+    "text": "Disclaimer\nThis is a research exercise, not investment advice. All inputs are public. The valuation is an order of magnitude estimate, not a price target. Idorsia is used as a case study; no position is held or recommended."
+  },
+  {
+    "objectID": "about.html#contact",
+    "href": "about.html#contact",
+    "title": "About",
+    "section": "Contact",
+    "text": "Contact\n\nEmail: prouvostdimitri@gmail.com\nGitHub: @DimitriPr"
+  },
+  {
+    "objectID": "about.html#license",
+    "href": "about.html#license",
+    "title": "About",
+    "section": "License",
+    "text": "License\nThe code in this repository is released under the MIT License. All data used is publicly available (see Methodology)."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "rNPV Valuation, Idorsia (SIX: IDIA)",
+    "section": "",
+    "text": "What is the fair per share value of Idorsia, a Swiss biotech (SIX: IDIA), when its clinical pipeline is valued product by product using phase specific probabilities of success, and how does that fair value compare to the current market capitalisation?"
+  },
+  {
+    "objectID": "index.html#research-question",
+    "href": "index.html#research-question",
+    "title": "rNPV Valuation, Idorsia (SIX: IDIA)",
+    "section": "",
+    "text": "What is the fair per share value of Idorsia, a Swiss biotech (SIX: IDIA), when its clinical pipeline is valued product by product using phase specific probabilities of success, and how does that fair value compare to the current market capitalisation?"
+  },
+  {
+    "objectID": "index.html#summary",
+    "href": "index.html#summary",
+    "title": "rNPV Valuation, Idorsia (SIX: IDIA)",
+    "section": "Summary",
+    "text": "Summary\nMethod: Risk adjusted NPV. Each pipeline product is projected as a revenue curve (ramp → peak → plateau → patent cliff), converted into operating cash flows via an EBIT margin, discounted at a biotech WACC, and probability weighted using phase specific success rates from published benchmarks. Enterprise value = sum of product rNPVs + net cash. Per share value = EV / shares outstanding.\nScope: QUVIVIQ (daridorexant, marketed), lucerastat (Phase 3, Fabry disease), and three Phase 2 candidates (CCR6, CXCR7, CXCR3 antagonists). The three assets transferred in 2025 to the ring fenced Idorsia Investments SARL (aprocitentan, selatogrel, cenerimod) are deliberately excluded from the base case and treated as an option like residual, see Methodology §Structural note.\nMain finding: Base case fair value CHF 0.89 / share vs market CHF 4.35 (mid June 2026). The ~80 % apparent gap is not a claim IDIA is overvalued 5×, it decomposes cleanly into three catalysts the base case excludes: (1) SARL residual value, (2) QUVIVIQ blockbuster trajectory, (3) J&J convertible optionality. Reconciled fair value across scenarios: CHF 0.9 – 6.6 / share. See the full note in Results."
+  },
+  {
+    "objectID": "index.html#quick-links",
+    "href": "index.html#quick-links",
+    "title": "rNPV Valuation, Idorsia (SIX: IDIA)",
+    "section": "Quick links",
+    "text": "Quick links\n\n📓 Interactive notebook\n📐 Methodology\n📊 Results and investment note\n💻 Source code on GitHub"
+  },
+  {
+    "objectID": "notebook.html",
+    "href": "notebook.html",
+    "title": "Interactive notebook",
+    "section": "",
+    "text": "Note\n\n\n\nThe notebook below is the complete analysis used in this valuation. All cells, outputs, and figures are visible. The raw .ipynb file is available on GitHub and can be cloned to rerun locally.\nRebuild before deploying: python -m jupyter nbconvert --to html notebooks/analysis.ipynb\n\n\n\n\n\n↗ Open notebook in a new tab"
+  }
+]
