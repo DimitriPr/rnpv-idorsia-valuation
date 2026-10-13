@@ -472,7 +472,7 @@ ul.task-list li input[type="checkbox"] {
 = Fair value / share (raw)                                  : CHF    -2.40
 = Fair value / share (floored, limited liability)           : CHF    +0.00</code></pre>
 <p><strong>Parent net cash is negative</strong> because we attribute CHF 723 M of debt to the parent equity holder (J&amp;J convertible 335 + Pharmakon term loan 150 + convertible bonds 49 + other financial 189 incl. R-Bridge royalty monetization) against only CHF 89 M of group cash (an upper bound at 30 Jun 2026 - see TODO_DATA.md). The CHF 762 M of SARL notes are excluded, they are non-recourse to IDIA shareholders and are serviced by the SARL assets.</p>
-<p>The SARL New Money Facility (CHF 150 M nominal, CHF 105 M drawn at YE 2025) was repaid in full on 26 Jun 2026 from the first Pharmakon tranche, so it does not appear in the current debt line.</p>
+<p>The SARL New Money Facility (CHF 150 M nominal, CHF 78 M drawn at YE 2025, CHF 105 M drawn at repayment) was repaid in full on 26 Jun 2026 from the first Pharmakon tranche, so it does not appear in the current debt line.</p>
 </section>
 <section id="key-assumptions-and-sources" class="level2">
 <h2 class="anchored" data-anchor-id="key-assumptions-and-sources">Key assumptions and sources</h2>
@@ -614,8 +614,10 @@ ul.task-list li input[type="checkbox"] {
 <section id="what-the-valuation-rides-on" class="level2">
 <h2 class="anchored" data-anchor-id="what-the-valuation-rides-on">What the valuation rides on</h2>
 <p><img src="outputs/figures/tornado.png" class="img-fluid" alt="Tornado chart of variables ranked by impact on value per share"></p>
-<p>Two variables dominate in the base case: <strong>QUVIVIQ peak sales</strong> and the <strong>SARL residual assumption</strong> (0 vs CHF 400 M). The central-costs upstream placeholder (+/-50 %, listed in TODO_DATA.md) is in the mid-tier of levers; discount rate and lucerastat PoS matter but do not move the needle on their own.</p>
-<p><strong>Critical read</strong>: no single variable at its stress case reaches the current market price. Closing the gap requires <strong>multiple positive assumptions simultaneously</strong>, that is the market's implicit bet.</p>
+<p>The dominant levers in the base case are <strong>QUVIVIQ peak sales (+/-30 %)</strong> (swing CHF 0.00; low CHF 0.00, high CHF 0.00) and <strong>Lucerastat peak sales (+/-30 %)</strong> (swing CHF 0.00; low CHF 0.00, high CHF 0.00).</p>
+<p>Mid-tier levers: <strong>Discount rate (10 % vs 14 %)</strong> (swing CHF 0.00; low CHF 0.00, high CHF 0.00); <strong>QUVIVIQ op margin at peak (+/-5 pp)</strong> (swing CHF 0.00; low CHF 0.00, high CHF 0.00).</p>
+<p>Minor levers (not sufficient to move the needle on their own): <strong>Lucerastat PoS (+/-20 %)</strong> (swing CHF 0.00; low CHF 0.00, high CHF 0.00); <strong>SARL residual (0 vs CHF 400 M)</strong> (swing CHF 0.00; low CHF 0.00, high CHF 0.00); <strong>Central costs: upstream R&amp;D (+/-50 %)</strong> (swing CHF 0.00; low CHF 0.00, high CHF 0.00).</p>
+<p><strong>Critical read</strong>: no single variable at its stress case reaches the current market price of CHF 4.16. Closing the gap requires multiple positive assumptions simultaneously, that is the market's implicit bet.</p>
 <p><img src="outputs/figures/sensitivity_heatmap.png" class="img-fluid" alt="Value-per-share heatmap over QUVIVIQ peak sales and discount rate"></p>
 <section id="dea-schedule-v-update-not-full-descheduling" class="level3">
 <h3 class="anchored" data-anchor-id="dea-schedule-v-update-not-full-descheduling">DEA Schedule V update (not full descheduling)</h3>
@@ -705,16 +707,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="verdict" class="level2">
 <h2 class="anchored" data-anchor-id="verdict">Verdict</h2>
-<p><strong>The gap between the model and the market has widened, and so has the required set of assumptions behind the market price.</strong></p>
-<p>The v1.1 base case floors at CHF 0.00 / share (raw equity value CHF -611 M). This is a hard lower bound under three jointly binding constraints: BIO 2011-2020 PoS transitions applied cleanly, QUVIVIQ margin ramping from the 2026 commercial-profitability target to a mid-range specialty 30 % at peak, and PV of unallocated central costs deducted from the equity bridge. The market at CHF 4.16 therefore embeds assumptions that, on a probability-weighted basis, span the full range of upside paths:</p>
-<ul>
-<li>A <strong>SARL residual</strong> at least matching the CHF 400 M stressed in scenarios (not sufficient on its own to clear the zero floor under the current cost structure).</li>
-<li>A QUVIVIQ trajectory <strong>well above</strong> the CHF 600 M base-case peak (closer to the CHF 1,000 M Bull case) and a discount rate at the low end of the biotech WACC range.</li>
-<li>A clean <strong>refinancing</strong> of the CHF 335 M J&amp;J convertible on 15 June 2027: either cash repayment (reducing the equity bridge directly) or conversion if V/share exceeds CHF 11.51 (dilutive but debt-eliminating; the if-converted scenario is already applied in the Bull case and still prints CHF 2.75 / share).</li>
-</ul>
-<p><strong>The reconciled range CHF 0.00 - 2.75 / share</strong> is the honest answer under the method as corrected; the market price sits noticeably <em>above</em> even the Bull. That is not a claim IDIA is overvalued 1.5×: it is a claim the market is pricing a combined scenario that is <em>outside</em> the parameter space our scenarios span (e.g. a QUVIVIQ peak above CHF 1,000 M, SARL residual above CHF 600 M, central cost normalisation faster than modelled, discount rate below 10 %).</p>
-<p><strong>My reconciled personal read</strong>: at CHF 4.16, IDIA is priced for a genuinely bullish composite outcome where (a) the DEA Schedule V reclassification, pediatric programme and EU reimbursement all contribute to a QUVIVIQ ceiling well above the CHF 600 M used here; (b) SARL asset performance clears the ring-fenced debt materially ahead of maturity; (c) the Pharmakon loan does not need to be extended on worse terms; and (d) the J&amp;J convertible either converts (dilution absorbed by rerating) or is refinanced on terms that do not tighten covenants. Each of these is probabilistic; none is binary. The investable thesis is a <em>conditional long on specific catalyst delivery</em> (CCR6 PoC Q4 2026, QUVIVIQ US run-rate exit 2026, SARL progress disclosures) with limited margin of safety at the current level under the base case.</p>
-<p><em>Don't read any point estimate here as a price target.</em> Read the status column of each input, the four scenarios, and the gap-covered percentage. Every assumption is traceable; every scenario has an explicit narrative; every CHF of the gap between the model and the market can be tied to a specific bet or a specific placeholder.</p>
+<p>Verdict pending model review (v1.2).</p>
 </section>
 <section id="limitations" class="level2">
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
@@ -727,7 +720,7 @@ ul.task-list li input[type="checkbox"] {
 <li><strong>QUVIVIQ post-launch R&amp;D</strong> (pediatric programme, label extensions) is not modelled in either the per-product dev-cost curve (prelaunch only) or central costs.</li>
 <li>Working capital and capex are netted to zero; tax proxied by the operating margin; product outcomes are assumed independent.</li>
 <li>The SARL contingent liability to J&amp;J (30 % aprocitentan + 10 % each selatogrel / cenerimod proceeds) is disclosed but not fully modelled, a known refinement.</li>
-<li>All historical data and the current share price are pinned to specific dates (<code>data/market.json</code> for the quote; <code>A.VALUATION_DATE = {python} A.VALUATION_DATE</code> for the balance sheet). Re-run <code>scripts/update_price.py</code> before each deploy.</li>
+<li>All historical data and the current share price are pinned to specific dates (<code>data/market.json</code> for the quote; A.VALUATION_DATE = 2026-06-30 for the balance sheet). Re-run <code>scripts/update_price.py</code> before each deploy.</li>
 </ul>
 <p>Don't read any point estimate as a price target. Read the sourcing and the scenarios: every input has a status (sourced / assumption / placeholder), every scenario has an explicit narrative, and every CHF of the gap between the model and the market can be tied to a specific bet.</p>
 <hr>
