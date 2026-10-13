@@ -352,7 +352,7 @@ ul.task-list li input[type="checkbox"] {
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-body-container">
-<p><strong>Base case fair value: CHF 0.00 / share (floored at zero).</strong> Equity value CHF -611 M pre-floor; current market <strong>CHF 4.22</strong> (IDIA.SW close 2026-10-13). Valuation date: 2026-06-30.</p>
+<p><strong>Base case fair value: CHF 0.00 / share (floored at zero).</strong> Equity value CHF -611 M pre-floor; current market <strong>CHF 4.16</strong> (IDIA.SW close 2026-10-13). Valuation date: 2026-06-30.</p>
 <p><strong>The base case is a conservative lower bound, not a price target.</strong> The gap to the market decomposes into <strong>two catalysts</strong> the base case excludes: (1) a residual claim on the ring-fenced SARL assets (aprocitentan / selatogrel / cenerimod), and (2) a QUVIVIQ blockbuster trajectory above the base-case peak. On top of that sits <strong>one refinancing event</strong> the base case already treats as pure debt: the J&amp;J convertible loan (CHF 335 M, matures 15 Jun 2027, convertible into 29.1 M shares at CHF 11.51). The convertible is <strong>never an upside</strong>: either dilution if IDIA rerates above the strike, or a cash repayment at maturity.</p>
 <p><strong>Reconciled fair-value range across scenarios: CHF 0.00 - 2.75 / share</strong> (post-floor, post-if-converted). This is the single range used across all pages of this note.</p>
 </div>
@@ -386,7 +386,7 @@ ul.task-list li input[type="checkbox"] {
 <tr class="even">
 <td style="text-align: left;">Bull</td>
 <td style="text-align: right;">2.75</td>
-<td style="text-align: left;">-35 %</td>
+<td style="text-align: left;">-34 %</td>
 </tr>
 </tbody>
 </table>
@@ -603,7 +603,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Current share price</td>
-<td style="text-align: left;">CHF 4.22 (2026-10-13)</td>
+<td style="text-align: left;">CHF 4.16 (2026-10-13)</td>
 <td style="text-align: left;">sourced</td>
 <td style="text-align: left;">yfinance IDIA.SW latest close via scripts/update_price.py</td>
 </tr>
@@ -706,14 +706,14 @@ ul.task-list li input[type="checkbox"] {
 <section id="verdict" class="level2">
 <h2 class="anchored" data-anchor-id="verdict">Verdict</h2>
 <p><strong>The gap between the model and the market has widened, and so has the required set of assumptions behind the market price.</strong></p>
-<p>The v1.1 base case floors at CHF 0.00 / share (raw equity value CHF -611 M). This is a hard lower bound under three jointly binding constraints: BIO 2011-2020 PoS transitions applied cleanly, QUVIVIQ margin ramping from the 2026 commercial-profitability target to a mid-range specialty 30 % at peak, and PV of unallocated central costs deducted from the equity bridge. The market at CHF 4.22 therefore embeds assumptions that, on a probability-weighted basis, span the full range of upside paths:</p>
+<p>The v1.1 base case floors at CHF 0.00 / share (raw equity value CHF -611 M). This is a hard lower bound under three jointly binding constraints: BIO 2011-2020 PoS transitions applied cleanly, QUVIVIQ margin ramping from the 2026 commercial-profitability target to a mid-range specialty 30 % at peak, and PV of unallocated central costs deducted from the equity bridge. The market at CHF 4.16 therefore embeds assumptions that, on a probability-weighted basis, span the full range of upside paths:</p>
 <ul>
 <li>A <strong>SARL residual</strong> at least matching the CHF 400 M stressed in scenarios (not sufficient on its own to clear the zero floor under the current cost structure).</li>
 <li>A QUVIVIQ trajectory <strong>well above</strong> the CHF 600 M base-case peak (closer to the CHF 1,000 M Bull case) and a discount rate at the low end of the biotech WACC range.</li>
 <li>A clean <strong>refinancing</strong> of the CHF 335 M J&amp;J convertible on 15 June 2027: either cash repayment (reducing the equity bridge directly) or conversion if V/share exceeds CHF 11.51 (dilutive but debt-eliminating; the if-converted scenario is already applied in the Bull case and still prints CHF 2.75 / share).</li>
 </ul>
 <p><strong>The reconciled range CHF 0.00 - 2.75 / share</strong> is the honest answer under the method as corrected; the market price sits noticeably <em>above</em> even the Bull. That is not a claim IDIA is overvalued 1.5×: it is a claim the market is pricing a combined scenario that is <em>outside</em> the parameter space our scenarios span (e.g. a QUVIVIQ peak above CHF 1,000 M, SARL residual above CHF 600 M, central cost normalisation faster than modelled, discount rate below 10 %).</p>
-<p><strong>My reconciled personal read</strong>: at CHF 4.22, IDIA is priced for a genuinely bullish composite outcome where (a) the DEA Schedule V reclassification, pediatric programme and EU reimbursement all contribute to a QUVIVIQ ceiling well above the CHF 600 M used here; (b) SARL asset performance clears the ring-fenced debt materially ahead of maturity; (c) the Pharmakon loan does not need to be extended on worse terms; and (d) the J&amp;J convertible either converts (dilution absorbed by rerating) or is refinanced on terms that do not tighten covenants. Each of these is probabilistic; none is binary. The investable thesis is a <em>conditional long on specific catalyst delivery</em> (CCR6 PoC Q4 2026, QUVIVIQ US run-rate exit 2026, SARL progress disclosures) with limited margin of safety at the current level under the base case.</p>
+<p><strong>My reconciled personal read</strong>: at CHF 4.16, IDIA is priced for a genuinely bullish composite outcome where (a) the DEA Schedule V reclassification, pediatric programme and EU reimbursement all contribute to a QUVIVIQ ceiling well above the CHF 600 M used here; (b) SARL asset performance clears the ring-fenced debt materially ahead of maturity; (c) the Pharmakon loan does not need to be extended on worse terms; and (d) the J&amp;J convertible either converts (dilution absorbed by rerating) or is refinanced on terms that do not tighten covenants. Each of these is probabilistic; none is binary. The investable thesis is a <em>conditional long on specific catalyst delivery</em> (CCR6 PoC Q4 2026, QUVIVIQ US run-rate exit 2026, SARL progress disclosures) with limited margin of safety at the current level under the base case.</p>
 <p><em>Don't read any point estimate here as a price target.</em> Read the status column of each input, the four scenarios, and the gap-covered percentage. Every assumption is traceable; every scenario has an explicit narrative; every CHF of the gap between the model and the market can be tied to a specific bet or a specific placeholder.</p>
 </section>
 <section id="limitations" class="level2">
