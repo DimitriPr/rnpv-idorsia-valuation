@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.1 — 2026-10-13
+## v1.1 - 2026-10-13
 
 External review found method errors, stale data, and page-to-page
 inconsistencies in v1.0. This release addresses every item one-by-one
@@ -19,7 +19,7 @@ numbers; a drafted replacement is attached below for review.
   benchmark to reflect orphan-trial economics.
 - **PoS single-sourced to BIO 2011-2020.** `POS_TRANSITIONS` replaces
   the v1.0 WSL label on numbers that actually combined BIO's
-  filing→approval figure (90.6 %) with Biomedtracker's P3→approval
+  filing->approval figure (90.6 %) with Biomedtracker's P3->approval
   (58.1 %). WSL (2019) corrigendum noted. BIO LOA from Phase 1 (7.9 %)
   matches the product of transitions.
 - **Methodology PoS table generated from the code.** `methodology.qmd`
@@ -28,8 +28,8 @@ numbers; a drafted replacement is attached below for review.
   in the equity bridge. G&A sourced to AR 2025 non-GAAP SG&A breakdown
   (71 M); upstream placeholder 25 M listed in TODO_DATA.md. Decay 10 %/
   year to floor 50 M by 2040, then proportional to weighted revenue to
-  2050 with hard floor 10 M. PV ≈ CHF 504 M. Added to tornado via a
-  ±50 % stress on the upstream component. Consistency check
+  2050 with hard floor 10 M. PV ~ CHF 504 M. Added to tornado via a
+  +/-50 % stress on the upstream component. Consistency check
   (year-1 modelled R&D 85 M + central 96 M = 181 M vs AR 2025 R&D+G&A
   163 M, +18 M overshoot) flagged in TODO_DATA.md.
 - **QUVIVIQ op-margin trajectory.** Flat 30 % from 2026 replaced by a
@@ -58,15 +58,15 @@ numbers; a drafted replacement is attached below for review.
 - **Single valuation date.** `VALUATION_DATE = "2026-06-30"`. H1 2026
   balance sheet not yet published; group cash and non-Pharmakon debt
   lines retained from YE 2025 as upper bounds, with a quantified H1
-  2026 cash reconciliation (+150 Pharmakon, −105 facility, net +45
+  2026 cash reconciliation (+150 Pharmakon, -105 facility, net +45
   less H1 burn) in TODO_DATA.md.
-- **Share count updated to Q1 2026.** 250.7 → 254.0 M issued;
-  313.7 → 317.1 M potential (incl. J&J convertible 29.1 M).
+- **Share count updated to Q1 2026.** 250.7 -> 254.0 M issued;
+  313.7 -> 317.1 M potential (incl. J&J convertible 29.1 M).
 - **Live share price via yfinance.** `scripts/update_price.py` writes
   `data/market.json` from IDIA.SW latest close. Site loads the file;
   fallback placeholder keeps the pipeline functional offline. Current
   pin: CHF 4.22 as of 2026-10-13.
-- **Arbitrary 89 − 20 cash split removed.** Parent-attributable cash =
+- **Arbitrary 89 - 20 cash split removed.** Parent-attributable cash =
   group cash as an upper bound, status `placeholder`.
 - **QUVIVIQ growth table.** Dynamic table showing +97 %, +120 %, +49 %
   guided replaces "~+50 % YoY historical". Narrative text updated.
@@ -85,12 +85,12 @@ numbers; a drafted replacement is attached below for review.
 - **Reconciled range made unique and dynamic.** `RANGE_LO = min`,
   `RANGE_HI = max` across the four scenarios (post-floor,
   post-if-converted). Reused on both the index and results pages.
-  Current range CHF 0.00 – 2.75 / share.
+  Current range CHF 0.00 - 2.75 / share.
 - **Gap-covered fraction computed, not asserted.** `gap_covered_pct()`
   replaces the "roughly two thirds" claim. Under current numbers it
   evaluates to 0 % because the Base+SARL scenario is still below the
   zero floor.
-- **Statements corrected / softened.** "Every number is sourced" →
+- **Statements corrected / softened.** "Every number is sourced" ->
   "Every input is either sourced or explicitly flagged as an
   assumption". "Constructed bottom-up" rewritten (triangulation vs
   comparables + disclosure, not patient × penetration × price). Ramp
@@ -99,8 +99,8 @@ numbers; a drafted replacement is attached below for review.
   (USD 1 bn blockbuster ~ CHF 850 M Idorsia-recognized, so CHF 600 M
   is mid-range specialty, not low-end blockbuster). Central costs
   and convertible treatment added to "What is NOT modelled" / Limitations.
-- **Notebook 404 links fixed.** `(../results.qmd)` → `(../results.html)`;
-  `(../src/assumptions.py)` → GitHub blob URL.
+- **Notebook 404 links fixed.** `(../results.qmd)` -> `(../results.html)`;
+  `(../src/assumptions.py)` -> GitHub blob URL.
 - **"Rebuild before deploying" note moved.** Removed from notebook.qmd,
   placed in the new README.md alongside the full local dev / rebuild
   pipeline.
@@ -111,7 +111,7 @@ numbers; a drafted replacement is attached below for review.
   is certain, future phase cost weighted by cumulative transition
   probability, filing cost doubly weighted after Phase 3, marketed
   returns empty curve, total scheduled dev cost = sum of weighted
-  phase costs, equity value = Σ rNPV + net cash + SARL − PV(central),
+  phase costs, equity value = Σ rNPV + net cash + SARL - PV(central),
   central PV in [300, 800], per-share floor, floor flag tracking,
   if-converted no-trigger below strike, if-converted trigger +
   dilution above strike, strike = 335 / 29.1. All green.
@@ -125,32 +125,32 @@ Base case (per share, floor applied):
 
 | Metric | v1.0 | v1.1 | Δ |
 |---|---:|---:|---:|
-| Σ product rNPVs (CHF M) | +727 | +528 | −199 |
-|   QUVIVIQ rNPV | +776 | +623 | −153 (margin ramp 5→30 vs flat 30) |
-|   Lucerastat rNPV | +152 | +114 | −38  (BIO PoS 52.4 % vs 58.1 % + DiMasi dev costs) |
-|   CCR6 rNPV | −61 | −58 | +3 |
-|   CXCR7 rNPV | −64 | −73 | −9 |
-|   CXCR3 rNPV | −77 | −78 | −1 |
-| Parent net cash | −504 | −634 | −130 (Pharmakon +150 debt, cash upper bound restored +20) |
-| PV central costs | — | +504 | +504 (new line) |
-| Equity value (parent) | +223 | −611 | −834 |
-| Value / share, raw | +0.89 | −2.40 | −3.29 |
-| Value / share, floored | +0.89 | +0.00 | −0.89 |
+| Σ product rNPVs (CHF M) | +727 | +528 | -199 |
+|   QUVIVIQ rNPV | +776 | +623 | -153 (margin ramp 5->30 vs flat 30) |
+|   Lucerastat rNPV | +152 | +114 | -38  (BIO PoS 52.4 % vs 58.1 % + DiMasi dev costs) |
+|   CCR6 rNPV | -61 | -58 | +3 |
+|   CXCR7 rNPV | -64 | -73 | -9 |
+|   CXCR3 rNPV | -77 | -78 | -1 |
+| Parent net cash | -504 | -634 | -130 (Pharmakon +150 debt, cash upper bound restored +20) |
+| PV central costs | - | +504 | +504 (new line) |
+| Equity value (parent) | +223 | -611 | -834 |
+| Value / share, raw | +0.89 | -2.40 | -3.29 |
+| Value / share, floored | +0.89 | +0.00 | -0.89 |
 | Market price (CHF) | 4.35 (2026-06-17) | 4.22 (2026-10-13) | yfinance refresh |
 
 Scenarios (per share, post-floor, post-if-converted):
 
 | Scenario | v1.0 | v1.1 |
 |---|---:|---:|
-| Bear | −0.64 | 0.00 |
+| Bear | -0.64 | 0.00 |
 | Base | +0.89 | 0.00 |
 | Base + SARL residual (CHF 400 M) | +2.48 | 0.00 |
 | Bull (SARL residual CHF 600 M, rate 10 %, QUVIVIQ 1000 / Luc 700) | +6.65 | +2.75 |
-| Reconciled range | 0.9 – 6.6 | 0.00 – 2.75 |
+| Reconciled range | 0.9 - 6.6 | 0.00 - 2.75 |
 
 The large swing is driven by three structural changes compounding:
 (1) PoS lower under BIO 2021 (Phase 2 cumulative 15.1 % vs 20.9 %;
-Phase 3 cumulative 52.4 % vs 58.1 %); (2) QUVIVIQ margin ramp 5→30 %
+Phase 3 cumulative 52.4 % vs 58.1 %); (2) QUVIVIQ margin ramp 5->30 %
 replacing flat 30 % from 2026; (3) PV of central costs now deducted
 (~CHF 504 M) where v1.0 had zero. The Pharmakon loan (CHF 150 M added
 to parent debt) accounts for ~CHF 0.6 per share.
@@ -158,14 +158,14 @@ to parent debt) accounts for ~CHF 0.6 per share.
 ### Proposed verdict (awaiting author validation)
 
 > *This section is a drafted replacement for the v1.0 verdict in
-> results.qmd. It is NOT merged — the final text requires author
+> results.qmd. It is NOT merged - the final text requires author
 > sign-off before being substituted.*
 >
 > **The gap between the model and the market has widened, and so has
 > the required set of assumptions behind the market price.**
 >
 > The v1.1 base case floors at CHF 0.00 / share (raw equity value
-> −CHF 611 M). This is a hard lower bound under three jointly binding
+> -CHF 611 M). This is a hard lower bound under three jointly binding
 > constraints: BIO 2011-2020 PoS transitions applied cleanly, QUVIVIQ
 > margin ramping from the 2026 commercial-profitability target to a
 > mid-range specialty 30 % at peak, and PV of unallocated central costs
@@ -185,7 +185,7 @@ to parent debt) accounts for ~CHF 0.6 per share.
 >   debt-eliminating; the if-converted scenario is already applied in
 >   the Bull case and still prints CHF 2.75 / share).
 >
-> **The reconciled range CHF 0.00 – 2.75 / share** is the honest answer
+> **The reconciled range CHF 0.00 - 2.75 / share** is the honest answer
 > under the method as corrected; the market price sits noticeably
 > *above* even the Bull. That is not a claim IDIA is overvalued 1.5×:
 > it is a claim the market is pricing a combined scenario that is

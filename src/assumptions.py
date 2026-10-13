@@ -129,12 +129,12 @@ PARENT_ATTRIBUTABLE_DEBT_CHF_M = (
 # SARL debt (excluded from parent equity bridge in base case):
 SARL_DEBT_CHF_M = DEBT_NOTES_SARL_CHF_M + DEBT_NEW_MONEY_FACILITY_CHF_M
 
-# Parent-attributable cash: Lot 3 removes the v1.0 arbitrary CHF 89 − 20
+# Parent-attributable cash: Lot 3 removes the v1.0 arbitrary CHF 89 - 20
 # split. The SARL-only cash sub-balance has never been disclosed, so we use
 # group cash as an UPPER BOUND and flag the overestimate in TODO_DATA.md.
 # Pending H1 2026 release, this will be re-anchored on the 30 Jun 2026
 # balance sheet (which should also reflect the +150 Pharmakon drawdown
-# minus the −105 New Money Facility repayment, net +45 at op co).
+# minus the -105 New Money Facility repayment, net +45 at op co).
 PARENT_ATTRIBUTABLE_CASH_CHF_M = CASH_YE2025_CHF_M  # upper bound, see TODO_DATA.md
 PARENT_ATTRIBUTABLE_CASH_STATUS: Status = "placeholder"
 
@@ -220,10 +220,10 @@ POS_CUMULATIVE_BY_PHASE = {
 # These are benchmarks; actual Idorsia-scale burn is lower (see per-product
 # remaining_current_phase_cost_chf_m, which uses Idorsia's historical burn).
 DEV_COSTS_BY_PHASE_CHF_M = {
-    "phase1":    32.0,     # 25.3 * 1.26 ≈ 31.9
-    "phase2":    74.0,     # 58.6 * 1.26 ≈ 73.8
-    "phase3":   322.0,     # 255.4 * 1.26 ≈ 321.8
-    "filing":    19.0,     # 15.0 * 1.26 ≈ 18.9
+    "phase1":    32.0,     # 25.3 * 1.26 ~ 31.9
+    "phase2":    74.0,     # 58.6 * 1.26 ~ 73.8
+    "phase3":   322.0,     # 255.4 * 1.26 ~ 321.8
+    "filing":    19.0,     # 15.0 * 1.26 ~ 18.9
 }
 DEV_COSTS_STATUS: Status = "assumption"
 # Industry default durations by phase (years). Used to schedule weighted spend

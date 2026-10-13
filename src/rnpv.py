@@ -513,7 +513,7 @@ def apply_if_converted(
     CHF 335 M principal from parent debt (so equity value goes UP by that
     amount) and adding 29.1 M shares (so per-share goes DOWN with dilution).
 
-    The option belongs to J&J, so this is a cost to the equity holder — it
+    The option belongs to J&J, so this is a cost to the equity holder - it
     is never an upside. We toggle it on only when V/share exceeds strike,
     representing J&J's rational conversion decision.
 

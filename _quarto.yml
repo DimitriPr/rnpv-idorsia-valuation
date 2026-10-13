@@ -9,7 +9,7 @@ project:
     - "outputs/figures/**"
 
 website:
-  title: "rNPV Valuation — Idorsia (SIX: IDIA)"
+  title: "rNPV Valuation - Idorsia (SIX: IDIA)"
   description: "A risk-adjusted NPV valuation of Idorsia's clinical pipeline, product-by-product"
 
   navbar:

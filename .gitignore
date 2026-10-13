@@ -1,4 +1,4 @@
-# IDE / editor local settings (do NOT commit — reveal tooling)
+# IDE / editor local settings (do NOT commit - reveal tooling)
 .claude/
 .cursorrules
 .vscode/
@@ -32,5 +32,5 @@ _site/
 Thumbs.db
 desktop.ini
 
-# NOTE: do NOT put *.html here — the notebook HTML must be committed
+# NOTE: do NOT put *.html here - the notebook HTML must be committed
 # so GitHub Pages can serve it. (Lesson learned on the oil-shocks project.)

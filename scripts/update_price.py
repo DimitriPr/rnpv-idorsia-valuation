@@ -39,7 +39,7 @@ def fetch_latest() -> dict:
     try:
         t = yf.Ticker("IDIA.SW")
         hist = t.history(period="5d")
-    except Exception as exc:  # noqa: BLE001  — any yfinance / network failure
+    except Exception as exc:  # noqa: BLE001  - any yfinance / network failure
         return PLACEHOLDER | {"source": f"placeholder: yfinance error ({exc})"}
 
     if hist.empty:

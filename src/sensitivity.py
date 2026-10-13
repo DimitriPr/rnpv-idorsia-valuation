@@ -2,7 +2,7 @@
 
 Computes:
   - Value/share heatmap over (discount rate) × (QUVIVIQ peak sales)
-  - Tornado of the 6 dominant variables (±20 % / ±30 %)
+  - Tornado of the 6 dominant variables (+/-20 % / +/-30 %)
   - Bear / Base / Bull scenarios
 
 Generates PNGs into outputs/figures/ using a dark theme matched to the
@@ -197,50 +197,50 @@ def tornado_data() -> pd.DataFrame:
             "swing": abs(high_val - low_val),
         })
 
-    # a) QUVIVIQ peak sales ±30 %
+    # a) QUVIVIQ peak sales +/-30 %
     peak = A.PRODUCTS["quviviq"]["peak_sales_chf_m"]
     _row(
-        f"QUVIVIQ peak sales (±30 %)",
+        f"QUVIVIQ peak sales (+/-30 %)",
         _value_per_share({"quviviq": {"peak_sales_chf_m": peak * 0.7}}),
         _value_per_share({"quviviq": {"peak_sales_chf_m": peak * 1.3}}),
     )
-    # b) Lucerastat peak sales ±30 %
+    # b) Lucerastat peak sales +/-30 %
     lp = A.PRODUCTS["lucerastat"]["peak_sales_chf_m"]
     _row(
-        "Lucerastat peak sales (±30 %)",
+        "Lucerastat peak sales (+/-30 %)",
         _value_per_share({"lucerastat": {"peak_sales_chf_m": lp * 0.7}}),
         _value_per_share({"lucerastat": {"peak_sales_chf_m": lp * 1.3}}),
     )
-    # c) Discount rate 10 % → 14 %
+    # c) Discount rate 10 % -> 14 %
     _row(
         "Discount rate (10 % vs 14 %)",
         _value_per_share(discount_rate=0.14),
         _value_per_share(discount_rate=0.10),
     )
-    # d) QUVIVIQ op margin at peak ±5 pp
+    # d) QUVIVIQ op margin at peak +/-5 pp
     m_peak = A.PRODUCTS["quviviq"]["op_margin_at_peak"]
     _row(
-        "QUVIVIQ op margin at peak (±5 pp)",
+        "QUVIVIQ op margin at peak (+/-5 pp)",
         _value_per_share({"quviviq": {"op_margin_at_peak": m_peak - 0.05}}),
         _value_per_share({"quviviq": {"op_margin_at_peak": m_peak + 0.05}}),
     )
-    # e) Lucerastat PoS ±20 %
+    # e) Lucerastat PoS +/-20 %
     lpos = A.PRODUCTS["lucerastat"]["pos"]
     _row(
-        "Lucerastat PoS (±20 %)",
+        "Lucerastat PoS (+/-20 %)",
         _value_per_share({"lucerastat": {"pos": lpos * 0.8}}),
         _value_per_share({"lucerastat": {"pos": lpos * 1.2}}),
     )
-    # f) SARL residual value (0 → 400 M CHF)
+    # f) SARL residual value (0 -> 400 M CHF)
     _row(
         "SARL residual (0 vs CHF 400 M)",
         _value_per_share(sarl_residual_chf_m=0.0, include_sarl_residual=True),
         _value_per_share(sarl_residual_chf_m=400.0, include_sarl_residual=True),
     )
-    # g) Central costs upstream (±50 %) — placeholder sensitivity
+    # g) Central costs upstream (+/-50 %) - placeholder sensitivity
     u = A.CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M
     _row(
-        "Central costs: upstream R&D (±50 %)",
+        "Central costs: upstream R&D (+/-50 %)",
         _value_per_share(central_upstream_year_1_chf_m=u * 1.5),  # higher cost = lower value
         _value_per_share(central_upstream_year_1_chf_m=u * 0.5),
     )
@@ -375,7 +375,7 @@ def plot_pipeline_overview(out: Path = FIG_DIR / "pipeline_overview.png") -> Pat
 
 
 # ---------------------------------------------------------------------------
-# 5. Waterfall, cash + rNPVs → EV → value/share
+# 5. Waterfall, cash + rNPVs -> EV -> value/share
 # ---------------------------------------------------------------------------
 
 def plot_waterfall(out: Path = FIG_DIR / "waterfall_ev.png") -> Path:
@@ -385,7 +385,7 @@ def plot_waterfall(out: Path = FIG_DIR / "waterfall_ev.png") -> Path:
     for v in bridge["products"]:
         steps.append((v.name.split(" (")[0], v.rnpv))
     steps.append(("SARL residual", bridge["sarl_residual_chf_m"]))
-    steps.append(("− PV central costs", -bridge["central_costs_pv_chf_m"]))
+    steps.append(("- PV central costs", -bridge["central_costs_pv_chf_m"]))
     steps.append(("Equity value (parent)", bridge["equity_value_chf_m"]))
 
     labels = [s[0] for s in steps]
@@ -422,7 +422,7 @@ def plot_waterfall(out: Path = FIG_DIR / "waterfall_ev.png") -> Path:
     )
     ax.set_title(
         f"Bridge to parent equity value, CHF {bridge['equity_value_chf_m']:,.0f} M "
-        f"→ {_per_share_label}",
+        f"-> {_per_share_label}",
         fontsize=11, fontweight="semibold", pad=14,
     )
     fig.tight_layout()

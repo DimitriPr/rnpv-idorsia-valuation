@@ -22,7 +22,7 @@ Where:
 
 ## Probability of success (PoS)
 
-Phase-to-phase transition probabilities are from BIO/Informa/QLS, *Clinical Development Success Rates and Contributing Factors 2011-2020* (2021), all-indication figures. These are the single-source replacement for the mixed set of PoS numbers used in v1.0, which combined BIO's filing-to-approval figure with a Biomedtracker Phase III-to-approval figure under a WSL label. Wong, Siah & Lo (2019) subsequently published a [corrigendum](https://pmc.ncbi.nlm.nih.gov/articles/PMC6409416/) on the Phase 2→3 and Phase 3→approval columns of its Table 1; we therefore use BIO 2021 as the single reference.
+Phase-to-phase transition probabilities are from BIO/Informa/QLS, *Clinical Development Success Rates and Contributing Factors 2011-2020* (2021), all-indication figures. These are the single-source replacement for the mixed set of PoS numbers used in v1.0, which combined BIO's filing-to-approval figure with a Biomedtracker Phase III-to-approval figure under a WSL label. Wong, Siah & Lo (2019) subsequently published a [corrigendum](https://pmc.ncbi.nlm.nih.gov/articles/PMC6409416/) on the Phase 2->3 and Phase 3->approval columns of its Table 1; we therefore use BIO 2021 as the single reference.
 
 ```{python}
 #| echo: false
@@ -31,10 +31,10 @@ import pandas as pd
 from src import assumptions as A
 
 rows = [
-    {"transition": "Phase 1 → Phase 2",       "probability": A.POS_TRANSITIONS["phase1_to_phase2"]},
-    {"transition": "Phase 2 → Phase 3",       "probability": A.POS_TRANSITIONS["phase2_to_phase3"]},
-    {"transition": "Phase 3 → NDA/BLA",       "probability": A.POS_TRANSITIONS["phase3_to_filing"]},
-    {"transition": "NDA/BLA → approval",      "probability": A.POS_TRANSITIONS["filing_to_approval"]},
+    {"transition": "Phase 1 -> Phase 2",       "probability": A.POS_TRANSITIONS["phase1_to_phase2"]},
+    {"transition": "Phase 2 -> Phase 3",       "probability": A.POS_TRANSITIONS["phase2_to_phase3"]},
+    {"transition": "Phase 3 -> NDA/BLA",       "probability": A.POS_TRANSITIONS["phase3_to_filing"]},
+    {"transition": "NDA/BLA -> approval",      "probability": A.POS_TRANSITIONS["filing_to_approval"]},
 ]
 cum_rows = [
     {"from phase": "Phase 1",   "cumulative PoS to approval": A.cumulative_pos("phase1")},
@@ -62,7 +62,7 @@ For each product we model annual sales as:
 
 1. **Ramp phase**, linear buildup from the latest anchored sales figure (historical or guidance) to peak. Ramp durations are set per product in `src/assumptions.py` (QUVIVIQ 8 years from 2022 launch; lucerastat 4 years; early-stage 5-6 years). We do not use a universal "5-7 years" assumption; each ramp is justified in the product entry.
 2. **Peak phase**, plateau at the estimated peak sales figure.
-3. **Patent cliff**, −85 % in the year after expiry with 30 % annual decay thereafter (orphan assets decay slower; broadly consistent).
+3. **Patent cliff**, -85 % in the year after expiry with 30 % annual decay thereafter (orphan assets decay slower; broadly consistent).
 
 Peak sales for marketed and Phase 3 assets are triangulated from company guidance, published comparables, and epidemiology data; for Phase 2 assets they are explicit `PLACEHOLDER` values that will be reanchored after each programme's proof-of-concept readout. Each peak sales value is documented in `src/assumptions.py` with its source and status.
 
@@ -78,7 +78,7 @@ Development costs are phase-weighted:
 
 - **Current phase**: remaining cost is **certain** (weight = 1). The amount is set per product in `remaining_current_phase_cost_chf_m` using an Idorsia-scale historical burn (~CHF 24 M/year for Phase 2 PoC; see `TODO_DATA.md` for status).
 - **Each subsequent phase**: cost is weighted by the **cumulative** probability of reaching that phase (product of BIO 2021 transitions). Future-phase spending does not start until after the current-phase readout.
-- Industry-benchmark unweighted phase costs (DiMasi 2016, converted USD 2013 → CHF 2026 by US CPI 1.40 × USD/CHF 0.90 ≈ 1.26) are the default `DEV_COSTS_BY_PHASE_CHF_M`. Products may override specific phases (e.g. lucerastat's orphan Fabry Phase 3 at CHF 100 M vs the DiMasi all-indication CHF 322 M average).
+- Industry-benchmark unweighted phase costs (DiMasi 2016, converted USD 2013 -> CHF 2026 by US CPI 1.40 × USD/CHF 0.90 ~ 1.26) are the default `DEV_COSTS_BY_PHASE_CHF_M`. Products may override specific phases (e.g. lucerastat's orphan Fabry Phase 3 at CHF 100 M vs the DiMasi all-indication CHF 322 M average).
 
 This replaces the v1.0 convention, which treated all remaining dev costs as certain regardless of future-phase advancement probability (and so penalised Phase 1/2 assets by the full future dev spend rather than its expected value).
 
@@ -144,9 +144,9 @@ The convention flips both the asset side (product rNPVs) and the net-cash side; 
 
 ### QUVIVIQ ramp trajectory: 8 years to peak
 
-The model interpolates linearly from the last anchored sales figure (CHF 200 M guidance for 2026) to the peak of CHF 600 M by 2030 — an 8-year ramp counted from the 2022 launch year. This produces the sequence 200 → 300 → 400 → 500 → 600 (2026-2030), consistent with the ~+50 % YoY growth Idorsia has been delivering and guides for 2026.
+The model interpolates linearly from the last anchored sales figure (CHF 200 M guidance for 2026) to the peak of CHF 600 M by 2030 - an 8-year ramp counted from the 2022 launch year. This produces the sequence 200 -> 300 -> 400 -> 500 -> 600 (2026-2030), consistent with the ~+50 % YoY growth Idorsia has been delivering and guides for 2026.
 
-An earlier draft used a 6-year ramp (peak in 2028), implying 200 → 400 → 600 in two years. Defensible only under an aggressive combined US descheduling + pediatric approval + European reimbursement bull case.
+An earlier draft used a 6-year ramp (peak in 2028), implying 200 -> 400 -> 600 in two years. Defensible only under an aggressive combined US descheduling + pediatric approval + European reimbursement bull case.
 
 ### What is NOT modelled
 
@@ -173,12 +173,12 @@ The `max(0, ·)` floor reflects limited liability: shareholders cannot owe money
 
 The model is stress-tested along the axes that dominate rNPV in practice:
 
-- Discount rate (10 % → 14 %)
-- PoS of the lead clinical candidate (±20 %)
-- Peak sales of the top revenue driver (±30 %)
-- SARL residual (0 → CHF 400 M)
-- QUVIVIQ operating margin (±5 pp at peak)
-- Central costs upstream placeholder (±50 %)
+- Discount rate (10 % -> 14 %)
+- PoS of the lead clinical candidate (+/-20 %)
+- Peak sales of the top revenue driver (+/-30 %)
+- SARL residual (0 -> CHF 400 M)
+- QUVIVIQ operating margin (+/-5 pp at peak)
+- Central costs upstream placeholder (+/-50 %)
 
 A tornado chart ranks the sensitivities.
 
@@ -203,5 +203,5 @@ All inputs are public. No Bloomberg / paid analyst data is republished.
 - Working capital and capex netted to zero.
 - No explicit tax treatment beyond the operating margin.
 - Sensitive to peak sales assumptions, especially for Phase 2 placeholders.
-- Upstream research is deducted without attributing value to the compounds it generates — a downward bias.
+- Upstream research is deducted without attributing value to the compounds it generates - a downward bias.
 - QUVIVIQ post-launch R&D is not modelled.

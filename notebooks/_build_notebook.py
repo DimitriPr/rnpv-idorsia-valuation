@@ -124,8 +124,8 @@ snapshot
 md("""
 Full year 2025 non GAAP (from the AR): net revenue CHF 214 M, operating
 loss CHF 100 M, net loss CHF 118 M. QUVIVIQ sales more than doubled YoY
-(2024 → 2025: CHF 61 M → 134 M). 2026 guidance is QUVIVIQ CHF 200 M,
-non GAAP EBIT CHF –120 M, implying a materially narrower operating loss.
+(2024 -> 2025: CHF 61 M -> 134 M). 2026 guidance is QUVIVIQ CHF 200 M,
+non GAAP EBIT CHF -120 M, implying a materially narrower operating loss.
 """)
 
 # ---------------------------------------------------------------------------
@@ -208,10 +208,10 @@ Rates 2011-2020" (2021). Transitions and derived cumulative PoS:
 
 code("""
 trans = pd.DataFrame(
-    [("Phase 1 → Phase 2",  A.POS_TRANSITIONS["phase1_to_phase2"]),
-     ("Phase 2 → Phase 3",  A.POS_TRANSITIONS["phase2_to_phase3"]),
-     ("Phase 3 → NDA/BLA",  A.POS_TRANSITIONS["phase3_to_filing"]),
-     ("NDA/BLA → approval", A.POS_TRANSITIONS["filing_to_approval"])],
+    [("Phase 1 -> Phase 2",  A.POS_TRANSITIONS["phase1_to_phase2"]),
+     ("Phase 2 -> Phase 3",  A.POS_TRANSITIONS["phase2_to_phase3"]),
+     ("Phase 3 -> NDA/BLA",  A.POS_TRANSITIONS["phase3_to_filing"]),
+     ("NDA/BLA -> approval", A.POS_TRANSITIONS["filing_to_approval"])],
     columns=["Transition", "Probability"],
 )
 trans["Probability"] = trans["Probability"].map(lambda x: f"{x*100:.1f} %")
@@ -278,7 +278,7 @@ aggressively (§7 does that):
 md("""
 ## 4. Revenue projections
 
-Ramp → plateau → patent cliff, per product. Historical sales figures
+Ramp -> plateau -> patent cliff, per product. Historical sales figures
 (2023-2026) are hard anchored to the AR and to management guidance; the
 model interpolates linearly to the peak year.
 """)
@@ -297,15 +297,15 @@ md("""
 Notes on shape choices:
 
 - QUVIVIQ ramp from CHF 200 M (2026 guidance) to CHF 600 M peak by 2030
-  implies a linear 200 → 300 → 400 → 500 → 600 sequence (31.6 % CAGR
-  from 2026 to 2030). Historical growth +97 % (2023→2024), +120 %
-  (2024→2025), +49 % guided (2025→2026) is already *decelerating*; the
+  implies a linear 200 -> 300 -> 400 -> 500 -> 600 sequence (31.6 % CAGR
+  from 2026 to 2030). Historical growth +97 % (2023->2024), +120 %
+  (2024->2025), +49 % guided (2025->2026) is already *decelerating*; the
   implied 31.6 % CAGR continues that deceleration into 2026-2030.
   An earlier draft used a 6-year ramp (peak 2028) which implied 100 % +
-  50 % YoY — defensible only on an aggressive combined bull case.
+  50 % YoY - defensible only on an aggressive combined bull case.
 - Lucerastat starts in 2031 (post-2029 filing target) with a 4-year ramp,
   consistent with orphan drug launch dynamics.
-- Patent cliffs use a −85 % drop the year after expiry, decaying 30 %/yr
+- Patent cliffs use a -85 % drop the year after expiry, decaying 30 %/yr
   thereafter, standard rNPV convention.
 """)
 
@@ -315,7 +315,7 @@ Notes on shape choices:
 md("""
 ## 5. Product level rNPVs
 
-For each product: rNPV = PoS × PV(operating cash flow) − PV(remaining
+For each product: rNPV = PoS × PV(operating cash flow) - PV(remaining
 development costs).
 """)
 
@@ -403,7 +403,7 @@ display(Image(str(FIG_DIR / "tornado.png"), width=900))
 md("""
 QUVIVIQ peak sales dominate, followed by the SARL residual assumption
 (0 vs CHF 400 M) and the QUVIVIQ operating margin. Discount rate is a
-mid tier lever. No single variable at its ±30 % / ±20 % stress level
+mid tier lever. No single variable at its +/-30 % / +/-20 % stress level
 reaches the market price on its own; the market is pricing several
 positive assumptions at once.
 """)
@@ -426,7 +426,7 @@ S.scenarios()
 
 md("""
 - **Bear** (QUVIVIQ peak 400 M, lucerastat 250 M, discount 14 %):
-  CHF –0.64 / share. Effectively equity negative, implies existing
+  CHF -0.64 / share. Effectively equity negative, implies existing
   operating debt swamps the parent owned asset value.
 - **Base** (assumptions as documented): CHF 0.89 / share.
 - **Base + SARL residual 400 M**: CHF 2.48 / share. Adding a modest
@@ -445,17 +445,17 @@ md("""
 
 **Verdict.** The base case, using mid-year discounting, BIO 2021 PoS
 transitions, Pharmakon-updated parent debt, and the QUVIVIQ margin ramp
-5 → 30 % 2026-2030, floors IDIA at CHF 0 / share (raw equity value
-CHF −611 M) against the latest IDIA.SW close (see market.json). The
+5 -> 30 % 2026-2030, floors IDIA at CHF 0 / share (raw equity value
+CHF -611 M) against the latest IDIA.SW close (see market.json). The
 gap decomposes into **two catalysts** the base case
-excludes — (1) a non-trivial residual value for the SARL assets, (2) a
-QUVIVIQ trajectory above CHF 600 M peak — **plus one refinancing event**
+excludes - (1) a non-trivial residual value for the SARL assets, (2) a
+QUVIVIQ trajectory above CHF 600 M peak - **plus one refinancing event**
 (J&J convertible, CHF 335 M, matures 15 Jun 2027). The convertible is
 not a catalyst: either dilution if the share price exceeds strike, or
 cash repayment at maturity.
 
 Depending on how much probability one assigns to those three catalysts,
-the reconciled fair value can be anywhere in the CHF 0.9 – 6.6 range.
+the reconciled fair value can be anywhere in the CHF 0.9 - 6.6 range.
 A "Base + SARL residual" scenario at CHF 2.48 / share is a defensible
 midpoint; a full bull scenario at CHF 6.6 requires several things to
 line up simultaneously.
@@ -487,7 +487,7 @@ to a specific assumption.
 # Finalise: assemble, execute, save
 # ---------------------------------------------------------------------------
 nb.cells = cells
-print(f"[build] assembled {len(cells)} cells; executing …")
+print(f"[build] assembled {len(cells)} cells; executing ...")
 client = NotebookClient(
     nb,
     timeout=180,
