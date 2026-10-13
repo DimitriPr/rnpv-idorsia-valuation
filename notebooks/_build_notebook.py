@@ -202,14 +202,29 @@ md("""
 
 **Discount rate.** 12 % (biotech WACC range 11-13 %; stress at 10 %/14 %).
 
-**PoS benchmarks**, Wong, Siah & Lo (2019, *Biostatistics* 20(2):273-286).
-Phase to approval probabilities used for pipeline products:
+**PoS transitions**, BIO/Informa/QLS, "Clinical Development Success
+Rates 2011-2020" (2021). Transitions and derived cumulative PoS:
 """)
 
 code("""
-pos = pd.DataFrame(A.POS_BY_PHASE_WSL_2019.items(),
-                   columns=["Phase", "PoS to approval"])
-pos
+trans = pd.DataFrame(
+    [("Phase 1 → Phase 2",  A.POS_TRANSITIONS["phase1_to_phase2"]),
+     ("Phase 2 → Phase 3",  A.POS_TRANSITIONS["phase2_to_phase3"]),
+     ("Phase 3 → NDA/BLA",  A.POS_TRANSITIONS["phase3_to_filing"]),
+     ("NDA/BLA → approval", A.POS_TRANSITIONS["filing_to_approval"])],
+    columns=["Transition", "Probability"],
+)
+trans["Probability"] = trans["Probability"].map(lambda x: f"{x*100:.1f} %")
+trans
+""")
+
+code("""
+cum = pd.DataFrame(
+    [(ph, A.cumulative_pos(ph)) for ph in ["phase1", "phase2", "phase3", "filing"]],
+    columns=["From phase", "Cumulative PoS to approval"],
+)
+cum["Cumulative PoS to approval"] = cum["Cumulative PoS to approval"].map(lambda x: f"{x*100:.1f} %")
+cum
 """)
 
 md("""
