@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.10.18">
+<meta name="generator" content="quarto-1.10.19">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -42,14 +42,14 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b626d73c4c936ccc3cb08be7d45d1df6.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-dae86cc5c44ff60038910d979d464551.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-b881767d2ce9f5bcc4cdcca02720d2b8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-dae86cc5c44ff60038910d979d464551.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-5e1c5491ca906fac94265e6fd3dba6c2.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-286a6bf8a15cd314f8f5f30c28641f63.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-5e1c5491ca906fac94265e6fd3dba6c2.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -307,9 +307,14 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#tldr" id="toc-tldr" class="nav-link active" data-scroll-target="#tldr">TL;DR</a></li>
   <li><a href="#pipeline-breakdown" id="toc-pipeline-breakdown" class="nav-link" data-scroll-target="#pipeline-breakdown">Pipeline breakdown</a></li>
-  <li><a href="#from-cash-to-per-share-value" id="toc-from-cash-to-per-share-value" class="nav-link" data-scroll-target="#from-cash-to-per-share-value">From cash to per share value</a></li>
+  <li><a href="#from-cash-to-equity-value" id="toc-from-cash-to-equity-value" class="nav-link" data-scroll-target="#from-cash-to-equity-value">From cash to equity value</a></li>
   <li><a href="#key-assumptions-and-sources" id="toc-key-assumptions-and-sources" class="nav-link" data-scroll-target="#key-assumptions-and-sources">Key assumptions and sources</a></li>
-  <li><a href="#what-the-valuation-rides-on" id="toc-what-the-valuation-rides-on" class="nav-link" data-scroll-target="#what-the-valuation-rides-on">What the valuation rides on</a></li>
+  <li><a href="#what-the-valuation-rides-on" id="toc-what-the-valuation-rides-on" class="nav-link" data-scroll-target="#what-the-valuation-rides-on">What the valuation rides on</a>
+  <ul class="collapse">
+  <li><a href="#dea-schedule-v-update-not-full-descheduling" id="toc-dea-schedule-v-update-not-full-descheduling" class="nav-link" data-scroll-target="#dea-schedule-v-update-not-full-descheduling">DEA Schedule V update (not full descheduling)</a></li>
+  <li><a href="#quviviq-growth-trajectory" id="toc-quviviq-growth-trajectory" class="nav-link" data-scroll-target="#quviviq-growth-trajectory">QUVIVIQ growth trajectory</a></li>
+  </ul></li>
+  <li><a href="#scenarios" id="toc-scenarios" class="nav-link" data-scroll-target="#scenarios">Scenarios</a></li>
   <li><a href="#verdict" id="toc-verdict" class="nav-link" data-scroll-target="#verdict">Verdict</a></li>
   <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
   </ul>
@@ -322,7 +327,7 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Results</h1>
-<p class="subtitle lead">Per share fair value and investment note, base case CHF 0.89 vs market CHF 4.35</p>
+<p class="subtitle lead">Per-share fair value and investment note</p>
 </div>
 
 
@@ -347,45 +352,41 @@ ul.task-list li input[type="checkbox"] {
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-body-container">
-<p><strong>Base case fair value: CHF 0.89 / share.</strong> Current market: CHF 4.35 (mid June 2026). Apparent downside: −80 %.</p>
-<p><strong>But the number to remember is not −80 %.</strong> The 80 % apparent gap is what the market is paying for three catalysts the base case <em>deliberately</em> excludes: (1) a residual claim on the ring fenced SARL assets (aprocitentan / selatogrel / cenerimod), (2) a QUVIVIQ blockbuster trajectory north of CHF 600 M peak, (3) equity optionality on the J&amp;J convertible. The reconciled fair value therefore sits anywhere in <strong>CHF 0.9 – 6.6 per share</strong> depending on how one weights those catalysts. A “Base + modest SARL residual (CHF 400 M)” reads at CHF ~2.5 / share.</p>
+<p><strong>Base case fair value: CHF 0.00 / share (floored at zero).</strong> Equity value CHF -611 M pre-floor; current market <strong>CHF 4.22</strong> (IDIA.SW close 2026-10-13). Valuation date: 2026-06-30.</p>
+<p><strong>The base case is a conservative lower bound, not a price target.</strong> The gap to the market decomposes into <strong>two catalysts</strong> the base case excludes — (1) a residual claim on the ring-fenced SARL assets (aprocitentan / selatogrel / cenerimod), (2) a QUVIVIQ blockbuster trajectory above the base-case peak — <strong>plus one refinancing event</strong> the base case already treats as pure debt: the J&amp;J convertible loan (CHF 335 M, matures 15 Jun 2027, convertible into 29.1 M shares at CHF 11.51). The convertible is <strong>never an upside</strong>: either dilution if IDIA rerates above the strike, or a cash repayment at maturity.</p>
+<p><strong>Reconciled fair-value range across scenarios: CHF 0.00 – 2.75 / share</strong> (post-floor, post-if-converted). This is the single range used across all pages of this note.</p>
 </div>
 </div>
 </div>
-<p><strong>The four headline numbers</strong></p>
+<p><strong>Scenario headline numbers</strong></p>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 27%">
-<col style="width: 36%">
-<col style="width: 36%">
-</colgroup>
 <thead>
 <tr class="header">
-<th>Scenario</th>
-<th style="text-align: right;">Value / share</th>
-<th style="text-align: right;">Distance to market</th>
+<th style="text-align: left;">Scenario</th>
+<th style="text-align: right;">Value / share (CHF)</th>
+<th style="text-align: left;">Distance to market</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Bear (peak QUVIVIQ CHF 400 M, discount 14 %)</td>
-<td style="text-align: right;">CHF −0.64</td>
-<td style="text-align: right;">−115 %</td>
+<td style="text-align: left;">Bear</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">-100 %</td>
 </tr>
 <tr class="even">
-<td><strong>Base</strong> (peak CHF 600 M, discount 12 %, no SARL residual)</td>
-<td style="text-align: right;"><strong>CHF 0.89</strong></td>
-<td style="text-align: right;"><strong>−80 %</strong></td>
+<td style="text-align: left;">Base</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">-100 %</td>
 </tr>
 <tr class="odd">
-<td>Base + SARL residual CHF 400 M</td>
-<td style="text-align: right;">CHF 2.48</td>
-<td style="text-align: right;">−43 %</td>
+<td style="text-align: left;">Base + SARL residual</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">-100 %</td>
 </tr>
 <tr class="even">
-<td>Bull (peak CHF 1 000 M, SARL 600 M, discount 10 %)</td>
-<td style="text-align: right;">CHF 6.65</td>
-<td style="text-align: right;">+53 %</td>
+<td style="text-align: left;">Bull</td>
+<td style="text-align: right;">2.75</td>
+<td style="text-align: left;">-35 %</td>
 </tr>
 </tbody>
 </table>
@@ -393,196 +394,342 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="pipeline-breakdown" class="level2">
 <h2 class="anchored" data-anchor-id="pipeline-breakdown">Pipeline breakdown</h2>
-<p>QUVIVIQ (daridorexant) does virtually all the work.</p>
+<p>QUVIVIQ does virtually all the work in the base case.</p>
 <p><img src="outputs/figures/pipeline_overview.png" class="img-fluid" alt="rNPV contribution per product in the base case"></p>
 <table class="caption-top table">
 <colgroup>
+<col style="width: 30%">
+<col style="width: 8%">
+<col style="width: 7%">
+<col style="width: 14%">
 <col style="width: 17%">
-<col style="width: 17%">
-<col style="width: 23%">
-<col style="width: 23%">
-<col style="width: 17%">
+<col style="width: 21%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Product</th>
-<th>Phase</th>
-<th style="text-align: right;">PoS</th>
+<th style="text-align: left;">Product</th>
+<th style="text-align: left;">Phase</th>
+<th style="text-align: left;">PoS</th>
 <th style="text-align: right;">rNPV (CHF M)</th>
-<th>Comment</th>
+<th style="text-align: right;">PV op CF (CHF M)</th>
+<th style="text-align: right;">PV dev costs (CHF M)</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>QUVIVIQ</td>
-<td>marketed</td>
-<td style="text-align: right;">100 %</td>
-<td style="text-align: right;">+776</td>
-<td>Full commercial base case, US exclusivity to 2036</td>
+<td style="text-align: left;">QUVIVIQ (daridorexant)</td>
+<td style="text-align: left;">marketed</td>
+<td style="text-align: left;">100.0 %</td>
+<td style="text-align: right;">+623</td>
+<td style="text-align: right;">+623</td>
+<td style="text-align: right;">+0</td>
 </tr>
 <tr class="even">
-<td>Lucerastat</td>
-<td>Phase 3</td>
-<td style="text-align: right;">58 %</td>
-<td style="text-align: right;">+152</td>
-<td>Filing target 2029; base case peak CHF 400 M</td>
+<td style="text-align: left;">Lucerastat</td>
+<td style="text-align: left;">phase3</td>
+<td style="text-align: left;">52.4 %</td>
+<td style="text-align: right;">+114</td>
+<td style="text-align: right;">+393</td>
+<td style="text-align: right;">+92</td>
 </tr>
 <tr class="odd">
-<td>CCR6 antagonist</td>
-<td>Phase 2</td>
-<td style="text-align: right;">21 %</td>
-<td style="text-align: right;">−61</td>
-<td>Placeholder peak, negative rNPV = conservative peak sales assumption, not a claim to shelve</td>
+<td style="text-align: left;">IDOR-1117-2520 (CCR6 antagonist)</td>
+<td style="text-align: left;">phase2</td>
+<td style="text-align: left;">15.1 %</td>
+<td style="text-align: right;">-58</td>
+<td style="text-align: right;">+205</td>
+<td style="text-align: right;">+89</td>
 </tr>
 <tr class="even">
-<td>CXCR7 antagonist</td>
-<td>Phase 2</td>
-<td style="text-align: right;">21 %</td>
-<td style="text-align: right;">−64</td>
-<td>Same</td>
+<td style="text-align: left;">ACT-1004-1239 (CXCR7 antagonist)</td>
+<td style="text-align: left;">phase2</td>
+<td style="text-align: left;">15.1 %</td>
+<td style="text-align: right;">-73</td>
+<td style="text-align: right;">+164</td>
+<td style="text-align: right;">+98</td>
 </tr>
 <tr class="odd">
-<td>CXCR3 antagonist</td>
-<td>Phase 2</td>
-<td style="text-align: right;">21 %</td>
-<td style="text-align: right;">−77</td>
-<td>Same</td>
+<td style="text-align: left;">ACT-777991 (CXCR3 antagonist)</td>
+<td style="text-align: left;">phase2</td>
+<td style="text-align: left;">15.1 %</td>
+<td style="text-align: right;">-78</td>
+<td style="text-align: right;">+126</td>
+<td style="text-align: right;">+97</td>
 </tr>
 </tbody>
 </table>
-<p>The three early stage negative rNPVs reflect the arithmetic of applying a 21 % Phase 2 to approval probability against remaining development costs. They should be read as <em>“peak sales assumption too conservative to justify the ongoing spend”</em>, not as <em>“the program should be discontinued”</em>, Phase 2 PoC readouts (CCR6 in Q4 2026) will reanchor those figures materially in either direction.</p>
+<p>The three early-stage negative rNPVs reflect the arithmetic of applying a 15.1 % Phase 2 cumulative to-approval probability against the phase-weighted development costs out to filing. They should be read as <em>“peak sales placeholder too low vs the phase-weighted dev spend”</em>, not as <em>“the programme should be discontinued”</em>. Phase 2 proof-of-concept readouts (CCR6 Q4 2026, CXCR3 2027, CXCR7 Q2 2028) will reanchor those figures materially in either direction.</p>
 </section>
-<section id="from-cash-to-per-share-value" class="level2">
-<h2 class="anchored" data-anchor-id="from-cash-to-per-share-value">From cash to per share value</h2>
-<p><img src="outputs/figures/waterfall_ev.png" class="img-fluid" alt="Bridge from parent net cash to enterprise value to value per share"></p>
-<pre><code>Sum of product rNPVs      : CHF   727 M
-+ Parent net cash          : CHF  −504 M   (cash 69 M − attributable debt 573 M)
-+ SARL residual (base = 0) : CHF     0 M
-= Enterprise value (parent): CHF   223 M
-÷ Shares outstanding       :        250.7 M
-= Fair value / share       : CHF   0.89</code></pre>
-<p><strong>Parent net cash is negative</strong> because we conservatively attribute CHF 573 M of debt (J&amp;J convertible + convertible bonds + other financial debt including R-Bridge royalty monetization) to the parent equity holder against only ~CHF 69 M of usable cash. The CHF 762 M of SARL notes are excluded, they are non recourse to IDIA shareholders and are serviced by the SARL assets (see <a href="./methodology.html">Methodology</a>).</p>
+<section id="from-cash-to-equity-value" class="level2">
+<h2 class="anchored" data-anchor-id="from-cash-to-equity-value">From cash to equity value</h2>
+<p><img src="outputs/figures/waterfall_ev.png" class="img-fluid" alt="Bridge from parent net cash to parent equity value to value per share"></p>
+<pre><code>Sum of product rNPVs                                       : CHF     +528 M
++ Parent net cash                                           : CHF     -634 M
++ SARL residual (base = 0)                                  : CHF       +0 M
+- PV central costs (G&amp;A + upstream research)                : CHF     -504 M
+= Equity value (parent)                                     : CHF     -611 M
+/ Shares outstanding                                        :        254.0 M
+= Fair value / share (raw)                                  : CHF    -2.40
+= Fair value / share (floored, limited liability)           : CHF    +0.00</code></pre>
+<p><strong>Parent net cash is negative</strong> because we attribute CHF 723 M of debt to the parent equity holder (J&amp;J convertible 335 + Pharmakon term loan 150 + convertible bonds 49 + other financial 189 incl.&nbsp;R-Bridge royalty monetization) against only CHF 89 M of group cash (an upper bound at 30 Jun 2026 — see TODO_DATA.md). The CHF 762 M of SARL notes are excluded, they are non-recourse to IDIA shareholders and are serviced by the SARL assets.</p>
+<p>The SARL New Money Facility (CHF 150 M nominal, CHF 105 M drawn at YE 2025) was repaid in full on 26 Jun 2026 from the first Pharmakon tranche, so it does not appear in the current debt line.</p>
 </section>
 <section id="key-assumptions-and-sources" class="level2">
 <h2 class="anchored" data-anchor-id="key-assumptions-and-sources">Key assumptions and sources</h2>
-<div class="callout callout-style-simple callout-note">
-<div class="callout-body d-flex">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-body-container">
-<p>Every number in <a href="https://github.com/DimitriPr/rnpv-idorsia-valuation/blob/main/src/assumptions.py"><code>src/assumptions.py</code></a> carries an inline <code># source:</code> comment. The table below highlights the inputs that dominate the result.</p>
-</div>
-</div>
-</div>
+<p><strong>Every input is either sourced to a public document (<code>sourced</code>) or explicitly flagged as an assumption or placeholder.</strong> The audit list of placeholders lives in <a href="https://github.com/DimitriPr/rnpv-idorsia-valuation/blob/main/TODO_DATA.md"><code>TODO_DATA.md</code></a>; the <code>status</code> column below is the per-input tag.</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 30%">
-<col style="width: 40%">
-<col style="width: 30%">
+<col style="width: 29%">
+<col style="width: 16%">
+<col style="width: 7%">
+<col style="width: 46%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Input</th>
-<th style="text-align: right;">Base case</th>
-<th>Source</th>
+<th style="text-align: left;">Input</th>
+<th style="text-align: left;">Base case</th>
+<th style="text-align: left;">Status</th>
+<th style="text-align: left;">Source</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Discount rate (mid year convention)</td>
-<td style="text-align: right;">12 %</td>
-<td>Standard biotech WACC 11-13 %; stressed 10 % / 14 %</td>
+<td style="text-align: left;">Discount rate (mid-year)</td>
+<td style="text-align: left;">12%</td>
+<td style="text-align: left;">assumption</td>
+<td style="text-align: left;">Standard biotech WACC 11-13 %; sensitivity 10 % / 14 %</td>
 </tr>
 <tr class="even">
-<td>PoS Phase 3 → approval</td>
-<td style="text-align: right;">58.1 %</td>
-<td>Wong, Siah &amp; Lo (2019), <em>Biostatistics</em> 20(2):273–286</td>
+<td style="text-align: left;">PoS transitions set</td>
+<td style="text-align: left;">BIO 2011-2020</td>
+<td style="text-align: left;">sourced</td>
+<td style="text-align: left;">BIO/Informa/QLS ‘Clinical Development Success Rates 2011-2020’ (2021)</td>
 </tr>
 <tr class="odd">
-<td>PoS Phase 2 → approval</td>
-<td style="text-align: right;">20.9 %</td>
-<td>idem</td>
+<td style="text-align: left;">PoS cumulative, Phase 2 -&gt; approval</td>
+<td style="text-align: left;">15.1 %</td>
+<td style="text-align: left;">sourced</td>
+<td style="text-align: left;">Derived from BIO 2021 transitions (0.289 * 0.578 * 0.906)</td>
 </tr>
 <tr class="even">
-<td>QUVIVIQ peak sales</td>
-<td style="text-align: right;">CHF 600 M</td>
-<td>Bracketed vs Belsomra (~USD 300 M plateau) and GlobalData 7MM DORA class projection (USD 4.1 bn by 2032)</td>
+<td style="text-align: left;">PoS cumulative, Phase 3 -&gt; approval</td>
+<td style="text-align: left;">52.4 %</td>
+<td style="text-align: left;">sourced</td>
+<td style="text-align: left;">Derived from BIO 2021 (0.578 * 0.906)</td>
 </tr>
 <tr class="odd">
-<td>QUVIVIQ ramp (launch → peak)</td>
-<td style="text-align: right;">8 years (peak 2030)</td>
-<td>Consistent with historical ~+50 % YoY 2024→2025→2026</td>
+<td style="text-align: left;">QUVIVIQ peak sales</td>
+<td style="text-align: left;">CHF 600 M</td>
+<td style="text-align: left;">assumption</td>
+<td style="text-align: left;">Bracket vs Belsomra/Dayvigo comps + GlobalData 7MM DORA class forecast</td>
 </tr>
 <tr class="even">
-<td>QUVIVIQ US / EU exclusivity</td>
-<td style="text-align: right;">2036 / 2037</td>
-<td>Idorsia investor presentation, June 2026, p.15</td>
+<td style="text-align: left;">QUVIVIQ op margin at launch (2026)</td>
+<td style="text-align: left;">5%</td>
+<td style="text-align: left;">assumption</td>
+<td style="text-align: left;">Idorsia 2026 commercial-profitability target (June 2026 pres. p.45)</td>
 </tr>
 <tr class="odd">
-<td>QUVIVIQ 2026 revenue guidance</td>
-<td style="text-align: right;">CHF 200 M</td>
-<td>Idorsia investor presentation, June 2026, p.45</td>
+<td style="text-align: left;">QUVIVIQ op margin at peak (2030)</td>
+<td style="text-align: left;">30%</td>
+<td style="text-align: left;">assumption</td>
+<td style="text-align: left;">Specialty biotech mature range 25-40 %</td>
 </tr>
 <tr class="even">
-<td>Lucerastat peak sales</td>
-<td style="text-align: right;">CHF 400 M</td>
-<td>Idorsia disclosure of USD ~4 bn addressable market (Fabry, June 2026 pres. p.30); Fabrazyme / Galafold comparables</td>
+<td style="text-align: left;">QUVIVIQ ramp (launch -&gt; peak)</td>
+<td style="text-align: left;">8 years (peak 2030)</td>
+<td style="text-align: left;">assumption</td>
+<td style="text-align: left;">Consistent with +120 % (2024-&gt;2025) and +49 % (2025-&gt;2026 guided) growth</td>
 </tr>
 <tr class="odd">
-<td>Group cash 31/12/25</td>
-<td style="text-align: right;">CHF 89 M</td>
-<td>Idorsia Annual Report 2025, p.145</td>
+<td style="text-align: left;">QUVIVIQ 2026 revenue guidance</td>
+<td style="text-align: left;">CHF 200 M</td>
+<td style="text-align: left;">sourced</td>
+<td style="text-align: left;">Idorsia June 2026 investor presentation p.45</td>
 </tr>
 <tr class="even">
-<td>Parent attributable debt</td>
-<td style="text-align: right;">CHF 573 M</td>
-<td>AR 2025 p.145: convertible loan 335 + bonds 49 + other 189</td>
+<td style="text-align: left;">QUVIVIQ US / EU exclusivity</td>
+<td style="text-align: left;">2036 / 2037</td>
+<td style="text-align: left;">sourced</td>
+<td style="text-align: left;">Idorsia June 2026 investor presentation p.15</td>
 </tr>
 <tr class="odd">
-<td>SARL ring fenced debt (excl.)</td>
-<td style="text-align: right;">CHF 840 M</td>
-<td>AR 2025 p.145: notes 762 + facility 78</td>
+<td style="text-align: left;">Lucerastat peak sales</td>
+<td style="text-align: left;">CHF 400 M</td>
+<td style="text-align: left;">assumption</td>
+<td style="text-align: left;">Fabrazyme (~USD 1 bn) / Galafold (~USD 450 M) comparables</td>
 </tr>
 <tr class="even">
-<td>Shares outstanding</td>
-<td style="text-align: right;">250.7 M</td>
-<td>AR 2025, p.8</td>
+<td style="text-align: left;">Lucerastat Phase 3 remaining cost</td>
+<td style="text-align: left;">CHF 100 M</td>
+<td style="text-align: left;">assumption</td>
+<td style="text-align: left;">Orphan Fabry registrational trial estimate (vs DiMasi avg CHF 322 M, inapplicable)</td>
 </tr>
 <tr class="odd">
-<td>Current share price</td>
-<td style="text-align: right;">CHF 4.35</td>
-<td>Yahoo Finance / IDIA.SW mid June 2026 midpoint</td>
+<td style="text-align: left;">Group cash YE 2025 (upper bound at 30/06/26)</td>
+<td style="text-align: left;">CHF 89 M</td>
+<td style="text-align: left;">placeholder</td>
+<td style="text-align: left;">AR 2025 p.145; SARL-only sub-balance not disclosed, see TODO_DATA.md</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Parent-attributable debt</td>
+<td style="text-align: left;">CHF 723 M</td>
+<td style="text-align: left;">sourced</td>
+<td style="text-align: left;">AR 2025 p.145 + Pharmakon media release 9/26 Jun 2026</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">J&amp;J convertible loan (treated as debt in base case)</td>
+<td style="text-align: left;">CHF 335 M, strike CHF 11.51</td>
+<td style="text-align: left;">sourced</td>
+<td style="text-align: left;">Idorsia media release 9 Jun 2026; matures 15 Jun 2027</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Central costs: G&amp;A year 1</td>
+<td style="text-align: left;">CHF 71 M/year</td>
+<td style="text-align: left;">sourced</td>
+<td style="text-align: left;">AR 2025 non-GAAP SG&amp;A: G&amp;A line (CHF 71 M, excluding commercial)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Central costs: upstream research year 1</td>
+<td style="text-align: left;">CHF 25 M/year</td>
+<td style="text-align: left;">placeholder</td>
+<td style="text-align: left;">~27 % of AR 2025 R&amp;D (non-program-specific), see TODO_DATA.md</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Shares outstanding</td>
+<td style="text-align: left;">254.0 M (Q1 2026)</td>
+<td style="text-align: left;">sourced</td>
+<td style="text-align: left;">Idorsia Q1 2026 Financial Report, 31 Mar 2026</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Current share price</td>
+<td style="text-align: left;">CHF 4.22 (2026-10-13)</td>
+<td style="text-align: left;">sourced</td>
+<td style="text-align: left;">yfinance IDIA.SW latest close via scripts/update_price.py</td>
 </tr>
 </tbody>
 </table>
+<p>Peak sales for QUVIVIQ and lucerastat are <strong>triangulated against public comparables and company disclosure</strong>, not constructed from a bottom-up patient × penetration × price breakdown — Idorsia does not publish the inputs for that calculation, so we use the comparables approach and document each anchor in the product entry.</p>
 </section>
 <section id="what-the-valuation-rides-on" class="level2">
 <h2 class="anchored" data-anchor-id="what-the-valuation-rides-on">What the valuation rides on</h2>
 <p><img src="outputs/figures/tornado.png" class="img-fluid" alt="Tornado chart of variables ranked by impact on value per share"></p>
-<p>Two variables dominate, nearly tied, <strong>the SARL residual assumption</strong> (0 vs CHF 400 M swings the model from CHF 0.89 to CHF 2.48 / share) and <strong>QUVIVIQ peak sales</strong> (±30 % swings from CHF 0.09 to CHF 1.69). Third is the QUVIVIQ operating margin (±5 pp). Discount rate is a mid tier lever; lucerastat peak sales and PoS matter but do not move the needle on their own.</p>
-<p><strong>Critical read of the tornado</strong>: no single variable at its stress case reaches the current market price. Closing the gap requires <strong>multiple positive assumptions simultaneously</strong>, that is the market’s implicit bet.</p>
-<p><img src="outputs/figures/sensitivity_heatmap.png" class="img-fluid" alt="Value per share heatmap over QUVIVIQ peak sales and discount rate"></p>
-<p>To reach the current CHF 4.35 with QUVIVIQ alone requires peak sales CHF ~1 000-1 100 M <em>and</em> a discount rate at the low end of the WACC range (9-10 %). That is not implausible, descheduling in the US, IDSIQ label enhancement, and pediatric approval, if all three land, plausibly get QUVIVIQ into that territory, but each is a separate probabilistic event.</p>
+<p>Two variables dominate in the base case: <strong>QUVIVIQ peak sales</strong> and the <strong>SARL residual assumption</strong> (0 vs CHF 400 M). The central-costs upstream placeholder (±50 %, listed in TODO_DATA.md) is in the mid-tier of levers; discount rate and lucerastat PoS matter but do not move the needle on their own.</p>
+<p><strong>Critical read</strong>: no single variable at its stress case reaches the current market price. Closing the gap requires <strong>multiple positive assumptions simultaneously</strong>, that is the market’s implicit bet.</p>
+<p><img src="outputs/figures/sensitivity_heatmap.png" class="img-fluid" alt="Value-per-share heatmap over QUVIVIQ peak sales and discount rate"></p>
+<section id="dea-schedule-v-update-not-full-descheduling" class="level3">
+<h3 class="anchored" data-anchor-id="dea-schedule-v-update-not-full-descheduling">DEA Schedule V update (not full descheduling)</h3>
+<p>On 11 Aug 2026, the DEA proposed to <strong>reclassify DORAs (QUVIVIQ, Belsomra, Dayvigo) from Schedule IV to Schedule V</strong>, not a full descheduling. Schedule V is the least-restrictive controlled substances tier (looser prescribing / refill constraints) but still a scheduled drug, so prescriber dispensing frictions are reduced without being eliminated. The upside scenarios in this note treat the reclassification as a <em>modest</em> commercial accelerator, not as a transformational catalyst. Source: <a href="https://www.marktpuls.ch/artikel/permalink/675639">Marktpuls, Aug 2026</a>.</p>
+</section>
+<section id="quviviq-growth-trajectory" class="level3">
+<h3 class="anchored" data-anchor-id="quviviq-growth-trajectory">QUVIVIQ growth trajectory</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Year</th>
+<th style="text-align: right;">Net sales (CHF M)</th>
+<th style="text-align: left;">YoY growth</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">2023</td>
+<td style="text-align: right;">31</td>
+<td style="text-align: left;">—</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2024</td>
+<td style="text-align: right;">61</td>
+<td style="text-align: left;">+97 %</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2025</td>
+<td style="text-align: right;">134</td>
+<td style="text-align: left;">+120 %</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2026</td>
+<td style="text-align: right;">200</td>
+<td style="text-align: left;">+49 %</td>
+</tr>
+</tbody>
+</table>
+<p>Realised and guided QUVIVIQ growth is <strong>not</strong> a steady “~+50 % YoY” — it decelerated materially from +120 % (2024→2025) to +49 % guided (2025→2026). To reach the CHF 600 M peak by 2030 (an 8-year ramp from launch), 2026→2030 only needs ~32 % annual CAGR, which is consistent with growth decelerating further as the US DORA class matures and the EU reimbursement footprint fills in.</p>
+</section>
+</section>
+<section id="scenarios" class="level2">
+<h2 class="anchored" data-anchor-id="scenarios">Scenarios</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 31%">
+<col style="width: 32%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Scenario</th>
+<th style="text-align: right;">V/share pre if-converted (CHF)</th>
+<th style="text-align: right;">V/share post if-converted (CHF)</th>
+<th style="text-align: left;">J&amp;J converted?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Bear</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">no</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Base</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">no</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Base + SARL residual</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">no</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Bull</td>
+<td style="text-align: right;">2.75</td>
+<td style="text-align: right;">2.75</td>
+<td style="text-align: left;">no</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Fraction of the base→market gap closed by Base + SARL residual</strong>: 0 % (replaces the “roughly two thirds” claim from v1.0, which used stale numbers).</p>
 </section>
 <section id="verdict" class="level2">
 <h2 class="anchored" data-anchor-id="verdict">Verdict</h2>
-<p><strong>The market is not wrong; the base case is not wrong.</strong> They price different things.</p>
-<p>The base case values <em>only</em> the parent owned assets, uses industry standard Phase 2 to approval and Phase 3 to approval probabilities, and applies a conservative peak sales estimate to a genuinely differentiated but uncertain commercial asset. It answers the question: <em>“If none of the three catalysts materialise, what is Idorsia worth?”</em> The answer is CHF ~0.9 / share.</p>
-<p>The market answers the different question: <em>“What is Idorsia worth on a probability weighted basis, including some credit for the SARL reversion and for QUVIVIQ becoming a genuine blockbuster?”</em> The reconciled fair value in that framework sits somewhere in CHF 2.5 – 5 / share. The market is at CHF 4.35, the upper end of that range.</p>
-<p><strong>My reconciled personal read</strong>: at CHF 4.35, IDIA is pricing in a material SARL residual <em>plus</em> a QUVIVIQ trajectory noticeably above the CHF 600 M I use as base. That is a fairly optimistic combination which is not irrational, but leaves limited margin of safety at the current level. It is not an obvious buy at these levels; it is not obviously a sell either. It is a name whose fair value critically depends on things that will be known in the next 18-24 months, the CCR6 PoC readout (Q4 2026), the US QUVIVIQ commercial trajectory, and progress on repaying the SARL notes.</p>
+<p><strong>The gap between the model and the market has widened, and so has the required set of assumptions behind the market price.</strong></p>
+<p>The v1.1 base case floors at CHF 0.00 / share (raw equity value CHF -611 M). This is a hard lower bound under three jointly binding constraints: BIO 2011-2020 PoS transitions applied cleanly, QUVIVIQ margin ramping from the 2026 commercial-profitability target to a mid-range specialty 30 % at peak, and PV of unallocated central costs deducted from the equity bridge. The market at CHF 4.22 therefore embeds assumptions that, on a probability-weighted basis, span the full range of upside paths:</p>
+<ul>
+<li>A <strong>SARL residual</strong> at least matching the CHF 400 M stressed in scenarios (not sufficient on its own to clear the zero floor under the current cost structure).</li>
+<li>A QUVIVIQ trajectory <strong>well above</strong> the CHF 600 M base-case peak (closer to the CHF 1,000 M Bull case) and a discount rate at the low end of the biotech WACC range.</li>
+<li>A clean <strong>refinancing</strong> of the CHF 335 M J&amp;J convertible on 15 June 2027: either cash repayment (reducing the equity bridge directly) or conversion if V/share exceeds CHF 11.51 (dilutive but debt-eliminating; the if-converted scenario is already applied in the Bull case and still prints CHF 2.75 / share).</li>
+</ul>
+<p><strong>The reconciled range CHF 0.00 – 2.75 / share</strong> is the honest answer under the method as corrected; the market price sits noticeably <em>above</em> even the Bull. That is not a claim IDIA is overvalued 1.5×: it is a claim the market is pricing a combined scenario that is <em>outside</em> the parameter space our scenarios span (e.g.&nbsp;a QUVIVIQ peak above CHF 1,000 M, SARL residual above CHF 600 M, central cost normalisation faster than modelled, discount rate below 10 %).</p>
+<p><strong>My reconciled personal read</strong>: at CHF 4.22, IDIA is priced for a genuinely bullish composite outcome where (a) the DEA Schedule V reclassification, pediatric programme and EU reimbursement all contribute to a QUVIVIQ ceiling well above the CHF 600 M used here; (b) SARL asset performance clears the ring-fenced debt materially ahead of maturity; (c) the Pharmakon loan does not need to be extended on worse terms; and (d) the J&amp;J convertible either converts (dilution absorbed by rerating) or is refinanced on terms that do not tighten covenants. Each of these is probabilistic; none is binary. The investable thesis is a <em>conditional long on specific catalyst delivery</em> (CCR6 PoC Q4 2026, QUVIVIQ US run-rate exit 2026, SARL progress disclosures) with limited margin of safety at the current level under the base case.</p>
+<p><em>Don’t read any point estimate here as a price target.</em> Read the status column of each input, the four scenarios, and the gap-covered percentage. Every assumption is traceable; every scenario has an explicit narrative; every CHF of the gap between the model and the market can be tied to a specific bet or a specific placeholder.</p>
 </section>
 <section id="limitations" class="level2">
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
 <ul>
-<li>All figures are constrained by the quality of the peak sales, PoS and discount rate inputs.</li>
-<li>Peak sales for the three Phase 2 candidates are placeholders and drive their negative rNPVs. A positive CCR6 PoC readout at Q4 2026 would materially reshape those figures.</li>
-<li>The J&amp;J convertible is treated as pure debt at its CHF ~11.55 strike (deep OTM at current prices). Rerating would turn it into an equity dilution event.</li>
-<li>Working capital and capex are netted to zero; tax proxied by EBIT margin; product outcomes are assumed independent.</li>
-<li>The SARL contingent liability to J&amp;J (30 % of aprocitentan proceeds + 10 % each of selatogrel and cenerimod) is disclosed but not fully modelled, a known refinement.</li>
-<li>Modelling conventions (mid year discount, 8 year QUVIVIQ ramp) are documented in <a href="./methodology.html">Methodology</a> §<em>Modelling conventions</em>.</li>
+<li>rNPV is an order-of-magnitude tool, not a precise valuation.</li>
+<li>Phase 2 peak sales (CCR6, CXCR7, CXCR3) are placeholders and drive their negative rNPVs. A positive CCR6 PoC readout at Q4 2026 would materially reshape those figures.</li>
+<li>The <strong>J&amp;J convertible is a cost, not an upside</strong>: either dilution (if V/share &gt; strike at maturity) or a CHF 335 M cash repayment on 15 Jun 2027. The if-converted test applies in scenarios where V/share &gt; strike.</li>
+<li><strong>Central costs are modelled as a decline-then-floor-then-proportional curve</strong> (71 M G&amp;A sourced + 25 M upstream placeholder at year 1, decay 10 %/year to floor 50 M to 2040, then scaled by weighted revenue to 2050 with hard floor 10 M). Not a line-by-line projection.</li>
+<li><strong>Upstream research is deducted but no value is attributed to the unborn pipeline candidates</strong> that upstream research will generate. This biases the model downward.</li>
+<li><strong>QUVIVIQ post-launch R&amp;D</strong> (pediatric programme, label extensions) is not modelled in either the per-product dev-cost curve (prelaunch only) or central costs.</li>
+<li>Working capital and capex are netted to zero; tax proxied by the operating margin; product outcomes are assumed independent.</li>
+<li>The SARL contingent liability to J&amp;J (30 % aprocitentan + 10 % each selatogrel / cenerimod proceeds) is disclosed but not fully modelled, a known refinement.</li>
+<li>All historical data and the current share price are pinned to specific dates (<code>data/market.json</code> for the quote; <code>A.VALUATION_DATE = {python} A.VALUATION_DATE</code> for the balance sheet). Re-run <code>scripts/update_price.py</code> before each deploy.</li>
 </ul>
-<p>Don’t read the CHF 0.89 as a price target. Read the sourcing and the scenarios. Every input is traceable to a public document, every scenario has an explicit narrative, and every CHF of the gap between the model and the market can be tied to a specific bet.</p>
+<p>Don’t read any point estimate as a price target. Read the sourcing and the scenarios: every input has a status (sourced / assumption / placeholder), every scenario has an explicit narrative, and every CHF of the gap between the model and the market can be tied to a specific bet.</p>
 <hr>
 <p><em>Full computation trail: <a href="./notebook.html">interactive notebook</a> | <a href="./methodology.html">methodology</a> | <a href="https://github.com/DimitriPr/rnpv-idorsia-valuation">source on GitHub</a>.</em></p>
 

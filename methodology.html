@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.10.18">
+<meta name="generator" content="quarto-1.10.19">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -42,14 +42,14 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b626d73c4c936ccc3cb08be7d45d1df6.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-dae86cc5c44ff60038910d979d464551.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-b881767d2ce9f5bcc4cdcca02720d2b8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-dae86cc5c44ff60038910d979d464551.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-5e1c5491ca906fac94265e6fd3dba6c2.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-286a6bf8a15cd314f8f5f30c28641f63.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-5e1c5491ca906fac94265e6fd3dba6c2.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -340,9 +340,10 @@ window.Quarto = {
   <li><a href="#operating-margin-and-cash-flow" id="toc-operating-margin-and-cash-flow" class="nav-link" data-scroll-target="#operating-margin-and-cash-flow">Operating margin and cash flow</a></li>
   <li><a href="#development-costs" id="toc-development-costs" class="nav-link" data-scroll-target="#development-costs">Development costs</a></li>
   <li><a href="#discount-rate" id="toc-discount-rate" class="nav-link" data-scroll-target="#discount-rate">Discount rate</a></li>
+  <li><a href="#central-costs-unallocated-ga-upstream-research" id="toc-central-costs-unallocated-ga-upstream-research" class="nav-link" data-scroll-target="#central-costs-unallocated-ga-upstream-research">Central costs (unallocated G&amp;A + upstream research)</a></li>
   <li><a href="#modelling-conventions" id="toc-modelling-conventions" class="nav-link" data-scroll-target="#modelling-conventions">Modelling conventions</a>
   <ul class="collapse">
-  <li><a href="#discounting-convention-mid-year" id="toc-discounting-convention-mid-year" class="nav-link" data-scroll-target="#discounting-convention-mid-year">Discounting convention: mid year</a></li>
+  <li><a href="#discounting-convention-mid-year" id="toc-discounting-convention-mid-year" class="nav-link" data-scroll-target="#discounting-convention-mid-year">Discounting convention: mid-year</a></li>
   <li><a href="#quviviq-ramp-trajectory-8-years-to-peak" id="toc-quviviq-ramp-trajectory-8-years-to-peak" class="nav-link" data-scroll-target="#quviviq-ramp-trajectory-8-years-to-peak">QUVIVIQ ramp trajectory: 8 years to peak</a></li>
   <li><a href="#what-is-not-modelled" id="toc-what-is-not-modelled" class="nav-link" data-scroll-target="#what-is-not-modelled">What is NOT modelled</a></li>
   </ul></li>
@@ -377,150 +378,209 @@ window.Quarto = {
 </header>
 
 
-<p>This page describes how each pipeline product is modelled, how probability weighting is applied, and how the product rNPVs are aggregated into an enterprise value and a per share value.</p>
+<p>This page describes how each pipeline product is modelled, how probability weighting is applied, and how the product rNPVs are aggregated into a parent-attributable equity value and a per-share value.</p>
 <section id="the-rnpv-formula" class="level2">
 <h2 class="anchored" data-anchor-id="the-rnpv-formula">The rNPV formula</h2>
-<p>For each product, the risk adjusted NPV is:</p>
-<p><span class="math inline">\(rNPV = \sum_{t=T_0}^{T_{end}} \frac{CF_t \times PoS_{cumulative}}{(1+r)^t} \; - \; \sum_{t=0}^{T_0-1} \frac{DevCost_t}{(1+r)^t}\)</span>$</p>
+<p>For each product, the risk-adjusted NPV is:</p>
+<p><span class="math display">\[rNPV = PoS_{cum} \; \times \; \sum_{t=T_0}^{T_{end}} \frac{CF_t}{(1+r)^{t - t_0 + 0.5}} \; - \; \sum_{t=t_0}^{T_0-1} \frac{w(phase_t) \; \cdot \; DevCost_{phase_t}}{(1+r)^{t - t_0 + 0.5}}\]</span></p>
 <p>Where:</p>
 <ul>
-<li><span class="math inline">\(CF_t\)</span> = operating cash flow in year <span class="math inline">\(t\)</span> = <span class="math inline">\(Sales_t \times \text{OpMargin}\)</span></li>
-<li><span class="math inline">\(PoS_{cumulative}\)</span> = cumulative probability that the product reaches the market from its current phase</li>
-<li><span class="math inline">\(r\)</span> = discount rate (biotech WACC)</li>
-<li><span class="math inline">\(DevCost_t\)</span> = remaining clinical development cost in year <span class="math inline">\(t\)</span></li>
-<li><span class="math inline">\(T_0\)</span> = expected launch year, <span class="math inline">\(T_{end}\)</span> = end of exclusivity window (post patent cliff)</li>
+<li><span class="math inline">\(CF_t\)</span> = operating cash flow in year <span class="math inline">\(t\)</span> = <span class="math inline">\(Sales_t \times (\text{OpMargin}_t - \text{Royalties}_t)\)</span>. The margin is a time-varying curve (see <em>Operating margin</em> below).</li>
+<li><span class="math inline">\(PoS_{cum}\)</span> = cumulative probability that the product reaches the market from its current phase (product of transitions, see <em>Probability of success</em> below).</li>
+<li><span class="math inline">\(r\)</span> = discount rate (biotech WACC), mid-year convention.</li>
+<li><span class="math inline">\(DevCost_{phase_t}\)</span> = clinical development cost of the phase that is spent in year <span class="math inline">\(t\)</span>.</li>
+<li><span class="math inline">\(w(phase_t)\)</span> = cumulative probability of <em>reaching</em> that phase (from the current phase). The current phase has <span class="math inline">\(w = 1\)</span> (certain); next phase has $w = $ one transition; the one after has $w = $ two transitions in product; etc.</li>
+<li><span class="math inline">\(T_0\)</span> = launch year, <span class="math inline">\(T_{end}\)</span> = end of exclusivity window.</li>
 </ul>
 </section>
 <section id="probability-of-success-pos" class="level2">
 <h2 class="anchored" data-anchor-id="probability-of-success-pos">Probability of success (PoS)</h2>
-<p>Phase to market probabilities are sourced from published academic benchmarks (Wong, Siah &amp; Lo 2019, MIT; BIO Industry Analysis reports). Indicative values used as starting points:</p>
+<p>Phase-to-phase transition probabilities are from BIO/Informa/QLS, <em>Clinical Development Success Rates and Contributing Factors 2011-2020</em> (2021), all-indication figures. These are the single-source replacement for the mixed set of PoS numbers used in v1.0, which combined BIO’s filing-to-approval figure with a Biomedtracker Phase III-to-approval figure under a WSL label. Wong, Siah &amp; Lo (2019) subsequently published a <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6409416/">corrigendum</a> on the Phase 2→3 and Phase 3→approval columns of its Table 1; we therefore use BIO 2021 as the single reference.</p>
+<p><strong>Phase-to-phase transitions (BIO 2021):</strong></p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
-<th>Current phase</th>
-<th>PoS to market</th>
+<th style="text-align: left;">transition</th>
+<th style="text-align: left;">probability</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Phase I</td>
-<td>~10 %</td>
+<td style="text-align: left;">Phase 1 → Phase 2</td>
+<td style="text-align: left;">52.0 %</td>
 </tr>
 <tr class="even">
-<td>Phase II</td>
-<td>~15–20 %</td>
+<td style="text-align: left;">Phase 2 → Phase 3</td>
+<td style="text-align: left;">28.9 %</td>
 </tr>
 <tr class="odd">
-<td>Phase III</td>
-<td>~50–60 %</td>
+<td style="text-align: left;">Phase 3 → NDA/BLA</td>
+<td style="text-align: left;">57.8 %</td>
 </tr>
 <tr class="even">
-<td>Filed</td>
-<td>~85–90 %</td>
-</tr>
-<tr class="odd">
-<td>Marketed / approved</td>
-<td>100 %</td>
+<td style="text-align: left;">NDA/BLA → approval</td>
+<td style="text-align: left;">90.6 %</td>
 </tr>
 </tbody>
 </table>
-<p>Exact values used in the model are stored in <code>src/assumptions.py</code> with source citations for each product.</p>
+<p><strong>Cumulative PoS to approval (derived):</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">from phase</th>
+<th style="text-align: left;">cumulative PoS to approval</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Phase 1</td>
+<td style="text-align: left;">7.9 %</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Phase 2</td>
+<td style="text-align: left;">15.1 %</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Phase 3</td>
+<td style="text-align: left;">52.4 %</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Filed</td>
+<td style="text-align: left;">90.6 %</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Marketed</td>
+<td style="text-align: left;">100.0 %</td>
+</tr>
+</tbody>
+</table>
+<p>The cumulative LOA from Phase 1 is 7.9 % per BIO’s published figure and matches our product-of-transitions. Phase-specific overrides can be applied per product in <code>src/assumptions.py</code>; the base case uses the cumulative benchmarks above.</p>
 </section>
 <section id="revenue-curve" class="level2">
 <h2 class="anchored" data-anchor-id="revenue-curve">Revenue curve</h2>
 <p>For each product we model annual sales as:</p>
 <ol type="1">
-<li><strong>Ramp phase</strong>, linear (or S curve) buildup over ~5–7 years from launch to peak.</li>
+<li><strong>Ramp phase</strong>, linear buildup from the latest anchored sales figure (historical or guidance) to peak. Ramp durations are set per product in <code>src/assumptions.py</code> (QUVIVIQ 8 years from 2022 launch; lucerastat 4 years; early-stage 5-6 years). We do not use a universal “5-7 years” assumption; each ramp is justified in the product entry.</li>
 <li><strong>Peak phase</strong>, plateau at the estimated peak sales figure.</li>
-<li><strong>Patent cliff</strong>, sharp decline (typically –80 % to –90 % over 1–2 years) at loss of exclusivity.</li>
+<li><strong>Patent cliff</strong>, −85 % in the year after expiry with 30 % annual decay thereafter (orphan assets decay slower; broadly consistent).</li>
 </ol>
-<p>Peak sales are constructed bottom up where possible:</p>
-<p><span class="math display">\[\text{Peak Sales} = \text{Target patient population} \times \text{Penetration rate} \times \text{Annual price}\]</span></p>
-<p>Every number is sourced (annual report, published analyst estimates, epidemiology literature) and the source is recorded next to the value in <code>assumptions.py</code>.</p>
+<p>Peak sales for marketed and Phase 3 assets are triangulated from company guidance, published comparables, and epidemiology data; for Phase 2 assets they are explicit <code>PLACEHOLDER</code> values that will be reanchored after each programme’s proof-of-concept readout. Each peak sales value is documented in <code>src/assumptions.py</code> with its source and status.</p>
 </section>
 <section id="operating-margin-and-cash-flow" class="level2">
 <h2 class="anchored" data-anchor-id="operating-margin-and-cash-flow">Operating margin and cash flow</h2>
-<p>Sales are converted to operating cash flow using an EBIT margin appropriate for a specialty biotech at maturity (indicative range: 25–40 %). The margin is sourced/hypothesised and disclosed. Working capital and capex are treated as netting to zero over the forecast horizon (standard rNPV simplification, discussed in Limitations).</p>
+<p>Sales are converted to operating cash flow via a <em>time-varying</em> operating margin, parameterised per product by <code>op_margin_at_launch</code> and <code>op_margin_at_peak</code>, interpolated linearly between the two anchor years. For QUVIVIQ in particular the margin ramps from 5 % in 2026 (Idorsia’s commercial-profitability target year) to 30 % at peak in 2030, rather than a flat 30 % from 2026.</p>
+<p>Working capital and capex are treated as netting to zero over the forecast horizon (standard rNPV simplification, discussed in Limitations). Taxes are proxied by the operating margin itself.</p>
 </section>
 <section id="development-costs" class="level2">
 <h2 class="anchored" data-anchor-id="development-costs">Development costs</h2>
-<p>For products not yet on the market, the remaining clinical development cost (Phase III trials, filing) is subtracted as an unweighted expense in the years before launch (i.e.&nbsp;spent regardless of approval outcome). Indicative per phase costs are sourced from published benchmarks.</p>
+<p>Development costs are phase-weighted:</p>
+<ul>
+<li><strong>Current phase</strong>: remaining cost is <strong>certain</strong> (weight = 1). The amount is set per product in <code>remaining_current_phase_cost_chf_m</code> using an Idorsia-scale historical burn (~CHF 24 M/year for Phase 2 PoC; see <code>TODO_DATA.md</code> for status).</li>
+<li><strong>Each subsequent phase</strong>: cost is weighted by the <strong>cumulative</strong> probability of reaching that phase (product of BIO 2021 transitions). Future-phase spending does not start until after the current-phase readout.</li>
+<li>Industry-benchmark unweighted phase costs (DiMasi 2016, converted USD 2013 → CHF 2026 by US CPI 1.40 × USD/CHF 0.90 ≈ 1.26) are the default <code>DEV_COSTS_BY_PHASE_CHF_M</code>. Products may override specific phases (e.g.&nbsp;lucerastat’s orphan Fabry Phase 3 at CHF 100 M vs the DiMasi all-indication CHF 322 M average).</li>
+</ul>
+<p>This replaces the v1.0 convention, which treated all remaining dev costs as certain regardless of future-phase advancement probability (and so penalised Phase 1/2 assets by the full future dev spend rather than its expected value).</p>
 </section>
 <section id="discount-rate" class="level2">
 <h2 class="anchored" data-anchor-id="discount-rate">Discount rate</h2>
-<p>A biotech appropriate WACC in the 11–13 % range is used. The base case is set in <code>assumptions.py</code> and the value is stress tested in the sensitivity section.</p>
+<p>A biotech-appropriate WACC in the 11-13 % range is used. The base case is 12 %; sensitivities stress at 10 % and 14 %.</p>
+</section>
+<section id="central-costs-unallocated-ga-upstream-research" class="level2">
+<h2 class="anchored" data-anchor-id="central-costs-unallocated-ga-upstream-research">Central costs (unallocated G&amp;A + upstream research)</h2>
+<p>In addition to product-level dev costs, the parent carries unallocated central costs that are not captured in <code>op_margin</code>:</p>
+<ul>
+<li><strong>G&amp;A</strong> (holding, corporate, finance): CHF 71 M in 2025 non-GAAP (AR 2025, SG&amp;A breakdown).</li>
+<li><strong>Upstream research</strong> (preclinical, platform, non-program-specific): placeholder at CHF 25 M/year (~27 % of total non-GAAP R&amp;D), listed in <code>TODO_DATA.md</code>.</li>
+</ul>
+<p>Trajectory: decline 10 %/year to a floor of CHF 50 M by year ~8, plateau to 2040, then scale with the model’s PoS-weighted revenue (floor CHF 10 M) through 2050. The present value is deducted in the equity-value bridge.</p>
 </section>
 <section id="modelling-conventions" class="level2">
 <h2 class="anchored" data-anchor-id="modelling-conventions">Modelling conventions</h2>
-<p>Two non obvious choices sit under the rNPV that would produce materially different numbers if flipped. Both are documented here for transparency.</p>
+<p>Two non-obvious choices sit under the rNPV that would produce materially different numbers if flipped. Both are documented here for transparency.</p>
 <section id="discounting-convention-mid-year" class="level3">
-<h3 class="anchored" data-anchor-id="discounting-convention-mid-year">Discounting convention: mid year</h3>
-<p>Cash flows in year <span class="math inline">\(t\)</span> are discounted by <span class="math inline">\((1+r)^{-(t - t_0 + 0.5)}\)</span>, the <strong>mid year convention</strong>. This is the textbook rNPV default: cash is assumed to flow evenly through the year, so the current year cash flow gets half a year of discounting. Two alternatives exist:</p>
+<h3 class="anchored" data-anchor-id="discounting-convention-mid-year">Discounting convention: mid-year</h3>
+<p>Cash flows in year <span class="math inline">\(t\)</span> are discounted by <span class="math inline">\((1+r)^{-(t - t_0 + 0.5)}\)</span>, the <strong>mid-year convention</strong>. This is the textbook rNPV default: cash is assumed to flow evenly through the year.</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
+<col style="width: 19%">
+<col style="width: 18%">
+<col style="width: 18%">
+<col style="width: 22%">
+<col style="width: 20%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Convention</th>
-<th>Formula</th>
-<th>Effect on base case (CHF/share)</th>
+<th style="text-align: left;">convention</th>
+<th style="text-align: right;">equity value (CHF M)</th>
+<th style="text-align: right;">value per share (CHF)</th>
+<th style="text-align: right;">Δ equity value vs mid year</th>
+<th style="text-align: right;">Δ per share vs mid year</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Start of year</td>
-<td><span class="math inline">\((1+r)^{-(t - t_0)}\)</span></td>
-<td>~ +6 % higher (no discount on t₀ CF)</td>
+<td style="text-align: left;">Start of year</td>
+<td style="text-align: right;">-609</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">+1</td>
+<td style="text-align: right;">0</td>
 </tr>
 <tr class="even">
-<td><strong>Mid year (used here)</strong></td>
-<td><span class="math inline">\((1+r)^{-(t - t_0 + 0.5)}\)</span></td>
-<td>base</td>
+<td style="text-align: left;"><strong>Mid year (used here)</strong></td>
+<td style="text-align: right;">-611</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">+0</td>
+<td style="text-align: right;">0</td>
 </tr>
 <tr class="odd">
-<td>End of year</td>
-<td><span class="math inline">\((1+r)^{-(t - t_0 + 1)}\)</span></td>
-<td>~ −6 % lower (full year of discount on t₀ CF)</td>
+<td style="text-align: left;">End of year</td>
+<td style="text-align: right;">-612</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">-1</td>
+<td style="text-align: right;">0</td>
 </tr>
 </tbody>
 </table>
-<p>The convention is exposed as a keyword argument on <code>discount_factors()</code> in <code>rnpv.py</code> so it can be flipped in one line for stress testing.</p>
+<p>The convention flips both the asset side (product rNPVs) and the net-cash side; the per-share effect is amplified by the net-debt position.</p>
 </section>
 <section id="quviviq-ramp-trajectory-8-years-to-peak" class="level3">
 <h3 class="anchored" data-anchor-id="quviviq-ramp-trajectory-8-years-to-peak">QUVIVIQ ramp trajectory: 8 years to peak</h3>
-<p>The model interpolates linearly from the last anchored sales figure (CHF 200 M guidance for 2026) to the peak of CHF 600 M by 2030, a 4-year interpolation from the anchor, or an 8-year ramp counted from the 2022 launch year. This produces the sequence 200 → 300 → 400 → 500 → 600 (2026-2030), consistent with the ~+50 % YoY growth Idorsia has been delivering and guides for 2026.</p>
-<p>An earlier draft used <code>ramp_years = 6</code> (peak in 2028), which would imply 200 → 400 → 600 in two years, 100 % then 50 % YoY growth. Defensible only under an aggressive combined US descheduling + pediatric approval + European reimbursement bull case. The current setting is deliberately more conservative and can be retightened via the tornado / heatmap.</p>
+<p>The model interpolates linearly from the last anchored sales figure (CHF 200 M guidance for 2026) to the peak of CHF 600 M by 2030 — an 8-year ramp counted from the 2022 launch year. This produces the sequence 200 → 300 → 400 → 500 → 600 (2026-2030), consistent with the ~+50 % YoY growth Idorsia has been delivering and guides for 2026.</p>
+<p>An earlier draft used a 6-year ramp (peak in 2028), implying 200 → 400 → 600 in two years. Defensible only under an aggressive combined US descheduling + pediatric approval + European reimbursement bull case.</p>
 </section>
 <section id="what-is-not-modelled" class="level3">
 <h3 class="anchored" data-anchor-id="what-is-not-modelled">What is NOT modelled</h3>
 <p>Consistent with the “order of magnitude” tool ambition:</p>
 <ul>
-<li><strong>Taxes</strong>, subsumed into the operating margin. A separate effective tax layer would trim EV by ~10–20 %.</li>
+<li><strong>Taxes</strong>, subsumed into the operating margin. A separate effective tax layer would trim equity value by ~10-20 %.</li>
 <li><strong>Working capital and capex</strong>, netted to zero over the forecast horizon.</li>
 <li><strong>Product outcome correlation</strong>, treated as independent (no portfolio effect).</li>
-<li><strong>J&amp;J convertible optionality</strong>, the CHF 335 M convertible loan is treated as pure debt at its ~CHF 11.55 strike. Rerating toward the strike would introduce dilution.</li>
-<li><strong>SARL cash flow priorities</strong>, the ring fenced debt at Idorsia Investments SARL is excluded from the parent bridge in the base case; the residual reversion to the parent is set to zero and stressed only in scenarios.</li>
+<li><strong>J&amp;J convertible optionality</strong>, the CHF 335 M convertible loan is treated as pure debt. An <code>if-converted</code> test applies in scenarios where V/share exceeds the CHF ~11.5 strike (adding 29.1 M shares, removing CHF 335 M of debt). See <em>Scenarios</em> in <a href="./results.html">Results</a>.</li>
+<li><strong>SARL cash flow priorities</strong>, the ring-fenced debt at Idorsia Investments SARL is excluded from the parent bridge in the base case; the residual reversion to the parent is set to zero and stressed only in scenarios.</li>
+<li><strong>Central costs modelled as a simple decline-then-floor-then-proportional curve</strong>, without a line-by-line projection of G&amp;A or upstream research.</li>
+<li><strong>Future value of unborn pipeline candidates</strong>, the upstream research line is deducted but no value is attributed to the compounds that upstream research will generate. This biases the model downward.</li>
+<li><strong>QUVIVIQ post-launch R&amp;D</strong>, pediatric programme and label extensions are in neither <code>dev_cost_curve</code> (prelaunch only) nor <code>central_costs</code> (non-program-specific). See Limitations.</li>
 </ul>
 </section>
 </section>
 <section id="aggregation" class="level2">
 <h2 class="anchored" data-anchor-id="aggregation">Aggregation</h2>
-<p><span class="math display">\[EV = \sum_{i \in products} rNPV_i + \text{NetCash}\]</span></p>
-<p><span class="math display">\[\text{Value per share} = \frac{EV}{\text{Shares outstanding}}\]</span></p>
-<p>Net cash and shares outstanding are taken from the most recent Idorsia balance sheet and share count disclosures.</p>
+<p><span class="math display">\[EquityValue_{parent} = \sum_{i \in products} rNPV_i + NetCash_{parent} + SARL_{residual} - PV(CentralCosts)\]</span></p>
+<p><span class="math display">\[\text{Value per share} = \max\!\left(0, \; \frac{EquityValue_{parent}}{\text{Shares outstanding}}\right)\]</span></p>
+<p>The <code>max(0, ·)</code> floor reflects limited liability: shareholders cannot owe money to the company. The raw (potentially negative) per-share value is kept as <code>value_per_share_raw_chf</code> for display in notes.</p>
 </section>
 <section id="sensitivity" class="level2">
 <h2 class="anchored" data-anchor-id="sensitivity">Sensitivity</h2>
-<p>The model is stress tested along the axes that dominate rNPV in practice:</p>
+<p>The model is stress-tested along the axes that dominate rNPV in practice:</p>
 <ul>
 <li>Discount rate (10 % → 14 %)</li>
 <li>PoS of the lead clinical candidate (±20 %)</li>
 <li>Peak sales of the top revenue driver (±30 %)</li>
-<li>A tornado chart ranks the sensitivities.</li>
+<li>SARL residual (0 → CHF 400 M)</li>
+<li>QUVIVIQ operating margin (±5 pp at peak)</li>
+<li>Central costs upstream placeholder (±50 %)</li>
 </ul>
+<p>A tornado chart ranks the sensitivities.</p>
 </section>
 <section id="data-sources" class="level2">
 <h2 class="anchored" data-anchor-id="data-sources">Data sources</h2>
@@ -538,28 +598,32 @@ window.Quarto = {
 </thead>
 <tbody>
 <tr class="odd">
-<td>Share price, market cap, shares outstanding</td>
-<td><code>yfinance</code> (IDIA.SW), SIX, Idorsia IR</td>
+<td>Share price (IDIA.SW)</td>
+<td><code>scripts/update_price.py</code> writes <code>data/market.json</code> from yfinance</td>
 </tr>
 <tr class="even">
-<td>Cash, debt, burn rate</td>
-<td>Idorsia annual report, quarterly releases</td>
+<td>Shares outstanding</td>
+<td>Idorsia Q1 2026 Financial Report, 254.0 M issued at 31 Mar 2026</td>
 </tr>
 <tr class="odd">
-<td>Pipeline composition, phase</td>
-<td>Idorsia IR pipeline page, trial press releases</td>
+<td>Cash, debt</td>
+<td>Idorsia AR 2025 “Indebtedness” table (p.145); Pharmakon loan from 9/26 Jun 2026 media releases</td>
 </tr>
 <tr class="even">
-<td>Regulatory status</td>
-<td>FDA / EMA / Swissmedic press releases</td>
+<td>Pipeline composition, phase, readouts</td>
+<td>Idorsia June 2026 investor presentation p.29</td>
 </tr>
 <tr class="odd">
-<td>PoS benchmarks</td>
-<td>Wong, Siah &amp; Lo (2019); BIO Industry Analysis</td>
+<td>PoS transitions</td>
+<td>BIO/Informa/QLS, “Clinical Development Success Rates 2011-2020” (2021)</td>
 </tr>
 <tr class="even">
-<td>Prices, market size</td>
-<td>Published analyst notes, specialty press, epidemiology</td>
+<td>Development cost benchmarks</td>
+<td>DiMasi, Grabowski, Hansen (2016), <em>J Health Econ</em> 47:20-33</td>
+</tr>
+<tr class="odd">
+<td>G&amp;A line</td>
+<td>Idorsia AR 2025 non-GAAP SG&amp;A breakdown</td>
 </tr>
 </tbody>
 </table>
@@ -567,11 +631,13 @@ window.Quarto = {
 <section id="limitations" class="level2">
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
 <ul>
-<li>rNPV is an order of magnitude tool, not a precise valuation.</li>
-<li>Assumes independence of product level outcomes (no portfolio correlation modelling).</li>
-<li>Working capital and capex are netted to zero.</li>
-<li>No explicit tax treatment beyond an EBIT margin proxy.</li>
-<li>Sensitive to peak sales assumptions, which are inherently uncertain.</li>
+<li>rNPV is an order-of-magnitude tool, not a precise valuation.</li>
+<li>Product outcomes are assumed independent (no portfolio correlation).</li>
+<li>Working capital and capex netted to zero.</li>
+<li>No explicit tax treatment beyond the operating margin.</li>
+<li>Sensitive to peak sales assumptions, especially for Phase 2 placeholders.</li>
+<li>Upstream research is deducted without attributing value to the compounds it generates — a downward bias.</li>
+<li>QUVIVIQ post-launch R&amp;D is not modelled.</li>
 </ul>
 
 
