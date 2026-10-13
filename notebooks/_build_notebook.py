@@ -42,8 +42,9 @@ md("""
 *A risk adjusted NPV of Idorsia's pipeline, product by product.*
 
 This notebook is the reproducible workbook behind the site's
-[Results](../results.qmd) page. Every number is traceable to a public
-source in [`src/assumptions.py`](../src/assumptions.py). The narrative
+[Results](../results.html) page. Every input is either sourced to a
+public document or explicitly flagged as an assumption in
+[`src/assumptions.py`](https://github.com/DimitriPr/rnpv-idorsia-valuation/blob/main/src/assumptions.py). The narrative
 version of the conclusions lives in `results.qmd`; this notebook is the
 audit trail.
 
