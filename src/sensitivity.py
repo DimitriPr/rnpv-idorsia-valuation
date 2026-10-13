@@ -454,13 +454,29 @@ def scenarios() -> pd.DataFrame:
     ]
     data = []
     for name, ov, r, sarl_on, sarl_val in rows:
-        v = _value_per_share(
-            product_overrides=ov,
-            discount_rate=r,
-            include_sarl_residual=sarl_on,
-            sarl_residual_chf_m=sarl_val,
-        )
-        data.append({"scenario": name, "value_per_share": v})
+        products = A.PRODUCTS if not ov else _with_overrides(ov)
+        original_sarl = A.SARL_RESIDUAL_VALUE_CHF_M
+        if sarl_val is not None:
+            A.SARL_RESIDUAL_VALUE_CHF_M = sarl_val
+        try:
+            bridge = rnpv.value_per_share(
+                products=products,
+                discount_rate=r,
+                include_sarl_residual=sarl_on,
+            )
+            # Apply the if-converted test: J&J converts iff V/share > strike.
+            converted = rnpv.apply_if_converted(bridge)
+        finally:
+            A.SARL_RESIDUAL_VALUE_CHF_M = original_sarl
+        data.append({
+            "scenario": name,
+            "value_per_share": converted.get(
+                "value_per_share_post_conversion_chf",
+                bridge["value_per_share_chf"],
+            ),
+            "value_per_share_pre_conversion": bridge["value_per_share_chf"],
+            "jj_converted": converted.get("jj_converted", False),
+        })
     return pd.DataFrame(data)
 
 
@@ -474,12 +490,20 @@ def plot_fair_value_vs_market(out: Path = FIG_DIR / "fair_value_vs_market.png") 
                label=f"Market (CHF {A.SHARE_PRICE_CURRENT_CHF:.2f})")
     ax.set_xticks(x)
     ax.set_xticklabels(df["scenario"], color=FG, fontsize=9)
-    ax.set_ylabel("Value / share (CHF)")
+    ax.set_ylabel("Value / share (CHF, post J&J if-converted)")
     ax.set_title("Fair value scenarios vs current market price",
                  fontsize=11, fontweight="semibold", pad=14)
-    for xi, val in zip(x, df["value_per_share"]):
-        ax.text(xi, val, f"CHF {val:.2f}", ha="center", va="bottom", color=FG, fontsize=9)
+    for xi, val, converted in zip(x, df["value_per_share"], df["jj_converted"]):
+        suffix = " *" if converted else ""
+        ax.text(xi, val, f"CHF {val:.2f}{suffix}", ha="center", va="bottom", color=FG, fontsize=9)
     ax.legend(facecolor=BG_PANEL, edgecolor=MUTED, labelcolor=FG, fontsize=9, loc="upper left")
+    if df["jj_converted"].any():
+        ax.text(
+            0.98, 0.02,
+            "* J&J convertible converted (29.1 M shares added, CHF 335 M debt removed)",
+            transform=ax.transAxes, ha="right", va="bottom",
+            color=MUTED, fontsize=7, style="italic",
+        )
     fig.tight_layout()
     fig.savefig(out, facecolor=BG, dpi=180, bbox_inches="tight")
     plt.close(fig)

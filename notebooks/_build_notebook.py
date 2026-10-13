@@ -175,11 +175,14 @@ bs
 """)
 
 md("""
-The J&J convertible loan (CHF 335 M, matures June 2027) has a conversion
-strike of CHF ~11.55 / share (335 M ÷ 29 M shares), well out of the money
-at the current price of CHF ~4.35, so we treat it as pure debt in the base
-case. If IDIA rerates toward the strike this becomes an equity dilution
-event; sensitivity discussed in §7.
+The J&J convertible loan (CHF 335 M, zero coupon, matures 15 Jun 2027)
+is convertible into 29.1 M IDIA shares at a strike of CHF ~11.5 / share
+(335 M / 29.1 M), currently well out of the money. The option belongs
+to J&J, so from the IDIA equity holder's perspective it is **never an
+upside**: either J&J converts (we take 29.1 M of dilution) or J&J does
+not (and the company must repay CHF 335 M in cash on 15 Jun 2027, a
+refinancing event). The base case treats it as pure debt; scenarios
+apply an *if-converted* test that triggers when V/share > strike.
 """)
 
 # ---------------------------------------------------------------------------
@@ -407,14 +410,15 @@ md("""
 md("""
 ## 9. Verdict and limitations
 
-**Verdict.** The base case, using mid year discounting, industry standard
-PoS benchmarks and conservative peak sales estimates for the parent owned
-assets, values IDIA at CHF ~0.9 / share against a market of CHF ~4.35.
-The ~80 % apparent gap is not a claim that IDIA is overvalued by 5×, it
-is a claim that the market is pricing in three catalysts that the base
-case deliberately excludes: (1) a non trivial residual value for the SARL
-assets, (2) a QUVIVIQ trajectory north of CHF 600 M peak, and (3) implicit
-optionality on the J&J convertible conversion.
+**Verdict.** The base case, using mid year discounting, BIO 2021 PoS
+transitions, and the QUVIVIQ margin ramp 5 → 30 % 2026-2030, floors
+IDIA at CHF 0 / share (raw equity value CHF −481 M) against a market
+of CHF 4.35. The gap decomposes into **two catalysts** the base case
+excludes — (1) a non-trivial residual value for the SARL assets, (2) a
+QUVIVIQ trajectory above CHF 600 M peak — **plus one refinancing event**
+(J&J convertible, CHF 335 M, matures 15 Jun 2027). The convertible is
+not a catalyst: either dilution if the share price exceeds strike, or
+cash repayment at maturity.
 
 Depending on how much probability one assigns to those three catalysts,
 the reconciled fair value can be anywhere in the CHF 0.9 – 6.6 range.

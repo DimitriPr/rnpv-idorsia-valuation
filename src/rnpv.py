@@ -498,6 +498,66 @@ def value_per_share(
 
 
 # ---------------------------------------------------------------------------
+# J&J convertible: if-converted test
+# ---------------------------------------------------------------------------
+
+def apply_if_converted(
+    bridge: dict,
+    strike_chf: float | None = None,
+    converted_shares_m: float | None = None,
+    principal_chf_m: float | None = None,
+) -> dict:
+    """If V/share > strike, treat the J&J convertible as converted.
+
+    Modifies a bridge dict (as returned by `value_per_share`) by removing the
+    CHF 335 M principal from parent debt (so equity value goes UP by that
+    amount) and adding 29.1 M shares (so per-share goes DOWN with dilution).
+
+    The option belongs to J&J, so this is a cost to the equity holder — it
+    is never an upside. We toggle it on only when V/share exceeds strike,
+    representing J&J's rational conversion decision.
+
+    Returns a new dict with the post-conversion equity value, share count,
+    and per-share value exposed under `_post_conversion_` keys, and a
+    `jj_converted` flag indicating whether the test triggered.
+    """
+    strike = A.JJ_CONVERTIBLE_STRIKE_CHF if strike_chf is None else float(strike_chf)
+    conv_shares = (
+        A.JJ_CONVERTIBLE_SHARES_ON_CONVERSION_M if converted_shares_m is None
+        else float(converted_shares_m)
+    )
+    principal = (
+        A.JJ_CONVERTIBLE_PRINCIPAL_CHF_M if principal_chf_m is None
+        else float(principal_chf_m)
+    )
+
+    out = dict(bridge)
+    out["jj_strike_chf"] = strike
+
+    v_pre = bridge.get("value_per_share_chf", 0.0)
+    # Use the raw (pre-floor) value for the conversion trigger: J&J will
+    # convert iff the underlying asset value per share exceeds the strike,
+    # regardless of the limited-liability display floor.
+    v_raw = bridge.get("value_per_share_raw_chf", v_pre)
+    triggered = v_raw > strike
+
+    out["jj_converted"] = triggered
+    if not triggered:
+        out["value_per_share_post_conversion_chf"] = v_pre
+        return out
+
+    new_equity = bridge["equity_value_chf_m"] + principal
+    new_shares = bridge["shares_m"] + conv_shares
+    new_raw = new_equity / new_shares
+    new_floored = max(0.0, new_raw)
+    out["equity_value_post_conversion_chf_m"] = new_equity
+    out["shares_post_conversion_m"] = new_shares
+    out["value_per_share_post_conversion_raw_chf"] = new_raw
+    out["value_per_share_post_conversion_chf"] = new_floored
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Helpers for display
 # ---------------------------------------------------------------------------
 

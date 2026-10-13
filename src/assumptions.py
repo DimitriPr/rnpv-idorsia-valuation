@@ -224,10 +224,28 @@ CENTRAL_COSTS_STATUS_UPSTREAM: Status = "placeholder"
 
 
 # =============================================================================
-# 7. PRODUCTS, the pipeline
+# 7. J&J CONVERTIBLE LOAN (for if-converted test)
 # =============================================================================
-# (J&J convertible if-converted test module added in Lot 2.)
+# source: Idorsia media release 9 Jun 2026
+# https://www.idorsia.com/media/news/news-archive/media-release-details?id=2619944
+# CHF 335 M, zero coupon, matures 15 Jun 2027. Convertible into 29.1 M IDIA
+# shares at a strike of approximately CHF 11.5 / share (CHF 335 M / 29.1 M).
 #
+# The conversion option is held by J&J. From the IDIA equity-holder's view
+# this is strictly a cost: either (a) J&J converts (and we take 29.1 M of
+# dilution if V/share > strike at maturity) or (b) J&J does not convert
+# (and Idorsia must repay CHF 335 M in cash on 15 Jun 2027, a refinancing
+# event). It is NEVER an upside. The if-converted test applies in scenarios
+# where V/share exceeds the strike.
+JJ_CONVERTIBLE_PRINCIPAL_CHF_M = 335.0
+JJ_CONVERTIBLE_SHARES_ON_CONVERSION_M = 29.1
+JJ_CONVERTIBLE_STRIKE_CHF = JJ_CONVERTIBLE_PRINCIPAL_CHF_M / JJ_CONVERTIBLE_SHARES_ON_CONVERSION_M  # ~CHF 11.51
+JJ_CONVERTIBLE_MATURITY = "2027-06-15"
+
+
+# =============================================================================
+# 8. PRODUCTS, the pipeline
+# =============================================================================
 # Each entry documents: phase, PoS override (if not the BIO 2021 cumulative),
 # launch year, readout_year (when the current-phase result gates next-phase
 # spending), peak sales (CHF M), ramp years, patent expiry, operating margin
@@ -408,7 +426,7 @@ PRODUCTS: dict[str, dict] = {
 
 
 # =============================================================================
-# 8. SARL reversion, option-like residual claim (base case = 0)
+# 9. SARL reversion, option-like residual claim (base case = 0)
 # =============================================================================
 # source: June 2026 presentation p.46, "Rights return to Idorsia once debt
 # and interest are repaid delivering long-term value". Deep OTM option.
@@ -416,7 +434,7 @@ SARL_RESIDUAL_VALUE_CHF_M = 0.0
 
 
 # =============================================================================
-# 9. Convenience: net cash bridge for the parent equity holder
+# 10. Convenience: net cash bridge for the parent equity holder
 # =============================================================================
 def parent_net_cash_chf_m() -> float:
     """Net cash attributable to parent equity holders (CHF M).

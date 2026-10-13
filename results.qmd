@@ -6,17 +6,21 @@ subtitle: "Per share fair value and investment note, base case CHF 0.89 vs marke
 ## TL;DR
 
 ::: {.callout-important appearance="minimal"}
-**Base case fair value: CHF 0.89 / share.**
-Current market: CHF 4.35 (mid June 2026). Apparent downside: −80 %.
+**Base case fair value: CHF 0.00 / share (floored).**
+Equity value −481 M pre-floor; current market CHF 4.35 (mid June 2026).
 
-**But the number to remember is not −80 %.** The 80 % apparent gap is
-what the market is paying for three catalysts the base case
-*deliberately* excludes: (1) a residual claim on the ring fenced SARL
-assets (aprocitentan / selatogrel / cenerimod), (2) a QUVIVIQ blockbuster
-trajectory north of CHF 600 M peak, (3) equity optionality on the J&J
-convertible. The reconciled fair value therefore sits anywhere in
-**CHF 0.9 – 6.6 per share** depending on how one weights those catalysts.
-A "Base + modest SARL residual (CHF 400 M)" reads at CHF ~2.5 / share.
+**But the base case is a conservative lower bound, not a price target.**
+The gap to the market decomposes into **two catalysts** the base case
+excludes — (1) a residual claim on the ring-fenced SARL assets
+(aprocitentan / selatogrel / cenerimod), (2) a QUVIVIQ blockbuster
+trajectory above CHF 600 M peak — **plus one refinancing event** the
+base case already treats as pure debt: the J&J convertible loan
+(CHF 335 M, matures 15 Jun 2027, convertible into 29.1 M shares at
+CHF ~11.5). The convertible is **never an upside**: either dilution if
+IDIA rerates above the strike, or a cash repayment at maturity.
+
+Reconciled fair value across scenarios will be updated with Lot 4;
+preliminary numbers are shown in the scenario table below.
 :::
 
 **The four headline numbers**

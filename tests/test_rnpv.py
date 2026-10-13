@@ -158,6 +158,46 @@ def test_value_per_share_is_floored_at_zero():
     assert "value_per_share_raw_chf" in b
 
 
+# ---------------------------------------------------------------------------
+# J&J if-converted test
+# ---------------------------------------------------------------------------
+
+def test_if_converted_does_not_trigger_below_strike():
+    """When raw V/share < strike, the convertible stays debt-only."""
+    bridge = {
+        "equity_value_chf_m": 100.0,
+        "shares_m": 254.0,
+        "value_per_share_chf": 0.39,
+        "value_per_share_raw_chf": 0.39,
+    }
+    out = rnpv.apply_if_converted(bridge)
+    assert out["jj_converted"] is False
+    assert out["value_per_share_post_conversion_chf"] == pytest.approx(0.39)
+
+
+def test_if_converted_triggers_above_strike_and_dilutes():
+    """When raw V/share > strike, +335 M equity, +29.1 M shares."""
+    bridge = {
+        "equity_value_chf_m": 5000.0,         # => raw V/share = 5000 / 254 = 19.69 (> 11.5 strike)
+        "shares_m": 254.0,
+        "value_per_share_chf": 19.69,
+        "value_per_share_raw_chf": 19.69,
+    }
+    out = rnpv.apply_if_converted(bridge)
+    assert out["jj_converted"] is True
+    expected_equity = 5000.0 + A.JJ_CONVERTIBLE_PRINCIPAL_CHF_M
+    expected_shares = 254.0 + A.JJ_CONVERTIBLE_SHARES_ON_CONVERSION_M
+    assert out["equity_value_post_conversion_chf_m"] == pytest.approx(expected_equity)
+    assert out["shares_post_conversion_m"] == pytest.approx(expected_shares)
+    assert out["value_per_share_post_conversion_chf"] == pytest.approx(
+        expected_equity / expected_shares
+    )
+
+
+def test_if_converted_strike_equals_335_over_291():
+    assert A.JJ_CONVERTIBLE_STRIKE_CHF == pytest.approx(335.0 / 29.1, abs=1e-6)
+
+
 def test_value_per_share_floor_tracks_floored_flag():
     # Build a bridge dict with an injected large central cost burden.
     import src.rnpv as R
