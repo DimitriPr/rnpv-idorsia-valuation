@@ -39,6 +39,7 @@ website:
 
 format:
   html:
+    from: markdown-smart
     theme:
       light: [cosmo, styles.css]
       dark: [darkly, styles.css]

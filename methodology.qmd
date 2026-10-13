@@ -203,5 +203,5 @@ All inputs are public. No Bloomberg / paid analyst data is republished.
 - Working capital and capex netted to zero.
 - No explicit tax treatment beyond the operating margin.
 - Sensitive to peak sales assumptions, especially for Phase 2 placeholders.
-- Upstream research is deducted without attributing value to the compounds it generates - a downward bias.
+- Upstream research is deducted without attributing value to the compounds it generates, a downward bias.
 - QUVIVIQ post-launch R&D is not modelled.

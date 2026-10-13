@@ -38,7 +38,7 @@ GAP_COVERED_SARL = rnpv.gap_covered_pct(BASE_SARL, BASE, MARKET)
 **Base case fair value: CHF `{python} f"{BASE:.2f}"` / share (floored at zero).**
 Equity value `{python} f"CHF {BRIDGE['equity_value_chf_m']:+,.0f} M"` pre-floor; current market **CHF `{python} f"{MARKET:.2f}"`** (IDIA.SW close `{python} MARKET_AS_OF`). Valuation date: `{python} A.VALUATION_DATE`.
 
-**The base case is a conservative lower bound, not a price target.** The gap to the market decomposes into **two catalysts** the base case excludes - (1) a residual claim on the ring-fenced SARL assets (aprocitentan / selatogrel / cenerimod), (2) a QUVIVIQ blockbuster trajectory above the base-case peak - **plus one refinancing event** the base case already treats as pure debt: the J&J convertible loan (CHF `{python} f"{A.JJ_CONVERTIBLE_PRINCIPAL_CHF_M:.0f}"` M, matures 15 Jun 2027, convertible into `{python} f"{A.JJ_CONVERTIBLE_SHARES_ON_CONVERSION_M:.1f}"` M shares at CHF `{python} f"{A.JJ_CONVERTIBLE_STRIKE_CHF:.2f}"`). The convertible is **never an upside**: either dilution if IDIA rerates above the strike, or a cash repayment at maturity.
+**The base case is a conservative lower bound, not a price target.** The gap to the market decomposes into **two catalysts** the base case excludes: (1) a residual claim on the ring-fenced SARL assets (aprocitentan / selatogrel / cenerimod), and (2) a QUVIVIQ blockbuster trajectory above the base-case peak. On top of that sits **one refinancing event** the base case already treats as pure debt: the J&J convertible loan (CHF `{python} f"{A.JJ_CONVERTIBLE_PRINCIPAL_CHF_M:.0f}"` M, matures 15 Jun 2027, convertible into `{python} f"{A.JJ_CONVERTIBLE_SHARES_ON_CONVERSION_M:.1f}"` M shares at CHF `{python} f"{A.JJ_CONVERTIBLE_STRIKE_CHF:.2f}"`). The convertible is **never an upside**: either dilution if IDIA rerates above the strike, or a cash repayment at maturity.
 
 **Reconciled fair-value range across scenarios: CHF `{python} f"{RANGE_LO:.2f}"` - `{python} f"{RANGE_HI:.2f}"` / share** (post-floor, post-if-converted). This is the single range used across all pages of this note.
 :::
@@ -128,7 +128,7 @@ df.columns = ["Input", "Base case", "Status", "Source"]
 print(df.to_markdown(index=False))
 ```
 
-Peak sales for QUVIVIQ and lucerastat are **triangulated against public comparables and company disclosure**, not constructed from a bottom-up patient × penetration × price breakdown - Idorsia does not publish the inputs for that calculation, so we use the comparables approach and document each anchor in the product entry.
+Peak sales for QUVIVIQ and lucerastat are **triangulated against public comparables and company disclosure**, not constructed from a bottom-up patient x penetration x price breakdown. Idorsia does not publish the inputs for that calculation, so we use the comparables approach and document each anchor in the product entry.
 
 ## What the valuation rides on
 

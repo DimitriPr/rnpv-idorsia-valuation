@@ -302,7 +302,7 @@ Notes on shape choices:
   (2024->2025), +49 % guided (2025->2026) is already *decelerating*; the
   implied 31.6 % CAGR continues that deceleration into 2026-2030.
   An earlier draft used a 6-year ramp (peak 2028) which implied 100 % +
-  50 % YoY - defensible only on an aggressive combined bull case.
+  50 % YoY, defensible only on an aggressive combined bull case.
 - Lucerastat starts in 2031 (post-2029 filing target) with a 4-year ramp,
   consistent with orphan drug launch dynamics.
 - Patent cliffs use a -85 % drop the year after expiry, decaying 30 %/yr
@@ -448,11 +448,11 @@ transitions, Pharmakon-updated parent debt, and the QUVIVIQ margin ramp
 5 -> 30 % 2026-2030, floors IDIA at CHF 0 / share (raw equity value
 CHF -611 M) against the latest IDIA.SW close (see market.json). The
 gap decomposes into **two catalysts** the base case
-excludes - (1) a non-trivial residual value for the SARL assets, (2) a
-QUVIVIQ trajectory above CHF 600 M peak - **plus one refinancing event**
-(J&J convertible, CHF 335 M, matures 15 Jun 2027). The convertible is
-not a catalyst: either dilution if the share price exceeds strike, or
-cash repayment at maturity.
+excludes: (1) a non-trivial residual value for the SARL assets, and
+(2) a QUVIVIQ trajectory above the CHF 600 M peak. On top of that sits
+**one refinancing event** (J&J convertible, CHF 335 M, matures 15 Jun
+2027). The convertible is not a catalyst: either dilution if the share
+price exceeds strike, or cash repayment at maturity.
 
 Depending on how much probability one assigns to those three catalysts,
 the reconciled fair value can be anywhere in the CHF 0.9 - 6.6 range.
