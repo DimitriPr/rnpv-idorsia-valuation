@@ -35,12 +35,12 @@ GAP_COVERED_SARL = rnpv.gap_covered_pct(BASE_SARL, BASE, MARKET)
 ## TL;DR
 
 ::: {.callout-important appearance="minimal"}
-**Base case fair value: CHF `{python} f"{BASE:.2f}"` / share (floored at zero).**
-Equity value `{python} f"CHF {BRIDGE['equity_value_chf_m']:+,.0f} M"` pre-floor; current market **CHF `{python} f"{MARKET:.2f}"`** (IDIA.SW close `{python} MARKET_AS_OF`). Valuation date: `{python} A.VALUATION_DATE`.
+**Base case fair value: CHF `{python} f"{BASE:.2f}"` / share (raw and floored, model prints positive).**
+Equity value `{python} f"CHF {BRIDGE['equity_value_chf_m']:+,.0f} M"`; current market **CHF `{python} f"{MARKET:.2f}"`** (IDIA.SW close `{python} MARKET_AS_OF`). Valuation date: `{python} f"{A.VALUATION_DATE}"` (mid-year, 30 Jun 2026 balance sheet).
 
-**The base case is a conservative lower bound, not a price target.** The gap to the market decomposes into **two catalysts** the base case excludes: (1) a residual claim on the ring-fenced SARL assets (aprocitentan / selatogrel / cenerimod), and (2) a QUVIVIQ blockbuster trajectory above the base-case peak. On top of that sits **one refinancing event** the base case already treats as pure debt: the J&J convertible loan (CHF `{python} f"{A.JJ_CONVERTIBLE_PRINCIPAL_CHF_M:.0f}"` M, matures 15 Jun 2027, convertible into `{python} f"{A.JJ_CONVERTIBLE_SHARES_ON_CONVERSION_M:.1f}"` M shares at CHF `{python} f"{A.JJ_CONVERTIBLE_STRIKE_CHF:.2f}"`). The convertible is **never an upside**: either dilution if IDIA rerates above the strike, or a cash repayment at maturity.
+**The gap to the market decomposes into two upside catalysts the base case excludes**: (1) a residual claim on the ring-fenced SARL assets (aprocitentan / selatogrel / cenerimod) that reverts to the parent once the SARL notes are repaid, and (2) a QUVIVIQ trajectory above the CHF `{python} f"{A.PRODUCTS['quviviq']['peak_sales_chf_m']:.0f}"` M base-case peak. The J&J convertible loan (CHF `{python} f"{A.JJ_CONVERTIBLE_PRINCIPAL_REMAINING_CHF_M:.0f}"` M remaining, matures 15 Jun 2027) is **not** an upside: the Pharmakon term loan covenant (H1 Report p.44) forbids cash repayment of a convertible loan, so the remaining principal is treated as a deterministic share issuance of `{python} f"{A.SHARES_JJ_CONVERSION_M:.1f}"` M shares at CHF `{python} f"{A.JJ_CONVERTIBLE_STRIKE_CHF:.2f}"` on maturity. Those shares are already in the valuation denominator (`{python} f"{BRIDGE['shares_m']:.2f}"` M, see §*From cash to equity value*).
 
-**Reconciled fair-value range across scenarios: CHF `{python} f"{RANGE_LO:.2f}"` - `{python} f"{RANGE_HI:.2f}"` / share** (post-floor, post-if-converted). This is the single range used across all pages of this note.
+**Reconciled fair-value range across scenarios: CHF `{python} f"{RANGE_LO:.2f}"` - `{python} f"{RANGE_HI:.2f}"` / share** (post-floor, with CB 2034 if-converted applied where V/share > CHF `{python} f"{A.CB_2034_STRIKE_CHF:.2f}"`). This is the single range used across all pages of this note.
 :::
 
 **Scenario headline numbers**
@@ -52,13 +52,16 @@ rows = []
 for _, r in SCENARIOS.iterrows():
     v = r["value_per_share"]
     dist = (v / MARKET - 1.0) * 100.0
-    jj = " (J&J converted)" if r["jj_converted"] else ""
+    cb = " *" if r.get("cb2034_converted", False) else ""
     rows.append({
-        "Scenario": r["scenario"] + jj,
+        "Scenario": r["scenario"] + cb,
         "Value / share (CHF)": f"{v:.2f}",
         "Distance to market": f"{dist:+.0f} %",
     })
 print(pd.DataFrame(rows).to_markdown(index=False))
+if SCENARIOS["cb2034_converted"].any():
+    print()
+    print("\\* CB 2034 if-converted applied: V/share > CHF 6.00 triggers conversion of the CHF 16.5 M principal into 2.72 M shares.")
 ```
 
 ![](outputs/figures/fair_value_vs_market.png){fig-alt="Fair value scenarios (Bear, Base, Base+SARL, Bull) vs current market price"}
@@ -85,7 +88,7 @@ for v in BRIDGE["products"]:
 print(pd.DataFrame(rows).to_markdown(index=False))
 ```
 
-The three early-stage negative rNPVs reflect the arithmetic of applying a `{python} f"{A.cumulative_pos('phase2')*100:.1f} %"` Phase 2 cumulative to-approval probability against the phase-weighted development costs out to filing. They should be read as *"peak sales placeholder too low vs the phase-weighted dev spend"*, not as *"the programme should be discontinued"*. Phase 2 proof-of-concept readouts (CCR6 Q4 2026, CXCR3 2027, CXCR7 Q2 2028) will reanchor those figures materially in either direction.
+The three early-stage negative rNPVs reflect the arithmetic of applying a `{python} f"{A.cumulative_pos('phase2')*100:.1f} %"` Phase 2 cumulative-to-approval probability against phase-weighted development costs out to filing. They should be read as *"peak sales placeholder too low vs the phase-weighted dev spend"*, not as *"the programme should be discontinued"*. Phase 2 proof-of-concept readouts (CCR6 Q4 2026, CXCR3 2027, CXCR7 Q2 2028) will reanchor those figures materially in either direction. Current-phase remaining PoC costs are calibrated downward from DiMasi 2016 Phase 2 averages: the H1 2026 Report (p.7) explicitly attributes the 2026 clinical development spend to the late-stage daridorexant and lucerastat programs, so a full-program DiMasi anchor would double-count.
 
 ## From cash to equity value
 
@@ -96,11 +99,14 @@ The three early-stage negative rNPVs reflect the arithmetic of applying a `{pyth
 #| output: asis
 lines = [
     f"Sum of product rNPVs                                       : CHF {BRIDGE['sum_rnpv_chf_m']:+8,.0f} M",
-    f"+ Parent net cash                                           : CHF {BRIDGE['parent_net_cash_chf_m']:+8,.0f} M",
+    f"+ Parent net cash (incl. CHF {A.SHARES_WARRANTS_CASH_IN_CHF_M:.1f} M warrant exercise cash)       : CHF {BRIDGE['parent_net_cash_chf_m']:+8,.0f} M",
     f"+ SARL residual (base = 0)                                  : CHF {BRIDGE['sarl_residual_chf_m']:+8,.0f} M",
     f"- PV central costs (G&A + upstream research)                : CHF {-BRIDGE['central_costs_pv_chf_m']:+8,.0f} M",
+    f"- PV J&J residual royalty (4 %, cap CHF 272 M remaining)    : CHF {-BRIDGE['jj_royalty_pv_chf_m']:+8,.0f} M",
     f"= Equity value (parent)                                     : CHF {BRIDGE['equity_value_chf_m']:+8,.0f} M",
-    f"/ Shares outstanding                                        :     {BRIDGE['shares_m']:8,.1f} M",
+    f"Issued shares (30 Jun 2026)                                 :     {BRIDGE['shares_issued_m']:8,.1f} M",
+    f"Diluted shares, valuation basis (incl. J&J mandatory,       ",
+    f"  warrants, unvested free shares)                           :     {BRIDGE['shares_m']:8,.2f} M",
     f"= Fair value / share (raw)                                  : CHF {BRIDGE['value_per_share_raw_chf']:+8.2f}",
     f"= Fair value / share (floored, limited liability)           : CHF {BRIDGE['value_per_share_chf']:+8.2f}",
 ]
@@ -110,9 +116,13 @@ for l in lines:
 print("```")
 ```
 
-**Parent net cash is negative** because we attribute `{python} f"CHF {A.PARENT_ATTRIBUTABLE_DEBT_CHF_M:.0f}"` M of debt to the parent equity holder (J&J convertible `{python} f"{A.DEBT_CONVERTIBLE_LOAN_JJ_CHF_M:.0f}"` + Pharmakon term loan `{python} f"{A.DEBT_PHARMAKON_LOAN_CHF_M:.0f}"` + convertible bonds `{python} f"{A.DEBT_CONVERTIBLE_BONDS_CHF_M:.0f}"` + other financial `{python} f"{A.DEBT_OTHER_FINANCIAL_CHF_M:.0f}"` incl. R-Bridge royalty monetization) against only `{python} f"CHF {A.PARENT_ATTRIBUTABLE_CASH_CHF_M:.0f}"` M of group cash (an upper bound at 30 Jun 2026 - see TODO_DATA.md). The CHF `{python} f"{A.DEBT_NOTES_SARL_CHF_M:.0f}"` M of SARL notes are excluded, they are non-recourse to IDIA shareholders and are serviced by the SARL assets.
+**Parent net cash is negative** because we attribute `{python} f"CHF {A.PARENT_ATTRIBUTABLE_DEBT_CHF_M:.0f}"` M of debt to the parent equity holder (Pharmakon term loan `{python} f"{A.DEBT_PHARMAKON_LOAN_CHF_M:.0f}"` + convertible bonds CB 2034 / CB 2038 `{python} f"{A.DEBT_CONVERTIBLE_BONDS_CHF_M:.1f}"` + sale-and-leaseback `{python} f"{A.DEBT_SALE_LEASEBACK_CHF_M:.0f}"`) against `{python} f"CHF {A.PARENT_ATTRIBUTABLE_CASH_CHF_M:.1f}"` M of parent cash (`{python} f"{A.CASH_30JUN2026_CHF_M:.1f}"` M group cash at 30 Jun 2026 as an upper bound, plus `{python} f"{A.SHARES_WARRANTS_CASH_IN_CHF_M:.1f}"` M of warrant exercise cash assumed to flow in since the CHF 1.49 strike is far below any plausible V/share).
 
-The SARL New Money Facility (CHF 150 M nominal, CHF 78 M drawn at YE 2025, CHF 105 M drawn at repayment) was repaid in full on 26 Jun 2026 from the first Pharmakon tranche, so it does not appear in the current debt line.
+**The J&J convertible is NOT in the debt line.** Pharmakon's covenant package (H1 Report p.44) explicitly forbids cash repayment of a convertible loan, so the remaining `{python} f"CHF {A.JJ_CONVERTIBLE_PRINCIPAL_REMAINING_CHF_M:.0f}"` M will be settled in shares at CHF `{python} f"{A.JJ_CONVERTIBLE_STRIKE_CHF:.2f}"` on 15 Jun 2027. The `{python} f"{A.SHARES_JJ_CONVERSION_M:.1f}"` M new shares are added to the valuation denominator; the convertible contributes neither debt nor an if-converted test.
+
+**The CHF `{python} f"{A.DEBT_NOTES_SARL_CHF_M:.0f}"` M of SARL notes are excluded from the parent bridge** because they are serviced by the ring-fenced SARL assets. The A1 / A2 tranches carry a *limited and subordinated* guarantee from Idorsia Ltd (H1 p.17, p.41); the term "non-recourse" is therefore inaccurate and avoided. The subordinated-guarantee exposure is flagged in *Limitations* and in [Methodology](methodology.qmd).
+
+The SARL New Money Facility (CHF 78 M drawn at YE 2025, CHF 113 M of principal repaid 25 Jun 2026 using Pharmakon proceeds) is at zero at the valuation date and does not appear in the current debt line.
 
 ## Key assumptions and sources
 
@@ -200,30 +210,45 @@ for _, r in SCENARIOS.iterrows():
         "Scenario": r["scenario"],
         "V/share pre if-converted (CHF)": f"{r['value_per_share_pre_conversion']:.2f}",
         "V/share post if-converted (CHF)": f"{r['value_per_share']:.2f}",
-        "J&J converted?": "yes" if r["jj_converted"] else "no",
+        "CB 2034 converted?": "yes" if r["cb2034_converted"] else "no",
     })
 print(pd.DataFrame(rows).to_markdown(index=False))
 ```
 
-**Fraction of the base->market gap closed by Base + SARL residual**: `{python} f"{GAP_COVERED_SARL:.0f}"` % (replaces the "roughly two thirds" claim from v1.0, which used stale numbers).
+**Fraction of the base-to-market gap closed by Base + SARL residual**: `{python} f"{GAP_COVERED_SARL:.0f}"` %. The remaining distance is a joint bet on upside QUVIVIQ trajectory, a thicker SARL residual than CHF 400 M, and a lower discount rate than 12 %.
+
+The CB 2034 if-converted test triggers in the Bull scenario (V/share > CHF `{python} f"{A.CB_2034_STRIKE_CHF:.2f}"`), adding `{python} f"{A.SHARES_CB_2034_IFCONVERTED_M:.2f}"` M shares and removing CHF `{python} f"{A.DEBT_CB_2034_CHF_M:.1f}"` M of debt. CB 2038 (strike CHF 31.54) stays out of the money across every scenario.
 
 ## Verdict
 
-Verdict pending model review (v1.2).
+The v1.2 base case prints CHF `{python} f"{BASE:.2f}"` / share. Equity value at the parent is `{python} f"CHF {BRIDGE['equity_value_chf_m']:+,.0f} M"`, built from `{python} f"CHF {BRIDGE['sum_rnpv_chf_m']:+,.0f}"` M of PoS-weighted product rNPVs minus `{python} f"CHF {BRIDGE['central_costs_pv_chf_m']:,.0f}"` M of PV central costs, `{python} f"CHF {BRIDGE['jj_royalty_pv_chf_m']:,.0f}"` M of PV J&J residual royalty, and `{python} f"CHF {-BRIDGE['parent_net_cash_chf_m']:,.0f}"` M of parent net debt (Pharmakon + CB 2034/2038 + sale-and-leaseback, net of CHF `{python} f"{A.PARENT_ATTRIBUTABLE_CASH_CHF_M:.1f}"` M of cash incl. warrant proceeds). The valuation denominator is `{python} f"{BRIDGE['shares_m']:.2f}"` M shares (issued + J&J mandatory + warrants + unvested free shares).
+
+**The base case is a lower bound, not a price target.** The CHF `{python} f"{MARKET - BASE:.2f}"` gap between the model (CHF `{python} f"{BASE:.2f}"`) and the market (CHF `{python} f"{MARKET:.2f}"`) is a compound bet on three excluded or stressed items:
+
+- **SARL residual.** The ring-fenced subsidiary holds aprocitentan (TRYVIO/JERAYGO), selatogrel and cenerimod. Rights revert to the parent only after the CHF `{python} f"{A.DEBT_NOTES_SARL_CHF_M:.0f}"` M of SARL notes (maturities 2048/2050, PIK interest) are repaid. The reversion is deep out of the money at the valuation date and set to zero in the base case; stressing it to CHF 400 M (Base + SARL scenario) closes `{python} f"{GAP_COVERED_SARL:.0f}"` % of the gap.
+- **QUVIVIQ trajectory.** The CHF `{python} f"{A.PRODUCTS['quviviq']['peak_sales_chf_m']:.0f}"` M base-case peak is anchored on Belsomra / Dayvigo comparables and GlobalData's 7MM DORA forecast. A CHF 1,000 M peak (Bull scenario) is defensible under combined DEA Schedule V + pediatric approval + full EU reimbursement; it is not the central scenario.
+- **QUVIVIQ peak contribution margin.** The base case uses 55 % contribution margin at peak (COGS 12-20 %, Selling 25-30 % at maturity), interpolated from the H1 2026 sourced anchor of 9 %. Each +10 pp at peak is worth roughly CHF +0.80 / share.
+
+**Reconciled fair-value range CHF `{python} f"{RANGE_LO:.2f}"` - `{python} f"{RANGE_HI:.2f}"` / share** across Bear / Base / Base+SARL / Bull. The market sits inside this range (between Base and Base + SARL), so IDIA is not materially mispriced relative to the model's upside optionality; it is priced for a non-trivial probability that at least one of the three catalysts delivers.
+
+**My reconciled personal read.** At CHF `{python} f"{MARKET:.2f}"`, IDIA is priced for a composite where (a) QUVIVIQ clears CHF 700-800 M of Idorsia-recognised peak sales, (b) the SARL residual accretes toward CHF 400-600 M, and (c) the Pharmakon loan does not need to be extended on worse terms before Q4 2027 QUVIVIQ-driven cash generation turns positive. Each of these is probabilistic. The investable read is a **conditional long on specific catalyst delivery** (CCR6 PoC Q4 2026, QUVIVIQ US run-rate exit 2026, pediatric filing, SARL cash-flow disclosures), with a limited margin of safety at the current level under the base case.
+
+Don't read the point estimate as a price target. Read the status column (sourced / assumption / placeholder) of each input, the four scenarios, and the gap-covered percentage. Every assumption is traceable; every scenario has an explicit narrative.
 
 ## Limitations
 
-- rNPV is an order-of-magnitude tool, not a precise valuation.
-- Phase 2 peak sales (CCR6, CXCR7, CXCR3) are placeholders and drive their negative rNPVs. A positive CCR6 PoC readout at Q4 2026 would materially reshape those figures.
-- The **J&J convertible is a cost, not an upside**: either dilution (if V/share > strike at maturity) or a CHF 335 M cash repayment on 15 Jun 2027. The if-converted test applies in scenarios where V/share > strike.
-- **Central costs are modelled as a decline-then-floor-then-proportional curve** (71 M G&A sourced + 25 M upstream placeholder at year 1, decay 10 %/year to floor 50 M to 2040, then scaled by weighted revenue to 2050 with hard floor 10 M). Not a line-by-line projection.
-- **Upstream research is deducted but no value is attributed to the unborn pipeline candidates** that upstream research will generate. This biases the model downward.
-- **QUVIVIQ post-launch R&D** (pediatric programme, label extensions) is not modelled in either the per-product dev-cost curve (prelaunch only) or central costs.
-- Working capital and capex are netted to zero; tax proxied by the operating margin; product outcomes are assumed independent.
-- The SARL contingent liability to J&J (30 % aprocitentan + 10 % each selatogrel / cenerimod proceeds) is disclosed but not fully modelled, a known refinement.
-- All historical data and the current share price are pinned to specific dates (`data/market.json` for the quote; `{python} f"A.VALUATION_DATE = {A.VALUATION_DATE}"` for the balance sheet). Re-run `scripts/update_price.py` before each deploy.
-
-Don't read any point estimate as a price target. Read the sourcing and the scenarios: every input has a status (sourced / assumption / placeholder), every scenario has an explicit narrative, and every CHF of the gap between the model and the market can be tied to a specific bet.
+- **rNPV is an order-of-magnitude tool, not a precise valuation.** Even under corrected method, a +/-10 pp swing on QUVIVIQ peak contribution margin moves per-share value by roughly CHF 0.80.
+- **Phase 2 peak sales (CCR6, CXCR7, CXCR3) are placeholders** and drive their negative rNPVs. A positive CCR6 PoC readout at Q4 2026 would reanchor those figures materially. Current-phase remaining costs are calibrated to the 2026 non-GAAP guidance decomposition rather than DiMasi full-program averages (H1 p.7 attributes 2026 clinical dev to late-stage daridorexant and lucerastat).
+- **Pharmakon term loan covenants are modelled only at the funding level** (CHF `{python} f"{A.DEBT_PHARMAKON_LOAN_CHF_M:.0f}"` M at 7 % with quarterly amortisation from 30 Sep 2029 and final maturity 25 Jun 2031). The covenant package includes a minimum-liquidity test, a minimum-revenue test, and an *obligation to strengthen liquidity within an agreed timeframe* (H1 p.44), i.e. an implicit requirement for an equity raise before 2028. The dilution that will follow is **not** in the share count.
+- **The J&J convertible is treated as a deterministic share issuance**, not debt. The Pharmakon covenant forbids cash repayment of a convertible loan, so the CHF `{python} f"{A.JJ_CONVERTIBLE_PRINCIPAL_REMAINING_CHF_M:.0f}"` M remaining is settled in shares at CHF `{python} f"{A.JJ_CONVERTIBLE_STRIKE_CHF:.2f}"` on 15 Jun 2027. The `{python} f"{A.SHARES_JJ_CONVERSION_M:.1f}"` M new shares are already in the diluted valuation basis.
+- **SARL note A1 / A2 carry a limited and subordinated guarantee from Idorsia Ltd** (H1 p.17, p.41). The base case excludes any claim on IDIA shareholders in a SARL stress scenario; this is a conservative assumption that could reverse in a downside case. The term "non-recourse" is factually incorrect for notes A and is not used in this note.
+- **The J&J residual royalty is a central line, not a per-product haircut.** The disclosure (H1 note 4, p.32) is "low-to-mid single-digit on net sales of all Idorsia products, until the remaining cap is reached". We model 4 % with a cap of CHF `{python} f"{A.JJ_RESIDUAL_ROYALTY_CAP_REMAINING_CHF_M:.0f}"` M, applied to the PoS-weighted aggregate sales stream. Rate and allocation ratio across products are both assumptions; the cap and the mechanic are sourced.
+- **Ex-US / ex-EU partner economics are not modelled.** Mochida (Japan), Simcere (China) and Idorsia Korea generate milestones and royalties on QUVIVIQ outside Idorsia's directly-recognised net sales. These are a small addition today (contract revenue line of the H1 2026 non-GAAP P&L: CHF 8 M, annualised ~16 M) and are not projected forward in the base case.
+- **Central costs** (`{python} f"CHF {A.CENTRAL_COSTS_GA_YEAR_1_CHF_M:.0f}"` M G&A + `{python} f"{A.CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M:.0f}"` M upstream research in year 1, both sourced on H1 2026) are modelled as a decline-then-floor-then-proportional curve, decay 10 % / year to a floor of CHF `{python} f"{A.CENTRAL_COSTS_FLOOR_CHF_M:.0f}"` M by 2040, then scaled by weighted revenue to 2050 with a hard floor of CHF `{python} f"{A.CENTRAL_COSTS_TAIL_FLOOR_CHF_M:.0f}"` M. Not a line-by-line projection.
+- **Upstream research is deducted but no value is attributed to the unborn pipeline candidates** it will generate. Downward bias of unknown magnitude.
+- **QUVIVIQ post-launch R&D** (pediatric programme, label extensions) is not modelled as a separate product. The 2026 development spend is calibrated such that it implicitly covers that lifecycle R&D.
+- **Working capital and capex are netted to zero**; tax is proxied by the operating margin; product outcomes are assumed independent (no portfolio effect).
+- All historical data and the current share price are pinned to specific dates (`data/market.json` for the quote via `scripts/update_price.py`; `{python} f"A.VALUATION_DATE = {A.VALUATION_DATE}"` for the balance sheet). Re-run the price refresh before each deploy.
 
 ---
 

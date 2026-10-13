@@ -9,16 +9,19 @@ This page describes how each pipeline product is modelled, how probability weigh
 
 For each product, the risk-adjusted NPV is:
 
-$$rNPV = PoS_{cum} \; \times \; \sum_{t=T_0}^{T_{end}} \frac{CF_t}{(1+r)^{t - t_0 + 0.5}} \; - \; \sum_{t=t_0}^{T_0-1} \frac{w(phase_t) \; \cdot \; DevCost_{phase_t}}{(1+r)^{t - t_0 + 0.5}}$$
+$$rNPV = PoS_{cum} \; \times \; \sum_{t=T_0}^{T_{end}} \frac{CF_t}{(1+r)^{\tau(t)}} \; - \; \sum_{t=t_0}^{T_0-1} \frac{w(phase_t) \; \cdot \; DevCost_{phase_t}}{(1+r)^{\tau(t)}}$$
 
 Where:
 
-- $CF_t$ = operating cash flow in year $t$ = $Sales_t \times (\text{OpMargin}_t - \text{Royalties}_t)$. The margin is a time-varying curve (see *Operating margin* below).
+- $CF_t$ = operating cash flow in year $t$ = $Sales_t \times \text{ContributionMargin}_t$, with contribution margin = $(Sales - COGS - Selling)/Sales$. G&A and R&D are deducted once elsewhere (as PV of central costs and PV of development costs). The margin is a time-varying curve (see *Contribution margin* below).
 - $PoS_{cum}$ = cumulative probability that the product reaches the market from its current phase (product of transitions, see *Probability of success* below).
-- $r$ = discount rate (biotech WACC), mid-year convention.
+- $r$ = discount rate (biotech WACC), mid-year valuation-date convention.
 - $DevCost_{phase_t}$ = clinical development cost of the phase that is spent in year $t$.
 - $w(phase_t)$ = cumulative probability of *reaching* that phase (from the current phase). The current phase has $w = 1$ (certain); next phase has $w = $ one transition; the one after has $w = $ two transitions in product; etc.
-- $T_0$ = launch year, $T_{end}$ = end of exclusivity window.
+- $T_0$ = launch year, $T_{end}$ = end of forecast horizon.
+- $\tau(t)$ = discount exponent under the mid-year valuation-date convention: 0.25 for $t = $ valuation year (H2 2026 stub, half flow at 3-month midpoint), $(t - t_0)$ for $t > $ valuation year. The valuation year flow is prorated by 0.5 to reflect H2-only cash.
+
+Idorsia pays a **central residual royalty to J&J on net sales of all products** until a cumulative cap is reached (H1 2026 Report note 4). This is modelled as a central line (not a per-product haircut) in the equity-value bridge below. The remaining cap at 30 Jun 2026 is CHF 272 M.
 
 ## Probability of success (PoS)
 
@@ -66,19 +69,19 @@ For each product we model annual sales as:
 
 Peak sales for marketed and Phase 3 assets are triangulated from company guidance, published comparables, and epidemiology data; for Phase 2 assets they are explicit `PLACEHOLDER` values that will be reanchored after each programme's proof-of-concept readout. Each peak sales value is documented in `src/assumptions.py` with its source and status.
 
-## Operating margin and cash flow
+## Contribution margin and cash flow
 
-Sales are converted to operating cash flow via a *time-varying* operating margin, parameterised per product by `op_margin_at_launch` and `op_margin_at_peak`, interpolated linearly between the two anchor years. For QUVIVIQ in particular the margin ramps from 5 % in 2026 (Idorsia's commercial-profitability target year) to 30 % at peak in 2030, rather than a flat 30 % from 2026.
+Sales are converted to operating cash flow via a *time-varying contribution margin*, parameterised per product by `op_margin_at_launch` and `op_margin_at_peak`, interpolated linearly between the two anchor years. The contribution-margin convention is $(Sales - COGS - Selling) / Sales$, so G&A and R&D are **not** inside the product line (they are deducted once each, as PV of central costs and PV of development costs). For QUVIVIQ in particular the contribution margin ramps from 9 % in 2026 (sourced on H1 2026 actuals: $(97 - 19 - 69)/97$ per H1 p.3 / p.6) to 55 % at peak in 2030 (COGS 12-20 %, Selling 25-30 % at steady state).
 
-Working capital and capex are treated as netting to zero over the forecast horizon (standard rNPV simplification, discussed in Limitations). Taxes are proxied by the operating margin itself.
+Working capital and capex are netted to zero over the forecast horizon (standard rNPV simplification, discussed in Limitations). Taxes are proxied by the contribution margin itself.
 
 ## Development costs
 
 Development costs are phase-weighted:
 
-- **Current phase**: remaining cost is **certain** (weight = 1). The amount is set per product in `remaining_current_phase_cost_chf_m` using an Idorsia-scale historical burn (~CHF 24 M/year for Phase 2 PoC; see `TODO_DATA.md` for status).
+- **Current phase**: remaining cost is **certain** (weight = 1). The amount is set per product in `remaining_current_phase_cost_chf_m`. For the Phase 2 PoC programs (CCR6, CXCR7, CXCR3) this value is calibrated downward from DiMasi 2016 Phase 2 averages: the H1 2026 Report (p.7) explicitly attributes the 2026 clinical dev spend to the late-stage daridorexant and lucerastat programs, so applying full-program DiMasi anchors would double-count. The 2026 model development total is calibrated to the implicit guidance decomposition (CHF 60 M = 330 total - 39 COGS - 143 selling - 54 G&A - 34 upstream research). Lucerastat Phase 3 remains anchored on the orphan Fabry registrational trial estimate (CHF 100 M).
 - **Each subsequent phase**: cost is weighted by the **cumulative** probability of reaching that phase (product of BIO 2021 transitions). Future-phase spending does not start until after the current-phase readout.
-- Industry-benchmark unweighted phase costs (DiMasi 2016, converted USD 2013 -> CHF 2026 by US CPI 1.40 × USD/CHF 0.90 ~ 1.26) are the default `DEV_COSTS_BY_PHASE_CHF_M`. Products may override specific phases (e.g. lucerastat's orphan Fabry Phase 3 at CHF 100 M vs the DiMasi all-indication CHF 322 M average).
+- Industry-benchmark unweighted phase costs (DiMasi 2016, converted USD 2013 to CHF 2026 by US CPI 1.40 x USD/CHF 0.90 ~ 1.26) are the default `DEV_COSTS_BY_PHASE_CHF_M`. Products may override specific phases.
 
 This replaces the v1.0 convention, which treated all remaining dev costs as certain regardless of future-phase advancement probability (and so penalised Phase 1/2 assets by the full future dev spend rather than its expected value).
 
@@ -88,20 +91,35 @@ A biotech-appropriate WACC in the 11-13 % range is used. The base case is 12 %; 
 
 ## Central costs (unallocated G&A + upstream research)
 
-In addition to product-level dev costs, the parent carries unallocated central costs that are not captured in `op_margin`:
+In addition to product-level dev costs, the parent carries unallocated central costs that are not captured in the contribution margin:
 
-- **G&A** (holding, corporate, finance): CHF 71 M in 2025 non-GAAP (AR 2025, SG&A breakdown).
-- **Upstream research** (preclinical, platform, non-program-specific): placeholder at CHF 25 M/year (~27 % of total non-GAAP R&D), listed in `TODO_DATA.md`.
+- **G&A** (holding, corporate, finance): CHF 54 M / year annualised (H1 2026 Report p.6, status *sourced*).
+- **Upstream research** (preclinical, biology, chemistry): CHF 34 M / year annualised (H1 2026 Report p.7, status *sourced*).
 
-Trajectory: decline 10 %/year to a floor of CHF 50 M by year ~8, plateau to 2040, then scale with the model's PoS-weighted revenue (floor CHF 10 M) through 2050. The present value is deducted in the equity-value bridge.
+Trajectory: decline 10 % / year to a floor of CHF 50 M by 2040, plateau to that year, then scale with the model's PoS-weighted revenue (hard floor CHF 10 M) through 2050. The present value is deducted in the equity-value bridge.
+
+## J&J residual royalty
+
+Independently of the SARL carve-out and of the J&J convertible loan, Idorsia pays Janssen Pharmaceuticals (now part of J&J) a residual royalty on net sales of all Idorsia products until a cumulative cap is reached (H1 2026 Report note 4, p.32). The disclosure is "low-to-mid single-digit royalty on net sales of all products, cap of CHF 272 M remaining at 30 Jun 2026". We model:
+
+- Rate: 4 % of PoS-weighted aggregate net sales (status *assumption*).
+- Cap: CHF 272 M remaining (status *sourced*).
+- Application: central line in the equity-value bridge, deducted once at PV. Not a per-product haircut.
+
+This replaces the v1.0 / v1.1 convention which carried the royalty as a per-product margin haircut (and so compounded the cap effect across products).
 
 ## Modelling conventions
 
 Two non-obvious choices sit under the rNPV that would produce materially different numbers if flipped. Both are documented here for transparency.
 
-### Discounting convention: mid-year
+### Discounting convention: mid-year valuation date (30 Jun 2026)
 
-Cash flows in year $t$ are discounted by $(1+r)^{-(t - t_0 + 0.5)}$, the **mid-year convention**. This is the textbook rNPV default: cash is assumed to flow evenly through the year.
+Cash flows are discounted from the **valuation date of 30 June 2026**, i.e. mid-year of the valuation year. The convention is:
+
+- $t$ = valuation year (2026): discount exponent 0.25 (H2 2026 stub, midpoint of the H2 at 3 months out); the valuation-year cash flow is also prorated by 0.5 to reflect H2 only.
+- $t$ = valuation year + $n$: discount exponent $n$.
+
+This is a tighter version of the textbook mid-year convention: it anchors the entire bridge (asset side AND net cash side) on the H1 2026 Report balance sheet date, rather than discounting cash flows that were already included in the balance sheet.
 
 ```{python}
 #| echo: false
@@ -113,14 +131,14 @@ base = rnpv.value_per_share(discount_rate=A.DISCOUNT_RATE)
 rows = []
 for label, conv_name in [
     ("Start of year", "start_of_year"),
-    ("**Mid year (used here)**", "mid_year"),
+    ("Mid year (textbook, offset 0.5)", "mid_year"),
+    ("**Mid-year valuation date (used here)**", "mid_year_valuation_date"),
     ("End of year", "end_of_year"),
 ]:
-    # Build the bridge with an alternate convention. We patch discount_factors via a lambda.
+    # Build the bridge with an alternate convention via a patched discount_factors.
     import src.rnpv as R
-    import numpy as np
     original = R.discount_factors
-    def _conv_df(valuation_year, horizon_year, rate, convention="mid_year", _c=conv_name):
+    def _conv_df(valuation_year, horizon_year, rate, convention="mid_year_valuation_date", _c=conv_name):
         return original(valuation_year, horizon_year, rate, convention=_c)
     R.discount_factors = _conv_df
     try:
@@ -129,8 +147,8 @@ for label, conv_name in [
             "convention": label,
             "equity value (CHF M)": f"{v['equity_value_chf_m']:,.0f}",
             "value per share (CHF)": f"{v['value_per_share_chf']:.2f}",
-            "Δ equity value vs mid year": f"{(v['equity_value_chf_m'] - base['equity_value_chf_m']):+,.0f}",
-            "Δ per share vs mid year": f"{(v['value_per_share_chf'] - base['value_per_share_chf']):+.2f}",
+            "delta equity vs base": f"{(v['equity_value_chf_m'] - base['equity_value_chf_m']):+,.0f}",
+            "delta per share vs base": f"{(v['value_per_share_chf'] - base['value_per_share_chf']):+.2f}",
         }
         rows.append(row)
     finally:
@@ -144,7 +162,7 @@ The convention flips both the asset side (product rNPVs) and the net-cash side; 
 
 ### QUVIVIQ ramp trajectory: 8 years to peak
 
-The model interpolates linearly from the last anchored sales figure (CHF 200 M guidance for 2026) to the peak of CHF 600 M by 2030 - an 8-year ramp counted from the 2022 launch year. This produces the sequence 200 -> 300 -> 400 -> 500 -> 600 (2026-2030), consistent with the ~+50 % YoY growth Idorsia has been delivering and guides for 2026.
+The model interpolates linearly from the last anchored sales figure (CHF 200 M guidance for 2026) to the peak of CHF 600 M by 2030, an 8-year ramp counted from the 2022 launch year. This produces the sequence 200 -> 300 -> 400 -> 500 -> 600 (2026-2030), consistent with the roughly +50 % YoY growth Idorsia has been delivering and guides for 2026.
 
 An earlier draft used a 6-year ramp (peak in 2028), implying 200 -> 400 -> 600 in two years. Defensible only under an aggressive combined US descheduling + pediatric approval + European reimbursement bull case.
 
@@ -152,33 +170,40 @@ An earlier draft used a 6-year ramp (peak in 2028), implying 200 -> 400 -> 600 i
 
 Consistent with the "order of magnitude" tool ambition:
 
-- **Taxes**, subsumed into the operating margin. A separate effective tax layer would trim equity value by ~10-20 %.
+- **Taxes**, subsumed into the contribution margin. A separate effective tax layer would trim equity value by roughly 10-20 %.
 - **Working capital and capex**, netted to zero over the forecast horizon.
 - **Product outcome correlation**, treated as independent (no portfolio effect).
-- **J&J convertible optionality**, the CHF 335 M convertible loan is treated as pure debt. An `if-converted` test applies in scenarios where V/share exceeds the CHF ~11.5 strike (adding 29.1 M shares, removing CHF 335 M of debt). See *Scenarios* in [Results](results.qmd).
-- **SARL cash flow priorities**, the ring-fenced debt at Idorsia Investments SARL is excluded from the parent bridge in the base case; the residual reversion to the parent is set to zero and stressed only in scenarios.
+- **J&J convertible loan optionality**: the remaining CHF 250 M principal is treated as a *deterministic* equity issuance of 21.7 M shares at CHF 11.48, not as debt. Pharmakon's covenant (H1 p.44) forbids cash repayment of a convertible loan, so the base case assumes shares at maturity. See *Scenarios* in [Results](results.qmd); the J&J principal does **not** have an if-converted test (it is mandatory).
+- **CB 2034 if-converted test** (strike CHF 6.00) is applied scenario-by-scenario: triggers when raw V/share > 6, adding 2.72 M shares and removing CHF 16.5 M of debt.
+- **SARL cash flow priorities**: the ring-fenced debt at Idorsia Investments SARL is excluded from the parent bridge in the base case; the residual reversion to the parent is set to zero and stressed only in scenarios. SARL notes A1 / A2 carry a *limited and subordinated* guarantee from Idorsia Ltd (H1 p.17, p.41); the base case ignores that contingent liability, flagged in Limitations.
+- **Pharmakon loan covenants** beyond the drawn amount (minimum-liquidity, minimum-revenue, obligation to strengthen liquidity within an agreed timeframe) are not modelled. The implicit equity raise is not in the share count.
+- **Ex-Idorsia-territory partner economics** (Mochida Japan, Simcere China, Idorsia Korea) are not projected forward. Current contribution (contract revenue H1 2026 = CHF 8 M) is reported in the calibration.
 - **Central costs modelled as a simple decline-then-floor-then-proportional curve**, without a line-by-line projection of G&A or upstream research.
-- **Future value of unborn pipeline candidates**, the upstream research line is deducted but no value is attributed to the compounds that upstream research will generate. This biases the model downward.
-- **QUVIVIQ post-launch R&D**, pediatric programme and label extensions are in neither `dev_cost_curve` (prelaunch only) nor `central_costs` (non-program-specific). See Limitations.
+- **Future value of unborn pipeline candidates**: the upstream research line is deducted but no value is attributed to the compounds that upstream research will generate. Downward bias.
+- **QUVIVIQ lifecycle R&D** (pediatric programme, label extensions, dosage optimisation) is not a separate product; it is implicitly covered by the 2026 development total calibrated to guidance. Post-2026 lifecycle spend is not projected.
 
 ## Aggregation
 
-$$EquityValue_{parent} = \sum_{i \in products} rNPV_i + NetCash_{parent} + SARL_{residual} - PV(CentralCosts)$$
+$$EquityValue_{parent} = \sum_{i \in products} rNPV_i + NetCash_{parent} + SARL_{residual} - PV(CentralCosts) - PV(J\&JRoyalty)$$
 
-$$\text{Value per share} = \max\!\left(0, \; \frac{EquityValue_{parent}}{\text{Shares outstanding}}\right)$$
+$$\text{Value per share} = \max\!\left(0, \; \frac{EquityValue_{parent}}{\text{Diluted valuation-basis shares}}\right)$$
 
-The `max(0, ·)` floor reflects limited liability: shareholders cannot owe money to the company. The raw (potentially negative) per-share value is kept as `value_per_share_raw_chf` for display in notes.
+The diluted valuation basis is: issued shares (263.1 M) + J&J mandatory conversion (21.7 M) + warrants (10.85 M, assumed exercised, strike CHF 1.49) + unvested free shares (9.5 M) = **305.15 M shares**. CB 2034 (+2.72 M, strike CHF 6.00) is added when the if-converted test triggers. Options (7.1 M at CHF 10.97) are informational and excluded from the valuation denominator (strike well above base case).
+
+The `max(0, .)` floor reflects limited liability: shareholders cannot owe money to the company. The raw (potentially negative) per-share value is kept as `value_per_share_raw_chf` for display.
 
 ## Sensitivity
 
 The model is stress-tested along the axes that dominate rNPV in practice:
 
-- Discount rate (10 % -> 14 %)
-- PoS of the lead clinical candidate (+/-20 %)
-- Peak sales of the top revenue driver (+/-30 %)
-- SARL residual (0 -> CHF 400 M)
-- QUVIVIQ operating margin (+/-5 pp at peak)
-- Central costs upstream placeholder (+/-50 %)
+- Discount rate (10 % to 14 %)
+- QUVIVIQ peak sales (+/-30 %)
+- Lucerastat peak sales (+/-30 %)
+- QUVIVIQ peak contribution margin (+/-10 pp)
+- Lucerastat peak contribution margin (+/-10 pp)
+- Lucerastat PoS (+/-20 %)
+- SARL residual (0 vs CHF 400 M)
+- Total central costs, G&A + upstream (+/-25 %)
 
 A tornado chart ranks the sensitivities.
 
@@ -189,19 +214,26 @@ All inputs are public. No Bloomberg / paid analyst data is republished.
 | Input | Source |
 |---|---|
 | Share price (IDIA.SW) | `scripts/update_price.py` writes `data/market.json` from yfinance |
-| Shares outstanding | Idorsia Q1 2026 Financial Report, 254.0 M issued at 31 Mar 2026 |
-| Cash, debt | Idorsia AR 2025 "Indebtedness" table (p.145); Pharmakon loan from 9/26 Jun 2026 media releases |
+| Shares issued, warrants, unvested free shares, options, CB 2034/2038 | Idorsia H1 2026 Financial Report, p.12 / p.39-40 / p.48 |
+| Cash, debt, SARL note A1/A2/B structure | Idorsia H1 2026 Financial Report, p.22, p.38-44 |
+| Pharmakon term loan terms + covenants | Idorsia H1 2026 Financial Report, p.43-44 |
+| J&J convertible loan post-June 2026 tranche conversion | Idorsia H1 2026 Financial Report, p.38-39, p.44 |
+| J&J residual royalty (rate band, cap remaining) | Idorsia H1 2026 Financial Report, note 4, p.32 |
+| 2026 non-GAAP income statement (basis for QUVIVIQ margin anchor) | Idorsia H1 2026 Financial Report, p.3 / p.6-7 |
+| 2026 full-year guidance | Idorsia press release, 30 July 2026 |
 | Pipeline composition, phase, readouts | Idorsia June 2026 investor presentation p.29 |
 | PoS transitions | BIO/Informa/QLS, "Clinical Development Success Rates 2011-2020" (2021) |
 | Development cost benchmarks | DiMasi, Grabowski, Hansen (2016), *J Health Econ* 47:20-33 |
-| G&A line | Idorsia AR 2025 non-GAAP SG&A breakdown |
 
 ## Limitations
 
 - rNPV is an order-of-magnitude tool, not a precise valuation.
 - Product outcomes are assumed independent (no portfolio correlation).
 - Working capital and capex netted to zero.
-- No explicit tax treatment beyond the operating margin.
-- Sensitive to peak sales assumptions, especially for Phase 2 placeholders.
+- No explicit tax treatment beyond the contribution margin.
+- Sensitive to peak sales and peak-margin assumptions, especially for Phase 2 placeholders.
+- Pharmakon covenant-driven equity raise is not in the share count.
+- SARL note A1 / A2 limited guarantee is excluded from the base case.
+- J&J residual royalty rate is an assumption (disclosure is "low-to-mid single digit"); the cap and the mechanic are sourced.
 - Upstream research is deducted without attributing value to the compounds it generates, a downward bias.
-- QUVIVIQ post-launch R&D is not modelled.
+- QUVIVIQ lifecycle R&D is implicit in the 2026 total; not projected beyond 2026.

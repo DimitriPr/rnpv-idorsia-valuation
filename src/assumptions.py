@@ -188,7 +188,7 @@ DEBT_NEW_MONEY_FACILITY_CHF_M = 0.0
 
 # ---------------------------------------------------------------------------
 # SARL notes (Idorsia Investments SARL), H1 p.17, p.41.
-#   - A1 121 + A2 260 + B 394 = CHF 774 M nominal at 30 Jun 2026.
+#   - A1 121 + A2 260 + B 394 = CHF 775 M nominal at 30 Jun 2026.
 #   - Interest is PIK (capitalised): +CHF 16.2 M added on 17 Jul 2026.
 #   - Notes A benefit from a LIMITED and SUBORDINATED guarantee from
 #     Idorsia Ltd. "Non-recourse to IDIA shareholders" is inaccurate; the

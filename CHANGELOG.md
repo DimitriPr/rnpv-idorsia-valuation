@@ -1,5 +1,165 @@
 # Changelog
 
+## v1.2 - 2026-10-14
+
+External review of v1.1 flagged three structural errors that explain the
+whole "negative equity value / zero-floored base case" result:
+
+1. **Double counting of G&A inside product margins AND in central costs.**
+   v1.1 kept EBIT margins at the product level and ALSO deducted the full
+   G&A line again as central costs. Combined with the central-cost
+   trajectory, the model was effectively double-charging CHF ~200 M of PV.
+2. **Mixed valuation dates.** v1.1 used the YE 2025 balance sheet for cash
+   and non-Pharmakon debt but called the valuation date 30 Jun 2026. The
+   30 Jun 2026 balance sheet is now the single reference and all cash
+   flows are discounted mid-year from 30 Jun 2026 with H2 2026 proration.
+3. **J&J convertible treated as cash-redeemable debt.** The Pharmakon
+   covenant package forbids cash repayment of a convertible loan; the
+   remaining J&J principal is therefore settled in shares at maturity,
+   not an optional debt.
+
+### One-line summary per correction
+
+- **Contribution-margin convention.** `op_margin_at_launch` and
+  `op_margin_at_peak` are now contribution margins ((sales - COGS -
+  Selling) / sales), NOT EBIT margins. G&A and R&D are deducted ONCE
+  elsewhere (central costs, dev costs). QUVIVIQ 2026 anchor: 9 %
+  sourced on H1 2026 Report ((97 - 19 - 69)/97, p.3 / p.6); 2030 peak:
+  55 % assumption (COGS 12-20 %, Selling 25-30 % at maturity).
+  Lucerastat 25 % launch to 65 % peak.
+- **Mid-year valuation-date convention.** `discount_factors()` now
+  defaults to `mid_year_valuation_date`: exponent 0.25 for the valuation
+  year (H2 2026 stub midpoint), exponent $n$ for year valuation + $n$.
+  The valuation-year cash flow is prorated by 0.5 to reflect H2 only.
+  Shared H2 proration helper (`_h2_prorate`) applied to operating cash
+  flow, development costs, central costs and the J&J royalty.
+- **J&J convertible loan: mandatory share settlement, not debt.** The
+  remaining CHF 250 M (after the 19 Jun 2026 tranche conversion of
+  CHF 85 M into 7.4 M shares) is treated as a deterministic equity
+  issuance of 21.7 M shares at CHF 11.48 at maturity. Zero debt, no
+  if-converted test. Source: H1 Report p.38-39 and p.44 (Pharmakon
+  covenant).
+- **CB 2034 if-converted test.** The if-converted machinery now applies
+  to CB 2034 (strike CHF 6.00, 2.72 M shares, principal CHF 16.5 M);
+  triggers when raw V/share exceeds the strike. In the base case the
+  test does not trigger; in the Bull scenario it does.
+- **J&J residual royalty (new central line).** H1 2026 Report note 4
+  (p.32) discloses a residual royalty on net sales of all Idorsia
+  products until a cumulative cap is reached (CHF 272 M remaining).
+  Modelled centrally as 4 % of PoS-weighted aggregate net sales with the
+  cap enforced. Removes the per-product `jj_royalty_haircut` of v1.1.
+- **Full balance sheet rebased to 30 Jun 2026 (H1 Report).** Cash (88.7),
+  Pharmakon loan (150), convertible bonds CB 2034 (16.5) + CB 2038 (32.8),
+  sale-and-leaseback (162), SARL notes A1 (121) + A2 (260) + B (394).
+  R-Bridge monetisation (CHF 24 M) excluded from the parent bridge for
+  asset / liability consistency (serviced by vamorolone royalties not in
+  the model). SARL New Money Facility (CHF 78 M at YE 2025) was repaid
+  in full on 25 Jun 2026 using Pharmakon proceeds; set to zero.
+- **SARL note A1 / A2: "limited and subordinated guarantee", not
+  non-recourse.** H1 Report p.17 and p.41 is explicit that notes A
+  benefit from a limited guarantee from Idorsia Ltd. The exact phrase
+  "non-recourse to IDIA shareholders" is removed throughout; the
+  contingent exposure is flagged in Limitations and in Methodology.
+- **Diluted valuation-basis share count: 305.15 M.** V/share denominator
+  = issued (263.1) + J&J mandatory (21.7) + warrants (10.85) + unvested
+  free shares (9.5) = 305.15 M. Replaces v1.1 denominator of 254.0 M
+  (issued only). CB 2034 (+2.72 M) added conditionally by the
+  if-converted test when V/share > CHF 6.00. Warrant cash in (+CHF
+  16.2 M at CHF 1.49 strike) added to parent cash. Options (7.1 M at
+  CHF 10.97) are informational and excluded from the valuation
+  denominator (strike well above base case).
+- **Central costs sourced on H1 2026.** G&A CHF 54 M / year run-rate
+  (H1 p.6, non-GAAP), upstream research CHF 34 M / year run-rate
+  (H1 p.7, preclinical / biology / chemistry). Both move from
+  placeholder (v1.1) to sourced. Decay 10 % / year, floor 50 M to
+  2040, proportional-to-weighted-revenue to 2050 with hard floor 10 M
+  (trajectory unchanged from v1.1).
+- **2026 development spend calibrated to guidance decomposition.**
+  Phase 2 PoC programs (CCR6, CXCR7, CXCR3) scaled down to CHF 10 / 24
+  / 18 M remaining because H1 p.7 attributes 2026 clinical dev to the
+  late-stage daridorexant and lucerastat programs (DiMasi Phase 2
+  averages apply to full programs, not single-indication PoCs).
+  Lucerastat Phase 3 anchor unchanged at CHF 100 M. Model 2026 dev =
+  CHF 60 M, matches the guidance implicit decomposition (330 - 39 -
+  143 - 54 - 34 = 60). Status `calibrated_to_2026_guidance`. QUVIVIQ
+  lifecycle R&D (pediatric etc.) is implicit in this calibrated total,
+  not modelled as a separate product.
+- **2026 calibration table.** New `rnpv.calibration_2026()` returns three
+  columns (Model full-year, H1 x 2, Guidance 2026). H1 x 2 total opex
+  (CHF 320 M) sits below the full-year guidance ceiling (CHF 330 M), so
+  the "Idorsia is overshooting its guidance" narrative from an earlier
+  draft is removed. A "Contract revenue (not modelled)" row (H1 x 2 ~
+  CHF 16 M) explains the gap between the modelled operating result and
+  the Idorsia-reported operating result.
+- **Pytest test on the 2026 opex ceiling.** New
+  `test_2026_opex_within_guidance_ceiling` enforces model opex within
+  guidance x 1.05. Current model opex CHF 330 M vs ceiling CHF 346.5 M.
+  Pass.
+- **Pytest regression test on the share denominator.** New
+  `test_value_per_share_uses_valuation_basis_denominator` fails on the
+  deprecated denominator (284.8 M = issued + J&J only) and passes on
+  305.15 M. Written specifically to catch future regressions on the
+  valuation basis.
+- **Pytest tests on J&J royalty cap.** New
+  `test_jj_royalty_cumulative_never_exceeds_cap` and
+  `test_jj_royalty_hits_cap_eventually`.
+- **Pytest tests on H2 proration + discount convention.** New
+  `test_h2_2026_proration_halves_valuation_year_flow` and
+  `test_discount_factors_mid_year_valuation_date_exponents`.
+- **Tornado chart updated.** Removed upstream-only +/-50 % lever;
+  replaced by total central costs (G&A + upstream) +/-25 %. Added
+  QUVIVIQ peak contribution margin +/-10 pp and Lucerastat peak
+  contribution margin +/-10 pp. Base is now the raw (pre-floor) value
+  so bars don't clip at zero.
+- **Scenario naming.** `scenarios()` now also exposes
+  `cb2034_converted`; the legacy `jj_converted` key is kept as an
+  alias.
+
+### Before / after key figures
+
+Base case (per share, floor applied where relevant):
+
+| Metric (CHF M) | v1.0 | v1.1 | v1.2 |
+|---|---:|---:|---:|
+| QUVIVIQ rNPV | +777 | +623 | +1,430 |
+| Lucerastat rNPV | +152 | +114 | +284 |
+| CCR6 rNPV | -61 | -58 | -27 |
+| CXCR7 rNPV | -64 | -73 | -36 |
+| CXCR3 rNPV | -77 | -78 | -48 |
+| Sum rNPV | +727 | +528 | +1,603 |
+| PV central costs | n/a | -504 | -458 |
+| PV J&J royalty | n/a | n/a | -139 |
+| Parent net cash | -504 | -634 | -256 |
+| Equity value (parent) | +223 | -611 | +750 |
+| Shares (valuation basis, M) | 250.7 | 254.0 | 305.15 |
+| V/share raw (CHF) | +0.89 | -2.40 | +2.46 |
+| V/share floored (CHF) | +0.89 | 0.00 | +2.46 |
+
+Scenarios (V/share, post-floor, with CB 2034 if-converted applied in Bull):
+
+| Scenario | v1.0 | v1.1 | v1.2 |
+|---|---:|---:|---:|
+| Bear | -0.64 | 0.00 | +0.31 |
+| Base | +0.89 | 0.00 | +2.46 |
+| Base + SARL residual (CHF 400 M) | +2.48 | 0.00 | +3.77 |
+| Bull | +6.65 | +2.75 | +9.36 (CB 2034 converts) |
+| Reconciled range | 0.9 to 6.6 | 0.0 to 2.75 | 0.31 to 9.36 |
+
+The main drivers of the v1.2 vs v1.1 swing:
+
+- Removing the G&A double-count on the product side (contribution
+  margin convention) adds CHF +807 M on QUVIVIQ rNPV and CHF +170 M on
+  Lucerastat.
+- Treating the J&J convertible as mandatory share settlement rather
+  than cash-redeemable debt moves parent net cash from -634 to -256.
+- The new J&J residual royalty line costs CHF -139 M of PV but is
+  modelled correctly (with the cap enforced) rather than being
+  per-product haircut.
+- The new diluted valuation basis (305.15 M vs 254 M) tempers the
+  per-share value but corrects a methodological error (the J&J
+  mandatory conversion, warrants, and unvested free shares are all
+  dilutive events with sub-CHF-6.00 effective strikes).
+
 ## v1.1 - 2026-10-13
 
 External review found method errors, stale data, and page-to-page
