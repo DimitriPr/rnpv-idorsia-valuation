@@ -183,13 +183,19 @@ print(pd.DataFrame(rows).to_markdown(index=False))
 
 ## Verdict
 
-::: {.callout-warning}
-**Pending validation.** The v1.0 verdict text below reflects pre-v1.1 numbers (base case CHF 0.89, reconciled range CHF 0.9 – 6.6). A refreshed verdict based on the new numbers (base floored at CHF `{python} f"{BASE:.2f}"`, reconciled range CHF `{python} f"{RANGE_LO:.2f}"` – `{python} f"{RANGE_HI:.2f}"`, Pharmakon loan, DEA Schedule V reclassification rather than descheduling) has been drafted and is awaiting the author's validation before being substituted here.
-:::
+**The gap between the model and the market has widened, and so has the required set of assumptions behind the market price.**
 
-**The market is not wrong; the base case is not wrong.** They price different things.
+The v1.1 base case floors at CHF `{python} f"{BASE:.2f}"` / share (raw equity value `{python} f"CHF {BRIDGE['equity_value_chf_m']:+,.0f} M"`). This is a hard lower bound under three jointly binding constraints: BIO 2011-2020 PoS transitions applied cleanly, QUVIVIQ margin ramping from the 2026 commercial-profitability target to a mid-range specialty 30 % at peak, and PV of unallocated central costs deducted from the equity bridge. The market at CHF `{python} f"{MARKET:.2f}"` therefore embeds assumptions that, on a probability-weighted basis, span the full range of upside paths:
 
-The base case values *only* the parent-owned assets, uses BIO 2021 Phase 2 and Phase 3 cumulative probabilities, and applies a conservative peak sales estimate to a genuinely differentiated but uncertain commercial asset. The reconciled fair value in that framework sits in the CHF `{python} f"{RANGE_LO:.2f}"` – `{python} f"{RANGE_HI:.2f}"` / share range depending on how one weights the two excluded catalysts.
+- A **SARL residual** at least matching the CHF 400 M stressed in scenarios (not sufficient on its own to clear the zero floor under the current cost structure).
+- A QUVIVIQ trajectory **well above** the CHF `{python} f"{A.PRODUCTS['quviviq']['peak_sales_chf_m']:.0f}"` M base-case peak (closer to the CHF 1,000 M Bull case) and a discount rate at the low end of the biotech WACC range.
+- A clean **refinancing** of the CHF `{python} f"{A.JJ_CONVERTIBLE_PRINCIPAL_CHF_M:.0f}"` M J&J convertible on 15 June 2027: either cash repayment (reducing the equity bridge directly) or conversion if V/share exceeds CHF `{python} f"{A.JJ_CONVERTIBLE_STRIKE_CHF:.2f}"` (dilutive but debt-eliminating; the if-converted scenario is already applied in the Bull case and still prints CHF `{python} f"{BULL:.2f}"` / share).
+
+**The reconciled range CHF `{python} f"{RANGE_LO:.2f}"` – `{python} f"{RANGE_HI:.2f}"` / share** is the honest answer under the method as corrected; the market price sits noticeably *above* even the Bull. That is not a claim IDIA is overvalued `{python} f"{MARKET/max(RANGE_HI, 0.01):.1f}"`×: it is a claim the market is pricing a combined scenario that is *outside* the parameter space our scenarios span (e.g. a QUVIVIQ peak above CHF 1,000 M, SARL residual above CHF 600 M, central cost normalisation faster than modelled, discount rate below 10 %).
+
+**My reconciled personal read**: at CHF `{python} f"{MARKET:.2f}"`, IDIA is priced for a genuinely bullish composite outcome where (a) the DEA Schedule V reclassification, pediatric programme and EU reimbursement all contribute to a QUVIVIQ ceiling well above the CHF 600 M used here; (b) SARL asset performance clears the ring-fenced debt materially ahead of maturity; (c) the Pharmakon loan does not need to be extended on worse terms; and (d) the J&J convertible either converts (dilution absorbed by rerating) or is refinanced on terms that do not tighten covenants. Each of these is probabilistic; none is binary. The investable thesis is a *conditional long on specific catalyst delivery* (CCR6 PoC Q4 2026, QUVIVIQ US run-rate exit 2026, SARL progress disclosures) with limited margin of safety at the current level under the base case.
+
+*Don't read any point estimate here as a price target.* Read the status column of each input, the four scenarios, and the gap-covered percentage. Every assumption is traceable; every scenario has an explicit narrative; every CHF of the gap between the model and the market can be tied to a specific bet or a specific placeholder.
 
 ## Limitations
 
