@@ -101,8 +101,12 @@ Market and share data as of 31 Dec 2025:
 code("""
 snapshot = pd.DataFrame({
     "Metric": [
-        "Share price, close 31/12/25", "Shares outstanding", "Market cap 31/12/25",
-        "Share price, mid June 2026", "Fully diluted potential shares",
+        "Share price, close 31/12/25",
+        "Shares outstanding (Q1 2026, 31/03/26)",
+        "Market cap 31/12/25",
+        f"Share price, latest ({A.SHARE_PRICE_STATUS})",
+        "Fully diluted potential shares",
+        "Valuation date",
     ],
     "Value": [
         f"CHF {A.SHARE_PRICE_YE2025_CHF:.2f}",
@@ -110,6 +114,7 @@ snapshot = pd.DataFrame({
         f"CHF {A.MARKET_CAP_YE2025_CHF_M:,.0f} M",
         f"CHF {A.SHARE_PRICE_CURRENT_CHF:.2f}  (as of {A.SHARE_PRICE_CURRENT_AS_OF})",
         f"{A.POTENTIAL_SHARES_FULLY_DILUTED_M:.1f} M",
+        A.VALUATION_DATE,
     ],
 })
 snapshot
@@ -133,9 +138,10 @@ This is the single point on which naïve valuations of Idorsia go wrong.
 In May 2025 Idorsia transferred the rights to **aprocitentan (TRYVIO /
 JERAYGO)**, **selatogrel** and **cenerimod** to a newly created
 subsidiary, **Idorsia Investments SARL**. That SARL secures CHF 762 M of
-notes maturing 2048/2050 plus a CHF 150 M new money facility. Rights only
-revert to the parent (Idorsia Ltd, SIX listed) *after* the SARL debt +
-interest are fully repaid.
+notes maturing 2048/2050. Rights only revert to the parent (Idorsia Ltd,
+SIX listed) *after* the SARL debt + interest are fully repaid. The CHF
+150 M SARL New Money Facility (CHF 105 M drawn) was repaid in full on
+26 Jun 2026 using proceeds from the new Pharmakon term loan at op co.
 
 For an equity holder of IDIA, this means:
 
@@ -151,19 +157,21 @@ The parent attributable debt / cash bridge is therefore:
 code("""
 bs = pd.DataFrame({
     "Item": [
-        "Group cash & equivalents (31/12/25)",
-        "  of which attributable to op co + parent (approx)",
-        "Convertible loan (J&J, matures 2027)",
+        "Group cash & equivalents (YE 2025, upper bound at 30/06/26)",
+        "  of which attributable to op co + parent (placeholder)",
+        "Convertible loan (J&J, matures 15/06/2027)",
+        "Pharmakon term loan (drawn 26/06/2026, matures 2031)",
         "Convertible bonds (mature 2034/2038)",
-        "Other financial debt (incl. R-Bridge)",
-        "SARL notes (2048/2050), ring fenced",
-        "SARL new money facility, ring fenced",
-        "Parent attributable net cash (used in bridge)",
+        "Other financial debt (incl. R-Bridge, IFRS 16 leases)",
+        "SARL notes (2048/2050), ring-fenced, non-recourse",
+        "SARL New Money Facility (repaid 26/06/2026)",
+        "Parent-attributable net cash (used in bridge)",
     ],
     "CHF M": [
         A.CASH_YE2025_CHF_M,
         A.PARENT_ATTRIBUTABLE_CASH_CHF_M,
         -A.DEBT_CONVERTIBLE_LOAN_JJ_CHF_M,
+        -A.DEBT_PHARMAKON_LOAN_CHF_M,
         -A.DEBT_CONVERTIBLE_BONDS_CHF_M,
         -A.DEBT_OTHER_FINANCIAL_CHF_M,
         -A.DEBT_NOTES_SARL_CHF_M,
@@ -352,8 +360,9 @@ display(Image(str(FIG_DIR / "sensitivity_heatmap.png"), width=900))
 """)
 
 md("""
-To reach the current market price (CHF 4.35 / share) requires QUVIVIQ
-peak sales of CHF ≈1,000-1,100 M *and* a discount rate of 9-10 %
+To reach the current market price (shown on the figure, pulled from
+`data/market.json`) requires QUVIVIQ peak sales of CHF ≈1,000-1,100 M
+*and* a discount rate of 9-10 %
 i.e. both variables at their optimistic ends simultaneously. That is not
 implausible if descheduling in the US, label enhancement on daytime
 functioning, and pediatric approval all land favourably; but each is a
@@ -410,10 +419,11 @@ md("""
 md("""
 ## 9. Verdict and limitations
 
-**Verdict.** The base case, using mid year discounting, BIO 2021 PoS
-transitions, and the QUVIVIQ margin ramp 5 → 30 % 2026-2030, floors
-IDIA at CHF 0 / share (raw equity value CHF −481 M) against a market
-of CHF 4.35. The gap decomposes into **two catalysts** the base case
+**Verdict.** The base case, using mid-year discounting, BIO 2021 PoS
+transitions, Pharmakon-updated parent debt, and the QUVIVIQ margin ramp
+5 → 30 % 2026-2030, floors IDIA at CHF 0 / share (raw equity value
+CHF −611 M) against the latest IDIA.SW close (see market.json). The
+gap decomposes into **two catalysts** the base case
 excludes — (1) a non-trivial residual value for the SARL assets, (2) a
 QUVIVIQ trajectory above CHF 600 M peak — **plus one refinancing event**
 (J&J convertible, CHF 335 M, matures 15 Jun 2027). The convertible is

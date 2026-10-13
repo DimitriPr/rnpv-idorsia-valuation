@@ -33,9 +33,13 @@ CRITICAL STRUCTURAL NOTE, read before touching PRODUCTS:
 
 from __future__ import annotations
 
+import json
+import pathlib
 from typing import Literal
 
 Status = Literal["sourced", "assumption", "placeholder"]
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 
 # =============================================================================
@@ -45,23 +49,52 @@ Status = Literal["sourced", "assumption", "placeholder"]
 SHARE_PRICE_YE2025_CHF = 4.26
 MARKET_CAP_YE2025_CHF_M = 1_070
 
-# source: Idorsia AR 2025, "Share count" table (updated to Q1 2026 Financial Report in Lot 3)
-SHARES_OUTSTANDING_M = 250.7                   # basic, issued common (YE 2025; refined in Lot 3)
-POTENTIAL_SHARES_FULLY_DILUTED_M = 313.7       # incl. equity derivatives + instruments (YE 2025; refined in Lot 3)
+# source: Idorsia Q1 2026 Financial Report, "Share count" (31 March 2026)
+# https://www.idorsia.com/dam/jcr:2d9c0e6a-f46c-4817-a501-ee652f7cb17f/2026-3m-idorsia-financial-report.pdf
+SHARES_OUTSTANDING_M = 254.0                   # basic, issued common (Q1 2026, 31 Mar 2026)
+POTENTIAL_SHARES_FULLY_DILUTED_M = 317.1       # incl. J&J convertible (29.1 M) + equity instruments
 
-# Current share price: hardcoded in Lot 1; replaced by scripts/update_price.py +
-# data/market.json loader in Lot 3.
-SHARE_PRICE_CURRENT_CHF = 4.35                  # mid-June 2026 midpoint, refined in Lot 3
-SHARE_PRICE_CURRENT_AS_OF = "2026-06-17"        # date of quote; refined in Lot 3
-SHARE_PRICE_STATUS: Status = "assumption"
+# Current share price: pulled from data/market.json by scripts/update_price.py
+# (yfinance IDIA.SW latest close). Fallback placeholder keeps the model
+# functional if the file is missing or stale.
+_MARKET_FILE = ROOT / "data" / "market.json"
+
+
+def _load_market_data() -> dict:
+    if _MARKET_FILE.exists():
+        try:
+            with _MARKET_FILE.open("r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError):
+            pass
+    return {
+        "ticker": "IDIA.SW",
+        "price_chf": 4.35,
+        "as_of": "2026-06-17",
+        "status": "placeholder",
+        "source": "mid-June 2026 placeholder; run scripts/update_price.py to refresh",
+    }
+
+
+_MARKET_DATA = _load_market_data()
+SHARE_PRICE_CURRENT_CHF: float = float(_MARKET_DATA["price_chf"])
+SHARE_PRICE_CURRENT_AS_OF: str = str(_MARKET_DATA["as_of"])
+SHARE_PRICE_STATUS: Status = _MARKET_DATA.get("status", "placeholder")
 
 
 # =============================================================================
 # 2. BALANCE SHEET
 # =============================================================================
+# Target valuation date: 30 June 2026. As of the model build date the
+# full H1 2026 release had not been published; group cash and most debt
+# lines are still at YE 2025 book value, with the exception of items we
+# have explicit disclosure for (Pharmakon loan, Q1 2026 share count,
+# Pharmakon-driven New Money Facility payoff). Missing H1 2026 items are
+# listed in TODO_DATA.md.
+VALUATION_DATE = "2026-06-30"
+
 # source: Idorsia AR 2025, "Liquidity" table, p.145
-# (valuation date switch to H1 2026 happens in Lot 3)
-CASH_YE2025_CHF_M = 89.0                        # group consolidated cash & equivalents, YE 2025
+CASH_YE2025_CHF_M = 89.0                        # group consolidated cash & equivalents, YE 2025 (upper bound at 30 Jun 2026)
 
 # source: Idorsia AR 2025, "Indebtedness" table, p.145 (nominal amounts)
 DEBT_CONVERTIBLE_LOAN_JJ_CHF_M = 335.0          # J&J convertible loan, matures 15 Jun 2027, zero coupon
@@ -69,23 +102,41 @@ DEBT_NOTES_SARL_CHF_M = 762.0                   # ring-fenced SARL notes, due 20
 DEBT_CONVERTIBLE_BONDS_CHF_M = 49.0             # convertible bonds, mature 2034/2038
 DEBT_OTHER_FINANCIAL_CHF_M = 189.0              # incl. IFRS 16 leases, R-Bridge royalty monetization (CHF 27 M)
 
-DEBT_NEW_MONEY_FACILITY_CHF_M = 78.0            # SARL new money facility (refined in Lot 3)
+# source: Idorsia media release 9 Jun 2026 and closing announcement 26 Jun 2026
+# https://idorsia.com/media/news/news-archive/media-release-details?id=3703084
+# Pharmakon senior secured term loan: up to CHF 250 M, 5 years, fixed 7 %.
+# First tranche of CHF 150 M drawn at closing (26 Jun 2026) and used to repay
+# in full the New Money Facility (CHF 105 M drawn). Borrower: Idorsia
+# Pharmaceuticals Ltd (op co, parent-attributable, NOT SARL).
+# https://goodwinlaw.com/en/news-and-events/news/2026/06/announcements-otherindustries-ip-goodwin-advises-pharmakon-advisors
+DEBT_PHARMAKON_LOAN_CHF_M = 150.0               # tranche 1 drawn 26 Jun 2026 (parent-attributable)
+DEBT_PHARMAKON_RATE = 0.07
+DEBT_PHARMAKON_MATURITY = "2031-06-26"
 
-# Debt attributable to parent equity holder (excludes ring-fenced SARL notes
-# that are serviced by SARL assets). Pharmakon loan to be added in Lot 3.
+# The SARL New Money Facility (CHF 150 M nominal, CHF 105 M drawn) was repaid
+# in full on 26 Jun 2026 with Pharmakon proceeds. Zero drawn at the H1 2026
+# valuation date.
+DEBT_NEW_MONEY_FACILITY_CHF_M = 0.0
+
+# Debt attributable to parent equity holder (excludes ring-fenced SARL notes,
+# which are serviced by SARL assets):
 PARENT_ATTRIBUTABLE_DEBT_CHF_M = (
     DEBT_CONVERTIBLE_LOAN_JJ_CHF_M
     + DEBT_CONVERTIBLE_BONDS_CHF_M
     + DEBT_OTHER_FINANCIAL_CHF_M
+    + DEBT_PHARMAKON_LOAN_CHF_M
 )
 # SARL debt (excluded from parent equity bridge in base case):
 SARL_DEBT_CHF_M = DEBT_NOTES_SARL_CHF_M + DEBT_NEW_MONEY_FACILITY_CHF_M
 
-# Parent-attributable cash: Lot 1 keeps the v1.0 arbitrary 89 − 20 split.
-# This will be revised in Lot 3 (removed, replaced by H1 2026 disclosure or
-# flagged as upper bound).
-PARENT_ATTRIBUTABLE_CASH_CHF_M = CASH_YE2025_CHF_M - 20.0  # revised in Lot 3
-PARENT_ATTRIBUTABLE_CASH_STATUS: Status = "assumption"
+# Parent-attributable cash: Lot 3 removes the v1.0 arbitrary CHF 89 − 20
+# split. The SARL-only cash sub-balance has never been disclosed, so we use
+# group cash as an UPPER BOUND and flag the overestimate in TODO_DATA.md.
+# Pending H1 2026 release, this will be re-anchored on the 30 Jun 2026
+# balance sheet (which should also reflect the +150 Pharmakon drawdown
+# minus the −105 New Money Facility repayment, net +45 at op co).
+PARENT_ATTRIBUTABLE_CASH_CHF_M = CASH_YE2025_CHF_M  # upper bound, see TODO_DATA.md
+PARENT_ATTRIBUTABLE_CASH_STATUS: Status = "placeholder"
 
 
 # =============================================================================

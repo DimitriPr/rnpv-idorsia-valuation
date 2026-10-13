@@ -1,13 +1,13 @@
 ---
 title: "Results"
-subtitle: "Per share fair value and investment note, base case CHF 0.89 vs market CHF 4.35"
+subtitle: "Per share fair value and investment note (base case floored at CHF 0.00; see scenarios for upside paths)"
 ---
 
 ## TL;DR
 
 ::: {.callout-important appearance="minimal"}
 **Base case fair value: CHF 0.00 / share (floored).**
-Equity value −481 M pre-floor; current market CHF 4.35 (mid June 2026).
+Equity value −611 M pre-floor; current market CHF 4.22 (IDIA.SW close 2026-10-13). Valuation date: 30 June 2026.
 
 **But the base case is a conservative lower bound, not a price target.**
 The gap to the market decomposes into **two catalysts** the base case
@@ -60,20 +60,24 @@ those figures materially in either direction.
 ![](outputs/figures/waterfall_ev.png){fig-alt="Bridge from parent net cash to enterprise value to value per share"}
 
 ```
-Sum of product rNPVs      : CHF   727 M
-+ Parent net cash          : CHF  −504 M   (cash 69 M − attributable debt 573 M)
-+ SARL residual (base = 0) : CHF     0 M
-= Enterprise value (parent): CHF   223 M
-÷ Shares outstanding       :        250.7 M
-= Fair value / share       : CHF   0.89
+Sum of product rNPVs       : CHF   528 M
++ Parent net cash           : CHF  −634 M   (cash 89 M − attributable debt 723 M)
++ SARL residual (base = 0)  : CHF     0 M
+− PV central costs          : CHF   504 M   (G&A 71 + upstream 25 at year 1, decay to floor)
+= Equity value (parent)     : CHF  −611 M
+÷ Shares outstanding        :        254.0 M
+= Fair value / share (raw)  : CHF  −2.40
+= Fair value / share (floored, limited liability): CHF 0.00
 ```
 
-**Parent net cash is negative** because we conservatively attribute
-CHF 573 M of debt (J&J convertible + convertible bonds + other financial
-debt including R-Bridge royalty monetization) to the parent equity holder
-against only ~CHF 69 M of usable cash. The CHF 762 M of SARL notes are
-excluded, they are non recourse to IDIA shareholders and are serviced
-by the SARL assets (see [Methodology](methodology.qmd)).
+**Parent net cash is negative** because we attribute CHF 723 M of debt
+to the parent equity holder (J&J convertible 335 + Pharmakon term loan
+150 + convertible bonds 49 + other financial 189 including R-Bridge
+royalty monetization) against only ~CHF 89 M of group cash (an upper
+bound, see TODO_DATA.md). The CHF 762 M of SARL notes are excluded,
+they are non-recourse to IDIA shareholders and are serviced by the
+SARL assets. The SARL New Money Facility (CHF 150 M nominal, CHF 105 M
+drawn) was repaid in full on 26 Jun 2026 from Pharmakon proceeds.
 
 ## Key assumptions and sources
 
@@ -93,11 +97,11 @@ inputs that dominate the result.
 | QUVIVIQ US / EU exclusivity | 2036 / 2037 | Idorsia investor presentation, June 2026, p.15 |
 | QUVIVIQ 2026 revenue guidance | CHF 200 M | Idorsia investor presentation, June 2026, p.45 |
 | Lucerastat peak sales | CHF 400 M | Idorsia disclosure of USD ~4 bn addressable market (Fabry, June 2026 pres. p.30); Fabrazyme / Galafold comparables |
-| Group cash 31/12/25 | CHF 89 M | Idorsia Annual Report 2025, p.145 |
-| Parent attributable debt | CHF 573 M | AR 2025 p.145: convertible loan 335 + bonds 49 + other 189 |
-| SARL ring fenced debt (excl.) | CHF 840 M | AR 2025 p.145: notes 762 + facility 78 |
-| Shares outstanding | 250.7 M | AR 2025, p.8 |
-| Current share price | CHF 4.35 | Yahoo Finance / IDIA.SW mid June 2026 midpoint |
+| Group cash 31/12/25 (upper bound at 30 Jun 2026) | CHF 89 M | Idorsia AR 2025, p.145; see TODO_DATA.md |
+| Parent attributable debt | CHF 723 M | AR 2025 p.145 + Pharmakon media release 9/26 Jun 2026: J&J convertible 335 + Pharmakon 150 + bonds 49 + other 189 |
+| SARL ring-fenced debt (excl.) | CHF 762 M | AR 2025 p.145: notes 762; New Money Facility repaid 26 Jun 2026 from Pharmakon proceeds |
+| Shares outstanding | 254.0 M | Idorsia Q1 2026 Financial Report (31 Mar 2026) |
+| Current share price | CHF 4.22 (2026-10-13) | yfinance IDIA.SW latest close, via `scripts/update_price.py` |
 
 ## What the valuation rides on
 
@@ -117,7 +121,7 @@ bet.
 
 ![](outputs/figures/sensitivity_heatmap.png){fig-alt="Value per share heatmap over QUVIVIQ peak sales and discount rate"}
 
-To reach the current CHF 4.35 with QUVIVIQ alone requires peak sales
+To reach the current CHF 4.22 with QUVIVIQ alone requires peak sales
 CHF ~1 000-1 100 M *and* a discount rate at the low end of the WACC
 range (9-10 %). That is not implausible, descheduling in the US,
 IDSIQ label enhancement, and pediatric approval, if all three land,
@@ -140,10 +144,10 @@ The market answers the different question:
 *"What is Idorsia worth on a probability weighted basis, including some
 credit for the SARL reversion and for QUVIVIQ becoming a genuine
 blockbuster?"* The reconciled fair value in that framework sits
-somewhere in CHF 2.5 – 5 / share. The market is at CHF 4.35, the upper
+somewhere in CHF 2.5 – 5 / share. The market is at CHF 4.22, the upper
 end of that range.
 
-**My reconciled personal read**: at CHF 4.35, IDIA is pricing in a
+**My reconciled personal read**: at CHF 4.22, IDIA is pricing in a
 material SARL residual *plus* a QUVIVIQ trajectory noticeably above the
 CHF 600 M I use as base. That is a fairly optimistic combination which is not
 irrational, but leaves limited margin of safety at the current level.
