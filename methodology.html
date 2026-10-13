@@ -395,7 +395,7 @@ window.Quarto = {
 </section>
 <section id="probability-of-success-pos" class="level2">
 <h2 class="anchored" data-anchor-id="probability-of-success-pos">Probability of success (PoS)</h2>
-<p>Phase-to-phase transition probabilities are from BIO/Informa/QLS, <em>Clinical Development Success Rates and Contributing Factors 2011-2020</em> (2021), all-indication figures. These are the single-source replacement for the mixed set of PoS numbers used in v1.0, which combined BIO’s filing-to-approval figure with a Biomedtracker Phase III-to-approval figure under a WSL label. Wong, Siah &amp; Lo (2019) subsequently published a <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6409416/">corrigendum</a> on the Phase 2-&gt;3 and Phase 3-&gt;approval columns of its Table 1; we therefore use BIO 2021 as the single reference.</p>
+<p>Phase-to-phase transition probabilities are from BIO/Informa/QLS, <em>Clinical Development Success Rates and Contributing Factors 2011-2020</em> (2021), all-indication figures. These are the single-source replacement for the mixed set of PoS numbers used in v1.0, which combined BIO's filing-to-approval figure with a Biomedtracker Phase III-to-approval figure under a WSL label. Wong, Siah &amp; Lo (2019) subsequently published a <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6409416/">corrigendum</a> on the Phase 2-&gt;3 and Phase 3-&gt;approval columns of its Table 1; we therefore use BIO 2021 as the single reference.</p>
 <p><strong>Phase-to-phase transitions (BIO 2021):</strong></p>
 <table class="caption-top table">
 <thead>
@@ -454,21 +454,21 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>The cumulative LOA from Phase 1 is 7.9 % per BIO’s published figure and matches our product-of-transitions. Phase-specific overrides can be applied per product in <code>src/assumptions.py</code>; the base case uses the cumulative benchmarks above.</p>
+<p>The cumulative LOA from Phase 1 is 7.9 % per BIO's published figure and matches our product-of-transitions. Phase-specific overrides can be applied per product in <code>src/assumptions.py</code>; the base case uses the cumulative benchmarks above.</p>
 </section>
 <section id="revenue-curve" class="level2">
 <h2 class="anchored" data-anchor-id="revenue-curve">Revenue curve</h2>
 <p>For each product we model annual sales as:</p>
 <ol type="1">
-<li><strong>Ramp phase</strong>, linear buildup from the latest anchored sales figure (historical or guidance) to peak. Ramp durations are set per product in <code>src/assumptions.py</code> (QUVIVIQ 8 years from 2022 launch; lucerastat 4 years; early-stage 5-6 years). We do not use a universal “5-7 years” assumption; each ramp is justified in the product entry.</li>
+<li><strong>Ramp phase</strong>, linear buildup from the latest anchored sales figure (historical or guidance) to peak. Ramp durations are set per product in <code>src/assumptions.py</code> (QUVIVIQ 8 years from 2022 launch; lucerastat 4 years; early-stage 5-6 years). We do not use a universal "5-7 years" assumption; each ramp is justified in the product entry.</li>
 <li><strong>Peak phase</strong>, plateau at the estimated peak sales figure.</li>
 <li><strong>Patent cliff</strong>, -85 % in the year after expiry with 30 % annual decay thereafter (orphan assets decay slower; broadly consistent).</li>
 </ol>
-<p>Peak sales for marketed and Phase 3 assets are triangulated from company guidance, published comparables, and epidemiology data; for Phase 2 assets they are explicit <code>PLACEHOLDER</code> values that will be reanchored after each programme’s proof-of-concept readout. Each peak sales value is documented in <code>src/assumptions.py</code> with its source and status.</p>
+<p>Peak sales for marketed and Phase 3 assets are triangulated from company guidance, published comparables, and epidemiology data; for Phase 2 assets they are explicit <code>PLACEHOLDER</code> values that will be reanchored after each programme's proof-of-concept readout. Each peak sales value is documented in <code>src/assumptions.py</code> with its source and status.</p>
 </section>
 <section id="operating-margin-and-cash-flow" class="level2">
 <h2 class="anchored" data-anchor-id="operating-margin-and-cash-flow">Operating margin and cash flow</h2>
-<p>Sales are converted to operating cash flow via a <em>time-varying</em> operating margin, parameterised per product by <code>op_margin_at_launch</code> and <code>op_margin_at_peak</code>, interpolated linearly between the two anchor years. For QUVIVIQ in particular the margin ramps from 5 % in 2026 (Idorsia’s commercial-profitability target year) to 30 % at peak in 2030, rather than a flat 30 % from 2026.</p>
+<p>Sales are converted to operating cash flow via a <em>time-varying</em> operating margin, parameterised per product by <code>op_margin_at_launch</code> and <code>op_margin_at_peak</code>, interpolated linearly between the two anchor years. For QUVIVIQ in particular the margin ramps from 5 % in 2026 (Idorsia's commercial-profitability target year) to 30 % at peak in 2030, rather than a flat 30 % from 2026.</p>
 <p>Working capital and capex are treated as netting to zero over the forecast horizon (standard rNPV simplification, discussed in Limitations). Taxes are proxied by the operating margin itself.</p>
 </section>
 <section id="development-costs" class="level2">
@@ -477,7 +477,7 @@ window.Quarto = {
 <ul>
 <li><strong>Current phase</strong>: remaining cost is <strong>certain</strong> (weight = 1). The amount is set per product in <code>remaining_current_phase_cost_chf_m</code> using an Idorsia-scale historical burn (~CHF 24 M/year for Phase 2 PoC; see <code>TODO_DATA.md</code> for status).</li>
 <li><strong>Each subsequent phase</strong>: cost is weighted by the <strong>cumulative</strong> probability of reaching that phase (product of BIO 2021 transitions). Future-phase spending does not start until after the current-phase readout.</li>
-<li>Industry-benchmark unweighted phase costs (DiMasi 2016, converted USD 2013 -&gt; CHF 2026 by US CPI 1.40 × USD/CHF 0.90 ~ 1.26) are the default <code>DEV_COSTS_BY_PHASE_CHF_M</code>. Products may override specific phases (e.g.&nbsp;lucerastat’s orphan Fabry Phase 3 at CHF 100 M vs the DiMasi all-indication CHF 322 M average).</li>
+<li>Industry-benchmark unweighted phase costs (DiMasi 2016, converted USD 2013 -&gt; CHF 2026 by US CPI 1.40 × USD/CHF 0.90 ~ 1.26) are the default <code>DEV_COSTS_BY_PHASE_CHF_M</code>. Products may override specific phases (e.g. lucerastat's orphan Fabry Phase 3 at CHF 100 M vs the DiMasi all-indication CHF 322 M average).</li>
 </ul>
 <p>This replaces the v1.0 convention, which treated all remaining dev costs as certain regardless of future-phase advancement probability (and so penalised Phase 1/2 assets by the full future dev spend rather than its expected value).</p>
 </section>
@@ -492,7 +492,7 @@ window.Quarto = {
 <li><strong>G&amp;A</strong> (holding, corporate, finance): CHF 71 M in 2025 non-GAAP (AR 2025, SG&amp;A breakdown).</li>
 <li><strong>Upstream research</strong> (preclinical, platform, non-program-specific): placeholder at CHF 25 M/year (~27 % of total non-GAAP R&amp;D), listed in <code>TODO_DATA.md</code>.</li>
 </ul>
-<p>Trajectory: decline 10 %/year to a floor of CHF 50 M by year ~8, plateau to 2040, then scale with the model’s PoS-weighted revenue (floor CHF 10 M) through 2050. The present value is deducted in the equity-value bridge.</p>
+<p>Trajectory: decline 10 %/year to a floor of CHF 50 M by year ~8, plateau to 2040, then scale with the model's PoS-weighted revenue (floor CHF 10 M) through 2050. The present value is deducted in the equity-value bridge.</p>
 </section>
 <section id="modelling-conventions" class="level2">
 <h2 class="anchored" data-anchor-id="modelling-conventions">Modelling conventions</h2>
@@ -550,7 +550,7 @@ window.Quarto = {
 </section>
 <section id="what-is-not-modelled" class="level3">
 <h3 class="anchored" data-anchor-id="what-is-not-modelled">What is NOT modelled</h3>
-<p>Consistent with the “order of magnitude” tool ambition:</p>
+<p>Consistent with the "order of magnitude" tool ambition:</p>
 <ul>
 <li><strong>Taxes</strong>, subsumed into the operating margin. A separate effective tax layer would trim equity value by ~10-20 %.</li>
 <li><strong>Working capital and capex</strong>, netted to zero over the forecast horizon.</li>
@@ -607,7 +607,7 @@ window.Quarto = {
 </tr>
 <tr class="odd">
 <td>Cash, debt</td>
-<td>Idorsia AR 2025 “Indebtedness” table (p.145); Pharmakon loan from 9/26 Jun 2026 media releases</td>
+<td>Idorsia AR 2025 "Indebtedness" table (p.145); Pharmakon loan from 9/26 Jun 2026 media releases</td>
 </tr>
 <tr class="even">
 <td>Pipeline composition, phase, readouts</td>
@@ -615,7 +615,7 @@ window.Quarto = {
 </tr>
 <tr class="odd">
 <td>PoS transitions</td>
-<td>BIO/Informa/QLS, “Clinical Development Success Rates 2011-2020” (2021)</td>
+<td>BIO/Informa/QLS, "Clinical Development Success Rates 2011-2020" (2021)</td>
 </tr>
 <tr class="even">
 <td>Development cost benchmarks</td>
@@ -636,7 +636,7 @@ window.Quarto = {
 <li>Working capital and capex netted to zero.</li>
 <li>No explicit tax treatment beyond the operating margin.</li>
 <li>Sensitive to peak sales assumptions, especially for Phase 2 placeholders.</li>
-<li>Upstream research is deducted without attributing value to the compounds it generates - a downward bias.</li>
+<li>Upstream research is deducted without attributing value to the compounds it generates, a downward bias.</li>
 <li>QUVIVIQ post-launch R&amp;D is not modelled.</li>
 </ul>
 
