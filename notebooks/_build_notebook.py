@@ -231,7 +231,8 @@ pipeline = pd.DataFrame([{
     "Peak sales (CHF M)": p["peak_sales_chf_m"],
     "Ramp (yrs)": p["ramp_years"],
     "Patent expiry": p["patent_expiry"],
-    "Op margin": p["op_margin"],
+    "Op margin @ launch": p.get("op_margin_at_launch", p.get("op_margin", 0.0)),
+    "Op margin @ peak":   p.get("op_margin_at_peak",   p.get("op_margin", 0.0)),
     "Included in base": p.get("include", True),
 } for k, p in A.PRODUCTS.items()])
 pipeline
@@ -243,9 +244,13 @@ aggressively (§7 does that):
 
 - **QUVIVIQ peak sales (CHF 600 M base)**. Belsomra plateaued at
   ~USD 300 M globally; GlobalData projects the 7MM DORA class to reach
-  USD 4.1 bn by 2032 (multi drug). QUVIVIQ carries best in class daytime
-  functioning + potential US descheduling upside. Base case is
-  intentionally at the low end of "blockbuster potential".
+  USD 4.1 bn by 2032 (multi drug). QUVIVIQ carries best-in-class daytime
+  functioning. On 11 Aug 2026 the DEA proposed to **reclassify DORAs
+  from Schedule IV to Schedule V** (not full descheduling); this is a
+  modest commercial accelerator, not a transformational catalyst. Base
+  case CHF 600 M peak corresponds to a mid-range specialty biotech
+  trajectory (the USD 1 bn global blockbuster threshold would be
+  ~CHF 850 M of Idorsia-recognized net sales).
 - **Lucerastat peak sales (CHF 400 M base)**. Fabry market addressable
   ~USD 4 bn per Idorsia disclosure; comparables Fabrazyme peaked at
   ~USD 1 bn, Galafold at ~USD 450 M.
@@ -276,13 +281,15 @@ md("""
 Notes on shape choices:
 
 - QUVIVIQ ramp from CHF 200 M (2026 guidance) to CHF 600 M peak by 2030
-  a linear 200 → 300 → 400 → 500 → 600 sequence, consistent with the
-  ~+50 % YoY growth Idorsia has delivered and guides. An earlier v0
-  used a 6-year ramp (peak 2028) but that implied 100 %+50 % YoY
-  aggressive without a specific US descheduling catalyst.
+  implies a linear 200 → 300 → 400 → 500 → 600 sequence (31.6 % CAGR
+  from 2026 to 2030). Historical growth +97 % (2023→2024), +120 %
+  (2024→2025), +49 % guided (2025→2026) is already *decelerating*; the
+  implied 31.6 % CAGR continues that deceleration into 2026-2030.
+  An earlier draft used a 6-year ramp (peak 2028) which implied 100 % +
+  50 % YoY — defensible only on an aggressive combined bull case.
 - Lucerastat starts in 2031 (post-2029 filing target) with a 4-year ramp,
   consistent with orphan drug launch dynamics.
-- Patent cliffs use a –85 % drop the year after expiry, decaying 30 %/yr
+- Patent cliffs use a −85 % drop the year after expiry, decaying 30 %/yr
   thereafter, standard rNPV convention.
 """)
 
@@ -361,10 +368,11 @@ display(Image(str(FIG_DIR / "sensitivity_heatmap.png"), width=900))
 
 md("""
 To reach the current market price (shown on the figure, pulled from
-`data/market.json`) requires QUVIVIQ peak sales of CHF ≈1,000-1,100 M
-*and* a discount rate of 9-10 %
-i.e. both variables at their optimistic ends simultaneously. That is not
-implausible if descheduling in the US, label enhancement on daytime
+`data/market.json`) requires QUVIVIQ peak sales well above the base-case
+CHF 600 M *and* a discount rate at the low end of the biotech WACC range
+(9-10 %), i.e. both variables at their optimistic ends simultaneously.
+That is not implausible if the DEA Schedule V reclassification (proposed
+11 Aug 2026, not full descheduling), label enhancement on daytime
 functioning, and pediatric approval all land favourably; but each is a
 separate probabilistic event.
 

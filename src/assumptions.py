@@ -495,3 +495,131 @@ def parent_net_cash_chf_m() -> float:
     TODO_DATA.md).
     """
     return PARENT_ATTRIBUTABLE_CASH_CHF_M - PARENT_ATTRIBUTABLE_DEBT_CHF_M
+
+
+# =============================================================================
+# 11. Programmatic display of key assumptions (used by results.qmd)
+# =============================================================================
+def key_assumptions() -> list[dict]:
+    """Return the key inputs that dominate the valuation, each with name,
+    value, status (sourced / assumption / placeholder), and source note.
+    results.qmd and the notebook consume this list to render a table.
+    """
+    quviviq = PRODUCTS["quviviq"]
+    lucerastat = PRODUCTS["lucerastat"]
+    return [
+        {
+            "input": "Discount rate (mid-year)",
+            "value": f"{DISCOUNT_RATE:.0%}",
+            "status": DISCOUNT_RATE_STATUS,
+            "source": "Standard biotech WACC 11-13 %; sensitivity 10 % / 14 %",
+        },
+        {
+            "input": "PoS transitions set",
+            "value": "BIO 2011-2020",
+            "status": "sourced",
+            "source": "BIO/Informa/QLS 'Clinical Development Success Rates 2011-2020' (2021)",
+        },
+        {
+            "input": "PoS cumulative, Phase 2 -> approval",
+            "value": f"{cumulative_pos('phase2')*100:.1f} %",
+            "status": "sourced",
+            "source": "Derived from BIO 2021 transitions (0.289 * 0.578 * 0.906)",
+        },
+        {
+            "input": "PoS cumulative, Phase 3 -> approval",
+            "value": f"{cumulative_pos('phase3')*100:.1f} %",
+            "status": "sourced",
+            "source": "Derived from BIO 2021 (0.578 * 0.906)",
+        },
+        {
+            "input": "QUVIVIQ peak sales",
+            "value": f"CHF {quviviq['peak_sales_chf_m']:.0f} M",
+            "status": "assumption",
+            "source": "Bracket vs Belsomra/Dayvigo comps + GlobalData 7MM DORA class forecast",
+        },
+        {
+            "input": "QUVIVIQ op margin at launch (2026)",
+            "value": f"{quviviq['op_margin_at_launch']:.0%}",
+            "status": "assumption",
+            "source": "Idorsia 2026 commercial-profitability target (June 2026 pres. p.45)",
+        },
+        {
+            "input": "QUVIVIQ op margin at peak (2030)",
+            "value": f"{quviviq['op_margin_at_peak']:.0%}",
+            "status": "assumption",
+            "source": "Specialty biotech mature range 25-40 %",
+        },
+        {
+            "input": "QUVIVIQ ramp (launch -> peak)",
+            "value": f"{quviviq['ramp_years']} years (peak {quviviq['launch_year'] + quviviq['ramp_years']})",
+            "status": "assumption",
+            "source": "Consistent with +120 % (2024->2025) and +49 % (2025->2026 guided) growth",
+        },
+        {
+            "input": "QUVIVIQ 2026 revenue guidance",
+            "value": "CHF 200 M",
+            "status": "sourced",
+            "source": "Idorsia June 2026 investor presentation p.45",
+        },
+        {
+            "input": "QUVIVIQ US / EU exclusivity",
+            "value": "2036 / 2037",
+            "status": "sourced",
+            "source": "Idorsia June 2026 investor presentation p.15",
+        },
+        {
+            "input": "Lucerastat peak sales",
+            "value": f"CHF {lucerastat['peak_sales_chf_m']:.0f} M",
+            "status": "assumption",
+            "source": "Fabrazyme (~USD 1 bn) / Galafold (~USD 450 M) comparables",
+        },
+        {
+            "input": "Lucerastat Phase 3 remaining cost",
+            "value": f"CHF {lucerastat['remaining_current_phase_cost_chf_m']:.0f} M",
+            "status": "assumption",
+            "source": "Orphan Fabry registrational trial estimate (vs DiMasi avg CHF 322 M, inapplicable)",
+        },
+        {
+            "input": "Group cash YE 2025 (upper bound at 30/06/26)",
+            "value": f"CHF {CASH_YE2025_CHF_M:.0f} M",
+            "status": PARENT_ATTRIBUTABLE_CASH_STATUS,
+            "source": "AR 2025 p.145; SARL-only sub-balance not disclosed, see TODO_DATA.md",
+        },
+        {
+            "input": "Parent-attributable debt",
+            "value": f"CHF {PARENT_ATTRIBUTABLE_DEBT_CHF_M:.0f} M",
+            "status": "sourced",
+            "source": "AR 2025 p.145 + Pharmakon media release 9/26 Jun 2026",
+        },
+        {
+            "input": "J&J convertible loan (treated as debt in base case)",
+            "value": f"CHF {JJ_CONVERTIBLE_PRINCIPAL_CHF_M:.0f} M, strike CHF {JJ_CONVERTIBLE_STRIKE_CHF:.2f}",
+            "status": "sourced",
+            "source": "Idorsia media release 9 Jun 2026; matures 15 Jun 2027",
+        },
+        {
+            "input": "Central costs: G&A year 1",
+            "value": f"CHF {CENTRAL_COSTS_GA_YEAR_1_CHF_M:.0f} M/year",
+            "status": CENTRAL_COSTS_STATUS_GA,
+            "source": "AR 2025 non-GAAP SG&A: G&A line (CHF 71 M, excluding commercial)",
+        },
+        {
+            "input": "Central costs: upstream research year 1",
+            "value": f"CHF {CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M:.0f} M/year",
+            "status": CENTRAL_COSTS_STATUS_UPSTREAM,
+            "source": "~27 % of AR 2025 R&D (non-program-specific), see TODO_DATA.md",
+        },
+        {
+            "input": "Shares outstanding",
+            "value": f"{SHARES_OUTSTANDING_M:.1f} M (Q1 2026)",
+            "status": "sourced",
+            "source": "Idorsia Q1 2026 Financial Report, 31 Mar 2026",
+        },
+        {
+            "input": "Current share price",
+            "value": f"CHF {SHARE_PRICE_CURRENT_CHF:.2f} ({SHARE_PRICE_CURRENT_AS_OF})",
+            "status": SHARE_PRICE_STATUS,
+            "source": "yfinance IDIA.SW latest close via scripts/update_price.py",
+        },
+    ]
