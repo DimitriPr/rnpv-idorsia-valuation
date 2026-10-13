@@ -3,110 +3,184 @@ title: "Methodology"
 subtitle: "From product level cash flows to a per share fair value"
 ---
 
-This page describes how each pipeline product is modelled, how probability weighting is applied, and how the product rNPVs are aggregated into an enterprise value and a per share value.
+This page describes how each pipeline product is modelled, how probability weighting is applied, and how the product rNPVs are aggregated into a parent-attributable equity value and a per-share value.
 
 ## The rNPV formula
 
-For each product, the risk adjusted NPV is:
+For each product, the risk-adjusted NPV is:
 
-$rNPV = \sum_{t=T_0}^{T_{end}} \frac{CF_t \times PoS_{cumulative}}{(1+r)^t} \; - \; \sum_{t=0}^{T_0-1} \frac{DevCost_t}{(1+r)^t}$$
+$$rNPV = PoS_{cum} \; \times \; \sum_{t=T_0}^{T_{end}} \frac{CF_t}{(1+r)^{t - t_0 + 0.5}} \; - \; \sum_{t=t_0}^{T_0-1} \frac{w(phase_t) \; \cdot \; DevCost_{phase_t}}{(1+r)^{t - t_0 + 0.5}}$$
 
 Where:
 
-- $CF_t$ = operating cash flow in year $t$ = $Sales_t \times \text{OpMargin}$
-- $PoS_{cumulative}$ = cumulative probability that the product reaches the market from its current phase
-- $r$ = discount rate (biotech WACC)
-- $DevCost_t$ = remaining clinical development cost in year $t$
-- $T_0$ = expected launch year, $T_{end}$ = end of exclusivity window (post patent cliff)
+- $CF_t$ = operating cash flow in year $t$ = $Sales_t \times (\text{OpMargin}_t - \text{Royalties}_t)$. The margin is a time-varying curve (see *Operating margin* below).
+- $PoS_{cum}$ = cumulative probability that the product reaches the market from its current phase (product of transitions, see *Probability of success* below).
+- $r$ = discount rate (biotech WACC), mid-year convention.
+- $DevCost_{phase_t}$ = clinical development cost of the phase that is spent in year $t$.
+- $w(phase_t)$ = cumulative probability of *reaching* that phase (from the current phase). The current phase has $w = 1$ (certain); next phase has $w = $ one transition; the one after has $w = $ two transitions in product; etc.
+- $T_0$ = launch year, $T_{end}$ = end of exclusivity window.
 
 ## Probability of success (PoS)
 
-Phase to market probabilities are sourced from published academic benchmarks (Wong, Siah & Lo 2019, MIT; BIO Industry Analysis reports). Indicative values used as starting points:
+Phase-to-phase transition probabilities are from BIO/Informa/QLS, *Clinical Development Success Rates and Contributing Factors 2011-2020* (2021), all-indication figures. These are the single-source replacement for the mixed set of PoS numbers used in v1.0, which combined BIO's filing-to-approval figure with a Biomedtracker Phase III-to-approval figure under a WSL label. Wong, Siah & Lo (2019) subsequently published a [corrigendum](https://pmc.ncbi.nlm.nih.gov/articles/PMC6409416/) on the Phase 2→3 and Phase 3→approval columns of its Table 1; we therefore use BIO 2021 as the single reference.
 
-| Current phase | PoS to market |
-|---|---|
-| Phase I | ~10 % |
-| Phase II | ~15–20 % |
-| Phase III | ~50–60 % |
-| Filed | ~85–90 % |
-| Marketed / approved | 100 % |
+```{python}
+#| echo: false
+#| output: asis
+import pandas as pd
+from src import assumptions as A
 
-Exact values used in the model are stored in `src/assumptions.py` with source citations for each product.
+rows = [
+    {"transition": "Phase 1 → Phase 2",       "probability": A.POS_TRANSITIONS["phase1_to_phase2"]},
+    {"transition": "Phase 2 → Phase 3",       "probability": A.POS_TRANSITIONS["phase2_to_phase3"]},
+    {"transition": "Phase 3 → NDA/BLA",       "probability": A.POS_TRANSITIONS["phase3_to_filing"]},
+    {"transition": "NDA/BLA → approval",      "probability": A.POS_TRANSITIONS["filing_to_approval"]},
+]
+cum_rows = [
+    {"from phase": "Phase 1",   "cumulative PoS to approval": A.cumulative_pos("phase1")},
+    {"from phase": "Phase 2",   "cumulative PoS to approval": A.cumulative_pos("phase2")},
+    {"from phase": "Phase 3",   "cumulative PoS to approval": A.cumulative_pos("phase3")},
+    {"from phase": "Filed",     "cumulative PoS to approval": A.cumulative_pos("filing")},
+    {"from phase": "Marketed",  "cumulative PoS to approval": 1.0},
+]
+tdf = pd.DataFrame(rows)
+tdf["probability"] = tdf["probability"].map(lambda x: f"{x*100:.1f} %")
+cdf = pd.DataFrame(cum_rows)
+cdf["cumulative PoS to approval"] = cdf["cumulative PoS to approval"].map(lambda x: f"{x*100:.1f} %")
+
+print("**Phase-to-phase transitions (BIO 2021):**\n")
+print(tdf.to_markdown(index=False))
+print("\n\n**Cumulative PoS to approval (derived):**\n")
+print(cdf.to_markdown(index=False))
+```
+
+The cumulative LOA from Phase 1 is 7.9 % per BIO's published figure and matches our product-of-transitions. Phase-specific overrides can be applied per product in `src/assumptions.py`; the base case uses the cumulative benchmarks above.
 
 ## Revenue curve
 
 For each product we model annual sales as:
 
-1. **Ramp phase**, linear (or S curve) buildup over ~5–7 years from launch to peak.
+1. **Ramp phase**, linear buildup from the latest anchored sales figure (historical or guidance) to peak. Ramp durations are set per product in `src/assumptions.py` (QUVIVIQ 8 years from 2022 launch; lucerastat 4 years; early-stage 5-6 years). We do not use a universal "5-7 years" assumption; each ramp is justified in the product entry.
 2. **Peak phase**, plateau at the estimated peak sales figure.
-3. **Patent cliff**, sharp decline (typically –80 % to –90 % over 1–2 years) at loss of exclusivity.
+3. **Patent cliff**, −85 % in the year after expiry with 30 % annual decay thereafter (orphan assets decay slower; broadly consistent).
 
-Peak sales are constructed bottom up where possible:
-
-$$\text{Peak Sales} = \text{Target patient population} \times \text{Penetration rate} \times \text{Annual price}$$
-
-Every number is sourced (annual report, published analyst estimates, epidemiology literature) and the source is recorded next to the value in `assumptions.py`.
+Peak sales for marketed and Phase 3 assets are triangulated from company guidance, published comparables, and epidemiology data; for Phase 2 assets they are explicit `PLACEHOLDER` values that will be reanchored after each programme's proof-of-concept readout. Each peak sales value is documented in `src/assumptions.py` with its source and status.
 
 ## Operating margin and cash flow
 
-Sales are converted to operating cash flow using an EBIT margin appropriate for a specialty biotech at maturity (indicative range: 25–40 %). The margin is sourced/hypothesised and disclosed. Working capital and capex are treated as netting to zero over the forecast horizon (standard rNPV simplification, discussed in Limitations).
+Sales are converted to operating cash flow via a *time-varying* operating margin, parameterised per product by `op_margin_at_launch` and `op_margin_at_peak`, interpolated linearly between the two anchor years. For QUVIVIQ in particular the margin ramps from 5 % in 2026 (Idorsia's commercial-profitability target year) to 30 % at peak in 2030, rather than a flat 30 % from 2026.
+
+Working capital and capex are treated as netting to zero over the forecast horizon (standard rNPV simplification, discussed in Limitations). Taxes are proxied by the operating margin itself.
 
 ## Development costs
 
-For products not yet on the market, the remaining clinical development cost (Phase III trials, filing) is subtracted as an unweighted expense in the years before launch (i.e. spent regardless of approval outcome). Indicative per phase costs are sourced from published benchmarks.
+Development costs are phase-weighted:
+
+- **Current phase**: remaining cost is **certain** (weight = 1). The amount is set per product in `remaining_current_phase_cost_chf_m` using an Idorsia-scale historical burn (~CHF 24 M/year for Phase 2 PoC; see `TODO_DATA.md` for status).
+- **Each subsequent phase**: cost is weighted by the **cumulative** probability of reaching that phase (product of BIO 2021 transitions). Future-phase spending does not start until after the current-phase readout.
+- Industry-benchmark unweighted phase costs (DiMasi 2016, converted USD 2013 → CHF 2026 by US CPI 1.40 × USD/CHF 0.90 ≈ 1.26) are the default `DEV_COSTS_BY_PHASE_CHF_M`. Products may override specific phases (e.g. lucerastat's orphan Fabry Phase 3 at CHF 100 M vs the DiMasi all-indication CHF 322 M average).
+
+This replaces the v1.0 convention, which treated all remaining dev costs as certain regardless of future-phase advancement probability (and so penalised Phase 1/2 assets by the full future dev spend rather than its expected value).
 
 ## Discount rate
 
-A biotech appropriate WACC in the 11–13 % range is used. The base case is set in `assumptions.py` and the value is stress tested in the sensitivity section.
+A biotech-appropriate WACC in the 11-13 % range is used. The base case is 12 %; sensitivities stress at 10 % and 14 %.
+
+## Central costs (unallocated G&A + upstream research)
+
+In addition to product-level dev costs, the parent carries unallocated central costs that are not captured in `op_margin`:
+
+- **G&A** (holding, corporate, finance): CHF 71 M in 2025 non-GAAP (AR 2025, SG&A breakdown).
+- **Upstream research** (preclinical, platform, non-program-specific): placeholder at CHF 25 M/year (~27 % of total non-GAAP R&D), listed in `TODO_DATA.md`.
+
+Trajectory: decline 10 %/year to a floor of CHF 50 M by year ~8, plateau to 2040, then scale with the model's PoS-weighted revenue (floor CHF 10 M) through 2050. The present value is deducted in the equity-value bridge.
 
 ## Modelling conventions
 
-Two non obvious choices sit under the rNPV that would produce materially different numbers if flipped. Both are documented here for transparency.
+Two non-obvious choices sit under the rNPV that would produce materially different numbers if flipped. Both are documented here for transparency.
 
-### Discounting convention: mid year
+### Discounting convention: mid-year
 
-Cash flows in year $t$ are discounted by $(1+r)^{-(t - t_0 + 0.5)}$, the **mid year convention**. This is the textbook rNPV default: cash is assumed to flow evenly through the year, so the current year cash flow gets half a year of discounting. Two alternatives exist:
+Cash flows in year $t$ are discounted by $(1+r)^{-(t - t_0 + 0.5)}$, the **mid-year convention**. This is the textbook rNPV default: cash is assumed to flow evenly through the year.
 
-| Convention | Formula | Effect on base case (CHF/share) |
-|---|---|---|
-| Start of year | $(1+r)^{-(t - t_0)}$ | ~ +6 % higher (no discount on t₀ CF) |
-| **Mid year (used here)** | $(1+r)^{-(t - t_0 + 0.5)}$ | base |
-| End of year | $(1+r)^{-(t - t_0 + 1)}$ | ~ −6 % lower (full year of discount on t₀ CF) |
+```{python}
+#| echo: false
+#| output: asis
+import pandas as pd
+from src import rnpv, assumptions as A
 
-The convention is exposed as a keyword argument on `discount_factors()` in `rnpv.py` so it can be flipped in one line for stress testing.
+base = rnpv.value_per_share(discount_rate=A.DISCOUNT_RATE)
+rows = []
+for label, conv_name in [
+    ("Start of year", "start_of_year"),
+    ("**Mid year (used here)**", "mid_year"),
+    ("End of year", "end_of_year"),
+]:
+    # Build the bridge with an alternate convention. We patch discount_factors via a lambda.
+    import src.rnpv as R
+    import numpy as np
+    original = R.discount_factors
+    def _conv_df(valuation_year, horizon_year, rate, convention="mid_year", _c=conv_name):
+        return original(valuation_year, horizon_year, rate, convention=_c)
+    R.discount_factors = _conv_df
+    try:
+        v = rnpv.value_per_share()
+        row = {
+            "convention": label,
+            "equity value (CHF M)": f"{v['equity_value_chf_m']:,.0f}",
+            "value per share (CHF)": f"{v['value_per_share_chf']:.2f}",
+            "Δ equity value vs mid year": f"{(v['equity_value_chf_m'] - base['equity_value_chf_m']):+,.0f}",
+            "Δ per share vs mid year": f"{(v['value_per_share_chf'] - base['value_per_share_chf']):+.2f}",
+        }
+        rows.append(row)
+    finally:
+        R.discount_factors = original
+
+df = pd.DataFrame(rows)
+print(df.to_markdown(index=False))
+```
+
+The convention flips both the asset side (product rNPVs) and the net-cash side; the per-share effect is amplified by the net-debt position.
 
 ### QUVIVIQ ramp trajectory: 8 years to peak
 
-The model interpolates linearly from the last anchored sales figure (CHF 200 M guidance for 2026) to the peak of CHF 600 M by 2030, a 4-year interpolation from the anchor, or an 8-year ramp counted from the 2022 launch year. This produces the sequence 200 → 300 → 400 → 500 → 600 (2026-2030), consistent with the ~+50 % YoY growth Idorsia has been delivering and guides for 2026.
+The model interpolates linearly from the last anchored sales figure (CHF 200 M guidance for 2026) to the peak of CHF 600 M by 2030 — an 8-year ramp counted from the 2022 launch year. This produces the sequence 200 → 300 → 400 → 500 → 600 (2026-2030), consistent with the ~+50 % YoY growth Idorsia has been delivering and guides for 2026.
 
-An earlier draft used `ramp_years = 6` (peak in 2028), which would imply 200 → 400 → 600 in two years, 100 % then 50 % YoY growth. Defensible only under an aggressive combined US descheduling + pediatric approval + European reimbursement bull case. The current setting is deliberately more conservative and can be retightened via the tornado / heatmap.
+An earlier draft used a 6-year ramp (peak in 2028), implying 200 → 400 → 600 in two years. Defensible only under an aggressive combined US descheduling + pediatric approval + European reimbursement bull case.
 
 ### What is NOT modelled
 
 Consistent with the "order of magnitude" tool ambition:
 
-- **Taxes**, subsumed into the operating margin. A separate effective tax layer would trim EV by ~10–20 %.
+- **Taxes**, subsumed into the operating margin. A separate effective tax layer would trim equity value by ~10-20 %.
 - **Working capital and capex**, netted to zero over the forecast horizon.
 - **Product outcome correlation**, treated as independent (no portfolio effect).
-- **J&J convertible optionality**, the CHF 335 M convertible loan is treated as pure debt at its ~CHF 11.55 strike. Rerating toward the strike would introduce dilution.
-- **SARL cash flow priorities**, the ring fenced debt at Idorsia Investments SARL is excluded from the parent bridge in the base case; the residual reversion to the parent is set to zero and stressed only in scenarios.
+- **J&J convertible optionality**, the CHF 335 M convertible loan is treated as pure debt. An `if-converted` test applies in scenarios where V/share exceeds the CHF ~11.5 strike (adding 29.1 M shares, removing CHF 335 M of debt). See *Scenarios* in [Results](results.qmd).
+- **SARL cash flow priorities**, the ring-fenced debt at Idorsia Investments SARL is excluded from the parent bridge in the base case; the residual reversion to the parent is set to zero and stressed only in scenarios.
+- **Central costs modelled as a simple decline-then-floor-then-proportional curve**, without a line-by-line projection of G&A or upstream research.
+- **Future value of unborn pipeline candidates**, the upstream research line is deducted but no value is attributed to the compounds that upstream research will generate. This biases the model downward.
+- **QUVIVIQ post-launch R&D**, pediatric programme and label extensions are in neither `dev_cost_curve` (prelaunch only) nor `central_costs` (non-program-specific). See Limitations.
 
 ## Aggregation
 
-$$EV = \sum_{i \in products} rNPV_i + \text{NetCash}$$
+$$EquityValue_{parent} = \sum_{i \in products} rNPV_i + NetCash_{parent} + SARL_{residual} - PV(CentralCosts)$$
 
-$$\text{Value per share} = \frac{EV}{\text{Shares outstanding}}$$
+$$\text{Value per share} = \max\!\left(0, \; \frac{EquityValue_{parent}}{\text{Shares outstanding}}\right)$$
 
-Net cash and shares outstanding are taken from the most recent Idorsia balance sheet and share count disclosures.
+The `max(0, ·)` floor reflects limited liability: shareholders cannot owe money to the company. The raw (potentially negative) per-share value is kept as `value_per_share_raw_chf` for display in notes.
 
 ## Sensitivity
 
-The model is stress tested along the axes that dominate rNPV in practice:
+The model is stress-tested along the axes that dominate rNPV in practice:
 
 - Discount rate (10 % → 14 %)
 - PoS of the lead clinical candidate (±20 %)
 - Peak sales of the top revenue driver (±30 %)
-- A tornado chart ranks the sensitivities.
+- SARL residual (0 → CHF 400 M)
+- QUVIVIQ operating margin (±5 pp at peak)
+- Central costs upstream placeholder (±50 %)
+
+A tornado chart ranks the sensitivities.
 
 ## Data sources
 
@@ -114,17 +188,20 @@ All inputs are public. No Bloomberg / paid analyst data is republished.
 
 | Input | Source |
 |---|---|
-| Share price, market cap, shares outstanding | `yfinance` (IDIA.SW), SIX, Idorsia IR |
-| Cash, debt, burn rate | Idorsia annual report, quarterly releases |
-| Pipeline composition, phase | Idorsia IR pipeline page, trial press releases |
-| Regulatory status | FDA / EMA / Swissmedic press releases |
-| PoS benchmarks | Wong, Siah & Lo (2019); BIO Industry Analysis |
-| Prices, market size | Published analyst notes, specialty press, epidemiology |
+| Share price (IDIA.SW) | `scripts/update_price.py` writes `data/market.json` from yfinance |
+| Shares outstanding | Idorsia Q1 2026 Financial Report, 254.0 M issued at 31 Mar 2026 |
+| Cash, debt | Idorsia AR 2025 "Indebtedness" table (p.145); Pharmakon loan from 9/26 Jun 2026 media releases |
+| Pipeline composition, phase, readouts | Idorsia June 2026 investor presentation p.29 |
+| PoS transitions | BIO/Informa/QLS, "Clinical Development Success Rates 2011-2020" (2021) |
+| Development cost benchmarks | DiMasi, Grabowski, Hansen (2016), *J Health Econ* 47:20-33 |
+| G&A line | Idorsia AR 2025 non-GAAP SG&A breakdown |
 
 ## Limitations
 
-- rNPV is an order of magnitude tool, not a precise valuation.
-- Assumes independence of product level outcomes (no portfolio correlation modelling).
-- Working capital and capex are netted to zero.
-- No explicit tax treatment beyond an EBIT margin proxy.
-- Sensitive to peak sales assumptions, which are inherently uncertain.
+- rNPV is an order-of-magnitude tool, not a precise valuation.
+- Product outcomes are assumed independent (no portfolio correlation).
+- Working capital and capex netted to zero.
+- No explicit tax treatment beyond the operating margin.
+- Sensitive to peak sales assumptions, especially for Phase 2 placeholders.
+- Upstream research is deducted without attributing value to the compounds it generates — a downward bias.
+- QUVIVIQ post-launch R&D is not modelled.

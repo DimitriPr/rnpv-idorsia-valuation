@@ -89,22 +89,28 @@ def _value_per_share(
     discount_rate: float | None = None,
     include_sarl_residual: bool = False,
     sarl_residual_chf_m: float | None = None,
+    central_upstream_year_1_chf_m: float | None = None,
+    floor_at_zero: bool = True,
 ) -> float:
-    """Wrapper that returns just the per share value (CHF)."""
+    """Wrapper that returns just the per-share value (CHF)."""
     products = A.PRODUCTS if not product_overrides else _with_overrides(product_overrides)
-    # temporarily override SARL residual if requested (module level constant)
     original_sarl = A.SARL_RESIDUAL_VALUE_CHF_M
+    original_upstream = A.CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M
     if sarl_residual_chf_m is not None:
         A.SARL_RESIDUAL_VALUE_CHF_M = sarl_residual_chf_m
+    if central_upstream_year_1_chf_m is not None:
+        A.CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M = central_upstream_year_1_chf_m
     try:
         bridge = rnpv.value_per_share(
             products=products,
             discount_rate=discount_rate,
             include_sarl_residual=include_sarl_residual,
+            floor_at_zero=floor_at_zero,
         )
         return bridge["value_per_share_chf"]
     finally:
         A.SARL_RESIDUAL_VALUE_CHF_M = original_sarl
+        A.CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M = original_upstream
 
 
 # ---------------------------------------------------------------------------
@@ -211,12 +217,12 @@ def tornado_data() -> pd.DataFrame:
         _value_per_share(discount_rate=0.14),
         _value_per_share(discount_rate=0.10),
     )
-    # d) QUVIVIQ op margin ±5 pp
-    m = A.PRODUCTS["quviviq"]["op_margin"]
+    # d) QUVIVIQ op margin at peak ±5 pp
+    m_peak = A.PRODUCTS["quviviq"]["op_margin_at_peak"]
     _row(
-        "QUVIVIQ op margin (±5 pp)",
-        _value_per_share({"quviviq": {"op_margin": m - 0.05}}),
-        _value_per_share({"quviviq": {"op_margin": m + 0.05}}),
+        "QUVIVIQ op margin at peak (±5 pp)",
+        _value_per_share({"quviviq": {"op_margin_at_peak": m_peak - 0.05}}),
+        _value_per_share({"quviviq": {"op_margin_at_peak": m_peak + 0.05}}),
     )
     # e) Lucerastat PoS ±20 %
     lpos = A.PRODUCTS["lucerastat"]["pos"]
@@ -230,6 +236,13 @@ def tornado_data() -> pd.DataFrame:
         "SARL residual (0 vs CHF 400 M)",
         _value_per_share(sarl_residual_chf_m=0.0, include_sarl_residual=True),
         _value_per_share(sarl_residual_chf_m=400.0, include_sarl_residual=True),
+    )
+    # g) Central costs upstream (±50 %) — placeholder sensitivity
+    u = A.CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M
+    _row(
+        "Central costs: upstream R&D (±50 %)",
+        _value_per_share(central_upstream_year_1_chf_m=u * 1.5),  # higher cost = lower value
+        _value_per_share(central_upstream_year_1_chf_m=u * 0.5),
     )
     df = pd.DataFrame(rows).sort_values("swing", ascending=True).reset_index(drop=True)
     return df
@@ -372,7 +385,8 @@ def plot_waterfall(out: Path = FIG_DIR / "waterfall_ev.png") -> Path:
     for v in bridge["products"]:
         steps.append((v.name.split(" (")[0], v.rnpv))
     steps.append(("SARL residual", bridge["sarl_residual_chf_m"]))
-    steps.append(("EV (parent)", bridge["ev_chf_m"]))
+    steps.append(("− PV central costs", -bridge["central_costs_pv_chf_m"]))
+    steps.append(("Equity value (parent)", bridge["equity_value_chf_m"]))
 
     labels = [s[0] for s in steps]
     values = [s[1] for s in steps]
@@ -380,9 +394,9 @@ def plot_waterfall(out: Path = FIG_DIR / "waterfall_ev.png") -> Path:
     fig, ax = _new_fig(figsize=(10, 5))
     cumulative = 0.0
     for i, (lab, val) in enumerate(zip(labels, values)):
-        if lab == "EV (parent)":
-            ax.bar(i, val, color=ACCENT_BRIGHT, alpha=0.95)
-            ax.text(i, val, f" {val:,.0f}", ha="center", va="bottom", color=FG, fontsize=9)
+        if lab == "Equity value (parent)":
+            ax.bar(i, val, color=ACCENT_BRIGHT if val >= 0 else NEG, alpha=0.95)
+            ax.text(i, val, f" {val:,.0f}", ha="center", va="bottom" if val >= 0 else "top", color=FG, fontsize=9)
         else:
             color = POS if val >= 0 else NEG
             ax.bar(i, val, bottom=cumulative, color=color, alpha=0.85)
@@ -400,9 +414,15 @@ def plot_waterfall(out: Path = FIG_DIR / "waterfall_ev.png") -> Path:
     ax.set_xticks(range(len(labels)))
     ax.set_xticklabels(labels, rotation=25, ha="right", color=FG, fontsize=9)
     ax.set_ylabel("CHF M")
+    _per_share_label = (
+        f"CHF {bridge['value_per_share_chf']:.2f}/share"
+        f" (floored; raw {bridge['value_per_share_raw_chf']:.2f})"
+        if bridge.get("value_per_share_floored")
+        else f"CHF {bridge['value_per_share_chf']:.2f}/share"
+    )
     ax.set_title(
-        f"Bridge to enterprise value, CHF {bridge['ev_chf_m']:,.0f} M "
-        f"→ CHF {bridge['value_per_share_chf']:.2f}/share",
+        f"Bridge to parent equity value, CHF {bridge['equity_value_chf_m']:,.0f} M "
+        f"→ {_per_share_label}",
         fontsize=11, fontweight="semibold", pad=14,
     )
     fig.tight_layout()
