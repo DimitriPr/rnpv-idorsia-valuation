@@ -1,6 +1,6 @@
 {
   "ticker": "IDIA.SW",
-  "price_chf": 4.22,
+  "price_chf": 4.16,
   "as_of": "2026-10-13",
   "status": "sourced",
   "source": "yfinance IDIA.SW latest close"
