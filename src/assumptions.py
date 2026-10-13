@@ -1,34 +1,37 @@
-"""Assumptions for the Idorsia rNPV model.
+"""Assumptions for the Idorsia rNPV model (v1.2).
 
-All numbers are tagged with a `status` field (sourced / assumption / placeholder) and,
-when sourced, with an inline `# source:` comment pointing to the public document.
+All numbers carry a `status` field (sourced / assumption / placeholder) and,
+when sourced, an inline `# source:` comment pointing to a public document.
 Currency: CHF millions. Convention: cash inflows positive, outflows negative.
 
-Sources:
-  - Idorsia Annual Report 2025 (published Feb 26, 2026)
-  - Idorsia Investor Company Presentation, June 2026
-  - Idorsia Q1 2026 Financial Report (May 2026)
+Primary source for v1.2:
+  - Idorsia, Financial Report H1 2026 (publication 30 July 2026),
+    local copy at data/raw/2026-6m-idorsia-financial-report.pdf
+    (abbreviated below as H1 2026 Report, with page refs e.g. "H1 p.22").
+
+Other sources:
+  - Idorsia Annual Report 2025 (published 26 Feb 2026) ("AR 2025 p.X")
+  - Idorsia Investor Presentation, June 2026 ("June 2026 pres. p.X")
   - BIO/Informa/QLS, "Clinical Development Success Rates 2011-2020" (2021)
   - DiMasi, Grabowski, Hansen (2016), *J Health Econ* 47:20-33
-
-Local copies of the two Idorsia PDFs live in data/raw/.
 
 CRITICAL STRUCTURAL NOTE, read before touching PRODUCTS:
     Idorsia Ltd (SIX: IDIA) is the listed parent. In 2025 it transferred the
     rights to aprocitentan (TRYVIO/JERAYGO), selatogrel and cenerimod to
-    Idorsia Investments SARL, a ring-fenced subsidiary that secures the SARL
-    notes due 2048/2050. Cash flows from those three assets service the SARL
-    debt first; rights revert to the parent only after the debt+interest are
-    fully repaid.
+    Idorsia Investments SARL, which secures the SARL notes due 2048/2050.
+    SARL notes A1/A2 benefit from a LIMITED and SUBORDINATED guarantee from
+    Idorsia Ltd (H1 p.17, p.41): "non-recourse" is therefore inaccurate.
 
-    The model therefore values, for the equity holder of IDIA:
+    Cash flows from those three assets service the SARL debt first; rights
+    revert to the parent only after the SARL debt + interest are fully repaid.
+
+    The model values, for the equity holder of IDIA:
       (1) QUVIVIQ (daridorexant), held at Idorsia Pharmaceuticals Ltd
       (2) The R&D pipeline (lucerastat + early stage), same op co
-      (3) A residual / option value for the SARL reversion, set to 0 in
-          the base case (documented as upside)
-      (4) Net cash/debt at the parent + op co (excluding SARL debt, which
-          is non-recourse to IDIA equity holders in expectation), minus a
-          present value of unallocated central costs (G&A + upstream research)
+      (3) A residual / option value for the SARL reversion (base case = 0)
+      (4) Net cash/debt at the parent + op co (excluding SARL notes), minus
+          a PV of unallocated central costs (G&A + upstream research), minus
+          a PV of the J&J residual royalty cash outflow (cap CHF 272 M).
 """
 
 from __future__ import annotations
@@ -45,16 +48,40 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 # =============================================================================
 # 1. MARKET DATA
 # =============================================================================
-# source: Idorsia AR 2025, "Key share data" table, p.8
+# source: AR 2025 "Key share data" p.8 (YE 2025 snapshot kept for historical ref)
 SHARE_PRICE_YE2025_CHF = 4.26
 MARKET_CAP_YE2025_CHF_M = 1_070
 
-# source: Idorsia Q1 2026 Financial Report, "Share count" (31 March 2026)
-# https://www.idorsia.com/dam/jcr:2d9c0e6a-f46c-4817-a501-ee652f7cb17f/2026-3m-idorsia-financial-report.pdf
-SHARES_OUTSTANDING_M = 254.0                   # basic, issued common (Q1 2026, 31 Mar 2026)
-POTENTIAL_SHARES_FULLY_DILUTED_M = 317.1       # incl. J&J convertible (29.1 M) + equity instruments
+# source: H1 2026 Report, p.12 (shares issued 30 Jun 2026, after the J&J
+# tranche-conversion of 7.4 M shares on 19 Jun 2026).
+SHARES_ISSUED_M = 263.1
 
-# Current share price: pulled from data/market.json by scripts/update_price.py
+# Diluted share count components (shown explicitly in the per-share bridge).
+# All sourced from H1 2026 Report unless noted.
+SHARES_JJ_CONVERSION_M = 21.7                # H1 p.38-39: remaining J&J loan converts into 21.7 M shares at CHF 11.48
+SHARES_WARRANTS_M = 10.85                    # H1 p.48: 10.85 M warrants at CHF 1.49, exercise cash CHF 16.2 M
+SHARES_WARRANTS_STRIKE_CHF = 1.49
+SHARES_WARRANTS_CASH_IN_CHF_M = 16.2         # 10.85 M * 1.49 = CHF 16.2 M cash into the parent on exercise
+SHARES_WARRANTS_EXPIRY = "2027-06-02"
+SHARES_UNVESTED_FREE_M = 9.5                 # H1 p.48: unvested free shares (not yet exercisable, but counted diluted)
+SHARES_CB_2034_IFCONVERTED_M = 2.72          # H1 p.39: CB 2034 conversion = 16.5 M principal / CHF 6.00 strike
+CB_2034_STRIKE_CHF = 6.00
+SHARES_OPTIONS_M = 7.1                       # H1 p.48: 7.1 M options, weighted-avg strike CHF 10.97
+SHARES_OPTIONS_STRIKE_CHF = 10.97
+
+# Convenience: v1.0/v1.1-era aliases kept so legacy callers (and tests that
+# haven't been updated) do not break. These are now DERIVED values.
+SHARES_OUTSTANDING_M = SHARES_ISSUED_M        # basic (issued), 30 Jun 2026
+POTENTIAL_SHARES_FULLY_DILUTED_M = (
+    SHARES_ISSUED_M
+    + SHARES_JJ_CONVERSION_M
+    + SHARES_WARRANTS_M
+    + SHARES_UNVESTED_FREE_M
+    + SHARES_CB_2034_IFCONVERTED_M
+    + SHARES_OPTIONS_M
+)
+
+# Current share price: data/market.json populated by scripts/update_price.py
 # (yfinance IDIA.SW latest close). Fallback placeholder keeps the model
 # functional if the file is missing or stale.
 _MARKET_FILE = ROOT / "data" / "market.json"
@@ -69,10 +96,10 @@ def _load_market_data() -> dict:
             pass
     return {
         "ticker": "IDIA.SW",
-        "price_chf": 4.35,
-        "as_of": "2026-06-17",
+        "price_chf": 4.16,
+        "as_of": "2026-10-13",
         "status": "placeholder",
-        "source": "mid-June 2026 placeholder; run scripts/update_price.py to refresh",
+        "source": "placeholder; run scripts/update_price.py to refresh",
     }
 
 
@@ -83,67 +110,125 @@ SHARE_PRICE_STATUS: Status = _MARKET_DATA.get("status", "placeholder")
 
 
 # =============================================================================
-# 2. BALANCE SHEET
+# 2. BALANCE SHEET at 30 June 2026
 # =============================================================================
-# Target valuation date: 30 June 2026. As of the model build date the
-# full H1 2026 release had not been published; group cash and most debt
-# lines are still at YE 2025 book value, with the exception of items we
-# have explicit disclosure for (Pharmakon loan, Q1 2026 share count,
-# Pharmakon-driven New Money Facility payoff). Missing H1 2026 items are
-# listed in TODO_DATA.md.
+# ALL lines in this section are at 30 Jun 2026 unless otherwise noted.
+# Primary source: H1 2026 Report. The v1.0/v1.1 practice of mixing YE 2025
+# and Jun 2026 figures is now gone.
 VALUATION_DATE = "2026-06-30"
 
-# source: Idorsia AR 2025, "Liquidity" table, p.145
-CASH_YE2025_CHF_M = 89.0                        # group consolidated cash & equivalents, YE 2025 (upper bound at 30 Jun 2026)
+# source: H1 p.22 (consolidated balance sheet, cash and equivalents)
+CASH_30JUN2026_CHF_M = 88.7
+# Backwards-compat alias (older callers):
+CASH_YE2025_CHF_M = 89.0                     # YE 2025, kept for historical reporting
 
-# source: Idorsia AR 2025, "Indebtedness" table, p.145 (nominal amounts)
-DEBT_CONVERTIBLE_LOAN_JJ_CHF_M = 335.0          # J&J convertible loan, matures 15 Jun 2027, zero coupon
-DEBT_NOTES_SARL_CHF_M = 762.0                   # ring-fenced SARL notes, due 2048/2050, NON-RECOURSE to parent
-DEBT_CONVERTIBLE_BONDS_CHF_M = 49.0             # convertible bonds, mature 2034/2038
-DEBT_OTHER_FINANCIAL_CHF_M = 189.0              # incl. IFRS 16 leases, R-Bridge royalty monetization (CHF 27 M)
+# ---------------------------------------------------------------------------
+# J&J convertible loan (Cilag), post the 19 Jun 2026 tranche conversion.
+# source: H1 Report p.38-39.
+#   - Remaining nominal: CHF 250 M (down from 335 after 85 M converted).
+#   - Convertible into 21.7 M IDIA shares at a strike of CHF 11.48.
+#   - Matures 15 Jun 2027.
+#   - At maturity Idorsia can settle in cash OR shares. The Pharmakon loan
+#     covenant (p.44) FORBIDS cash repayment of a convertible loan.
+#     => The remaining 250 M will be settled in shares. The convertible is
+#     treated as 0 debt + a deterministic +21.7 M share issuance at CHF 11.48.
+#     It is a "deferred equity issuance", not a cash outflow and not an upside.
+# ---------------------------------------------------------------------------
+JJ_CONVERTIBLE_PRINCIPAL_REMAINING_CHF_M = 250.0
+JJ_CONVERTIBLE_STRIKE_CHF = 11.48
+JJ_CONVERTIBLE_MATURITY = "2027-06-15"
+# Legacy alias (apply_if_converted still exists and is reused for CB 2034)
+JJ_CONVERTIBLE_PRINCIPAL_CHF_M = JJ_CONVERTIBLE_PRINCIPAL_REMAINING_CHF_M
+JJ_CONVERTIBLE_SHARES_ON_CONVERSION_M = SHARES_JJ_CONVERSION_M
 
-# source: Idorsia media release 9 Jun 2026 and closing announcement 26 Jun 2026
-# https://idorsia.com/media/news/news-archive/media-release-details?id=3703084
-# Pharmakon senior secured term loan: up to CHF 250 M, 5 years, fixed 7 %.
-# First tranche of CHF 150 M drawn at closing (26 Jun 2026) and used to repay
-# in full the New Money Facility (CHF 105 M drawn). Borrower: Idorsia
-# Pharmaceuticals Ltd (op co, parent-attributable, NOT SARL).
-# https://goodwinlaw.com/en/news-and-events/news/2026/06/announcements-otherindustries-ip-goodwin-advises-pharmakon-advisors
-DEBT_PHARMAKON_LOAN_CHF_M = 150.0               # tranche 1 drawn 26 Jun 2026 (parent-attributable)
+# ---------------------------------------------------------------------------
+# Convertible bonds (CB), H1 p.39-40.
+#   - CB 2034: CHF 16.5 M nominal, strike CHF 6.00 => 2.72 M shares if converted.
+#   - CB 2038: CHF 32.8 M nominal, strike CHF 31.54.
+#   - Treated as debt; CB 2034 if-converted test triggers when V/share > 6.00.
+# ---------------------------------------------------------------------------
+DEBT_CB_2034_CHF_M = 16.5
+DEBT_CB_2038_CHF_M = 32.8
+DEBT_CONVERTIBLE_BONDS_CHF_M = DEBT_CB_2034_CHF_M + DEBT_CB_2038_CHF_M  # 49.3 M total
+
+# ---------------------------------------------------------------------------
+# Pharmakon term loan (Idorsia Pharmaceuticals Ltd), H1 p.43-44.
+#   - CHF 150 M nominal drawn 26 Jun 2026, 7 %, quarterly amortisation from
+#     30 Sep 2029, final maturity 25 Jun 2031.
+#   - Covenants: minimum liquidity, minimum revenue, obligation to strengthen
+#     liquidity within an agreed timeframe (implies anticipated capital raise,
+#     i.e. dilution not modelled).
+# ---------------------------------------------------------------------------
+DEBT_PHARMAKON_LOAN_CHF_M = 150.0
 DEBT_PHARMAKON_RATE = 0.07
-DEBT_PHARMAKON_MATURITY = "2031-06-26"
+DEBT_PHARMAKON_MATURITY = "2031-06-25"
 
-# The SARL New Money Facility (CHF 150 M nominal, CHF 105 M drawn) was repaid
-# in full on 26 Jun 2026 with Pharmakon proceeds. Zero drawn at the H1 2026
-# valuation date.
+# ---------------------------------------------------------------------------
+# Other financial debt (H1 p.42), decomposed:
+#   - Sale-and-leaseback: CHF 162 M, parent debt
+#   - R-Bridge royalty monetization: CHF 24 M, serviced by VAMOROLONE royalties
+#     which are NOT in the model. EXCLUDED from the parent bridge for
+#     asset/liability consistency.
+# Historical total line used in v1.1 was 189 M; v1.2 keeps only the 162 M
+# sale-leaseback.
+# ---------------------------------------------------------------------------
+DEBT_SALE_LEASEBACK_CHF_M = 162.0
+DEBT_RBRIDGE_CHF_M = 24.0                    # excluded from parent bridge
+DEBT_OTHER_FINANCIAL_CHF_M = DEBT_SALE_LEASEBACK_CHF_M  # for parent bridge; R-Bridge excluded
+
+# ---------------------------------------------------------------------------
+# New Money Facility (Idorsia Luxembourg SARL, NOT Investments SARL).
+#   - 78 M nominal drawn at YE 2025 (H1 p.16, p.43).
+#   - 113 M of principal repaid on 25 Jun 2026 using Pharmakon proceeds.
+#   - Zero at 30 Jun 2026. Not in the current bridge.
+# ---------------------------------------------------------------------------
+DEBT_NEW_MONEY_FACILITY_YE2025_CHF_M = 78.0
+DEBT_NEW_MONEY_FACILITY_REPAID_CHF_M = 113.0
 DEBT_NEW_MONEY_FACILITY_CHF_M = 0.0
 
-# Debt attributable to parent equity holder (excludes ring-fenced SARL notes,
-# which are serviced by SARL assets):
-PARENT_ATTRIBUTABLE_DEBT_CHF_M = (
-    DEBT_CONVERTIBLE_LOAN_JJ_CHF_M
-    + DEBT_CONVERTIBLE_BONDS_CHF_M
-    + DEBT_OTHER_FINANCIAL_CHF_M
-    + DEBT_PHARMAKON_LOAN_CHF_M
+# ---------------------------------------------------------------------------
+# SARL notes (Idorsia Investments SARL), H1 p.17, p.41.
+#   - A1 121 + A2 260 + B 394 = CHF 774 M nominal at 30 Jun 2026.
+#   - Interest is PIK (capitalised): +CHF 16.2 M added on 17 Jul 2026.
+#   - Notes A benefit from a LIMITED and SUBORDINATED guarantee from
+#     Idorsia Ltd. "Non-recourse to IDIA shareholders" is inaccurate; the
+#     exact phrase used in results.qmd and methodology.qmd is updated.
+# ---------------------------------------------------------------------------
+DEBT_NOTES_SARL_A1_CHF_M = 121.0
+DEBT_NOTES_SARL_A2_CHF_M = 260.0
+DEBT_NOTES_SARL_B_CHF_M = 394.0
+DEBT_NOTES_SARL_CHF_M = (
+    DEBT_NOTES_SARL_A1_CHF_M + DEBT_NOTES_SARL_A2_CHF_M + DEBT_NOTES_SARL_B_CHF_M
 )
-# SARL debt (excluded from parent equity bridge in base case):
+# Legacy alias used by legacy callers:
+DEBT_CONVERTIBLE_LOAN_JJ_CHF_M = 0.0         # J&J is now 0 debt (settled in shares at maturity)
+
+# ---------------------------------------------------------------------------
+# Debt attributable to parent equity holder.
+# Excludes:
+#   - J&J convertible (becomes equity issuance via the mandatory share settlement)
+#   - SARL notes (serviced by SARL assets; subordinated Idorsia Ltd guarantee is
+#     NOT included in the base case, flagged in Limitations)
+#   - R-Bridge monetization (serviced by vamorolone royalties not in the model)
+#   - New Money Facility (repaid 25 Jun 2026)
+# ---------------------------------------------------------------------------
+PARENT_ATTRIBUTABLE_DEBT_CHF_M = (
+    DEBT_PHARMAKON_LOAN_CHF_M
+    + DEBT_CONVERTIBLE_BONDS_CHF_M
+    + DEBT_SALE_LEASEBACK_CHF_M
+)
+# SARL debt kept separate (excluded from parent equity bridge):
 SARL_DEBT_CHF_M = DEBT_NOTES_SARL_CHF_M + DEBT_NEW_MONEY_FACILITY_CHF_M
 
-# Parent-attributable cash: Lot 3 removes the v1.0 arbitrary CHF 89 - 20
-# split. The SARL-only cash sub-balance has never been disclosed, so we use
-# group cash as an UPPER BOUND and flag the overestimate in TODO_DATA.md.
-# Pending H1 2026 release, this will be re-anchored on the 30 Jun 2026
-# balance sheet (which should also reflect the +150 Pharmakon drawdown
-# minus the -105 New Money Facility repayment, net +45 at op co).
-PARENT_ATTRIBUTABLE_CASH_CHF_M = CASH_YE2025_CHF_M  # upper bound, see TODO_DATA.md
+# Parent-attributable cash. The SARL-only cash sub-balance is still not
+# cleanly disclosed, so group cash remains an upper bound. Kept at 30 Jun 2026.
+PARENT_ATTRIBUTABLE_CASH_CHF_M = CASH_30JUN2026_CHF_M + SHARES_WARRANTS_CASH_IN_CHF_M
 PARENT_ATTRIBUTABLE_CASH_STATUS: Status = "placeholder"
 
 
 # =============================================================================
 # 3. DISCOUNT RATE
 # =============================================================================
-# source: standard biotech WACC range 11-13 % (methodology.qmd cites the range).
-# Base case: 12 %. Sensitivity: 10 % / 14 %.
 DISCOUNT_RATE = 0.12
 DISCOUNT_RATE_STATUS: Status = "assumption"
 
@@ -154,29 +239,20 @@ DISCOUNT_RATE_STATUS: Status = "assumption"
 # source: BIO, Informa Pharma Intelligence, QLS Advisors, "Clinical Development
 # Success Rates and Contributing Factors 2011-2020", 2021.
 # https://www.bio.org/clinical-development-success-rates-and-contributing-factors-2011-2020
-# Values are the ALL-INDICATION phase-to-phase transition probabilities.
-# These REPLACE the Wong, Siah & Lo (2019) values used in v1.0, which had
-# incoherence: v1.0 mixed the 90.6 % NDA/BLA->approval figure from BIO/Informa
-# with the 58.1 % Phase III->approval figure from Biomedtracker (2006-2015);
-# WSL (2019) also published a corrigendum on columns Phase 2->3 and Phase 3->
-# approval of its Table 1 (https://pmc.ncbi.nlm.nih.gov/articles/PMC6409416/).
 POS_TRANSITIONS = {
     "phase1_to_phase2":   0.520,
     "phase2_to_phase3":   0.289,
     "phase3_to_filing":   0.578,
     "filing_to_approval": 0.906,
 }
-# Cumulative LOA (likelihood of approval) from Phase 1 = 7.9 % per the BIO
-# report (same source), consistent with 0.520 * 0.289 * 0.578 * 0.906 = 0.0786.
+# Cumulative LOA (likelihood of approval) from Phase 1 = 7.9 %
+# = 0.520 * 0.289 * 0.578 * 0.906 = 0.0786.
 
 PHASE_ORDER = ["phase1", "phase2", "phase3", "filing"]
 
 
 def cumulative_pos(phase: str) -> float:
-    """Cumulative PoS from `phase` through to approval, product of transitions.
-
-    'marketed' -> 1.0 (already approved).
-    """
+    """Cumulative PoS from `phase` through to approval, product of transitions."""
     if phase == "marketed":
         return 1.0
     try:
@@ -191,7 +267,6 @@ def cumulative_pos(phase: str) -> float:
     return p
 
 
-# Convenience: cumulative PoS per phase, used e.g. for display in methodology.qmd
 POS_CUMULATIVE_BY_PHASE = {
     "phase1":   cumulative_pos("phase1"),
     "phase2":   cumulative_pos("phase2"),
@@ -205,29 +280,19 @@ POS_CUMULATIVE_BY_PHASE = {
 # 5. DEVELOPMENT COSTS BY PHASE (per compound entering phase, CHF 2026 M)
 # =============================================================================
 # source: DiMasi, Grabowski, Hansen (2016), *J Health Econ* 47:20-33, Table 1.
-# Mean out-of-pocket cost per investigational compound entering phase, in USD 2013:
-#   Phase 1:  25.3 USD 2013 M
-#   Phase 2:  58.6 USD 2013 M
-#   Phase 3: 255.4 USD 2013 M
-# DiMasi does not break out approval/filing separately; we use USD 15 M as an
-# industry rule of thumb (regulatory + launch prep).
-#
-# Conversion USD 2013 -> CHF 2026 (status: assumption, inflation + FX):
-#   * US CPI inflation 2013 -> 2026 (projected): ~1.40x
-#       (CPI 2013 = 232.957; 2026 est. = 325, ~2.5 % avg annual CPI 2013-2026)
-#   * USD/CHF 2026 (midpoint): 0.90 (CHF trading ~0.90 USD mid-2026)
-#   * Combined factor: 1.40 * 0.90 = 1.26
-# These are benchmarks; actual Idorsia-scale burn is lower (see per-product
-# remaining_current_phase_cost_chf_m, which uses Idorsia's historical burn).
+# Mean out-of-pocket cost per compound entering phase, in USD 2013:
+#   Phase 1: 25.3, Phase 2: 58.6, Phase 3: 255.4 USD 2013 M.
+# Conversion USD 2013 -> CHF 2026 (status: assumption):
+#   * US CPI 2013 -> 2026 (projected): ~1.40x
+#   * USD/CHF 2026 (mid): 0.90
+#   * Combined factor: 1.26
 DEV_COSTS_BY_PHASE_CHF_M = {
-    "phase1":    32.0,     # 25.3 * 1.26 ~ 31.9
-    "phase2":    74.0,     # 58.6 * 1.26 ~ 73.8
-    "phase3":   322.0,     # 255.4 * 1.26 ~ 321.8
-    "filing":    19.0,     # 15.0 * 1.26 ~ 18.9
+    "phase1":    32.0,
+    "phase2":    74.0,
+    "phase3":   322.0,
+    "filing":    19.0,
 }
 DEV_COSTS_STATUS: Status = "assumption"
-# Industry default durations by phase (years). Used to schedule weighted spend
-# across years (status: assumption, rounded order-of-magnitude).
 DEV_PHASE_DURATION_YEARS = {
     "phase1": 1,
     "phase2": 3,
@@ -237,76 +302,74 @@ DEV_PHASE_DURATION_YEARS = {
 
 
 # =============================================================================
-# 6. CENTRAL COSTS (unallocated G&A + upstream research)
+# 6. CENTRAL COSTS (unallocated G&A + upstream research), SOURCED on H1 2026
 # =============================================================================
-# These are costs NOT captured in product-level `op_margin` and NOT captured in
-# per-product dev costs:
-#   - G&A (holding, corporate, finance): sourced from AR 2025 non-GAAP SG&A
-#     breakdown (CHF 71 M general and administrative in 2025, vs CHF 144 M
-#     commercial activities already loaded into product op_margin).
-#   - Upstream research: placeholder for the portion of Idorsia's R&D spend
-#     NOT attributable to the specific pipeline programs modelled in PRODUCTS.
-#     The 2025 non-GAAP R&D line is CHF 92 M total; the bulk is clinical trial
-#     spend on the modelled programs (captured via dev_cost_curve). We assume
-#     ~27 % of total R&D is non-program-specific preclinical / platform work.
-# Decay 10 %/year from year 1 to a floor of CHF 50 M by year ~8, then plateau
-# at that floor to 2040, then scale with the model's weighted revenue series
-# with a hard floor at CHF 10 M (a listed company retains minimal G&A even if
-# business winds down). Horizon aligned on product cash flow horizon (2050).
+# source: H1 2026 Report p.6-7 (non-GAAP operating expense breakdown).
+#   - G&A: CHF 27 M at H1 2026 => CHF 54 M / year run-rate (replaces 71 M from AR 2025).
+#   - Upstream research (preclinical, biology, chemistry; p.7): CHF 17 M at H1
+#     => CHF 34 M / year run-rate (replaces the CHF 25 M placeholder).
+# Both are now `sourced`. Trajectory (unchanged from v1.1): decay 10 %/year
+# until floor 50 M by 2040, then proportional to weighted revenue to 2050
+# with hard floor 10 M.
 #
-# Consistency check: year-1 central costs + sum of year-1 product dev costs
-# must be close to the AR 2025 R&D (CHF 92 M non-GAAP) + G&A (CHF 71 M), total
-# CHF 163 M. Overshoots indicate double-counting.
-#
-# QUVIVIQ post-launch R&D (pediatric study, label extensions) is NOT currently
-# modelled either here or in dev_cost_curve. See Limitations in results.qmd.
-CENTRAL_COSTS_GA_YEAR_1_CHF_M = 71.0                 # sourced AR 2025 non-GAAP SG&A: General and administrative
-CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M = 25.0           # placeholder, see TODO_DATA.md
+# Consistency check: year-1 (2026 annualised) product dev costs + central
+# costs ~ H1 2026 total non-GAAP R&D annualised; results.qmd shows the
+# comparison. Overshoots indicate double-counting.
+CENTRAL_COSTS_GA_YEAR_1_CHF_M = 54.0                 # sourced H1 p.6
+CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M = 34.0           # sourced H1 p.7
 CENTRAL_COSTS_YEAR_1_CHF_M = (
     CENTRAL_COSTS_GA_YEAR_1_CHF_M + CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M
 )
-CENTRAL_COSTS_DECAY = 0.10                           # 10 %/year decline until floor
-CENTRAL_COSTS_FLOOR_CHF_M = 50.0                     # floor during 2026-2040 (plateau)
-CENTRAL_COSTS_TAIL_FLOOR_CHF_M = 10.0                # hard floor during 2041-2050 (proportional phase)
-CENTRAL_COSTS_PLATEAU_END_YEAR = 2040                # before this: fixed decay to 50; after: scale with revenue
-CENTRAL_COSTS_HORIZON_END_YEAR = 2050                # aligned on product horizon
+CENTRAL_COSTS_DECAY = 0.10
+CENTRAL_COSTS_FLOOR_CHF_M = 50.0
+CENTRAL_COSTS_TAIL_FLOOR_CHF_M = 10.0
+CENTRAL_COSTS_PLATEAU_END_YEAR = 2040
+CENTRAL_COSTS_HORIZON_END_YEAR = 2050
 CENTRAL_COSTS_STATUS_GA: Status = "sourced"
-CENTRAL_COSTS_STATUS_UPSTREAM: Status = "placeholder"
+CENTRAL_COSTS_STATUS_UPSTREAM: Status = "sourced"
 
 
 # =============================================================================
-# 7. J&J CONVERTIBLE LOAN (for if-converted test)
+# 7. J&J RESIDUAL ROYALTY (post-SARL carve-out)
 # =============================================================================
-# source: Idorsia media release 9 Jun 2026
-# https://www.idorsia.com/media/news/news-archive/media-release-details?id=2619944
-# CHF 335 M, zero coupon, matures 15 Jun 2027. Convertible into 29.1 M IDIA
-# shares at a strike of approximately CHF 11.5 / share (CHF 335 M / 29.1 M).
+# source: H1 2026 Report Note 4, p.32.
+# Janssen collects a low-to-mid single-digit royalty on NET SALES of ALL
+# Idorsia products, until the cumulative royalty paid reaches a cap. Remaining
+# cap at 30 Jun 2026: CHF 272 M.
 #
-# The conversion option is held by J&J. From the IDIA equity-holder's view
-# this is strictly a cost: either (a) J&J converts (and we take 29.1 M of
-# dilution if V/share > strike at maturity) or (b) J&J does not convert
-# (and Idorsia must repay CHF 335 M in cash on 15 Jun 2027, a refinancing
-# event). It is NEVER an upside. The if-converted test applies in scenarios
-# where V/share exceeds the strike.
-JJ_CONVERTIBLE_PRINCIPAL_CHF_M = 335.0
-JJ_CONVERTIBLE_SHARES_ON_CONVERSION_M = 29.1
-JJ_CONVERTIBLE_STRIKE_CHF = JJ_CONVERTIBLE_PRINCIPAL_CHF_M / JJ_CONVERTIBLE_SHARES_ON_CONVERSION_M  # ~CHF 11.51
-JJ_CONVERTIBLE_MATURITY = "2027-06-15"
+# Modelling:
+#   - rate 4 % of net sales (status: assumption; the disclosure says
+#     "low-to-mid single digit")
+#   - cap CHF 272 M remaining (status: sourced)
+#   - applied to the AGGREGATE PoS-weighted sales stream across all products
+#     in the model; stops at the cap
+JJ_RESIDUAL_ROYALTY_RATE = 0.04              # assumption
+JJ_RESIDUAL_ROYALTY_RATE_STATUS: Status = "assumption"
+JJ_RESIDUAL_ROYALTY_CAP_REMAINING_CHF_M = 272.0
+JJ_RESIDUAL_ROYALTY_CAP_STATUS: Status = "sourced"
 
 
 # =============================================================================
-# 8. PRODUCTS, the pipeline
+# 8. PRODUCTS, the pipeline (contribution-margin convention)
 # =============================================================================
-# Each entry documents: phase, PoS override (if not the BIO 2021 cumulative),
-# launch year, readout_year (when the current-phase result gates next-phase
-# spending), peak sales (CHF M), ramp years, patent expiry, operating margin
-# at launch and at peak, remaining_current_phase_cost_chf_m (Idorsia-scale
-# burn through readout, certain), optional per-phase cost overrides, and the
-# sources for each choice. Set `include=False` to exclude from base case.
+# v1.2 semantics: `op_margin_at_launch` / `op_margin_at_peak` now represent
+# the CONTRIBUTION MARGIN = (sales - COGS - Selling) / sales, NOT the EBIT
+# margin. G&A and R&D are deducted ONCE elsewhere (central costs; dev costs).
 #
-# Convention: peak_sales_chf_m is Idorsia-recognized net sales (NOT gross
-# market value). For partnered / royalty-only assets, this must be the royalty
-# stream.
+# Convention: peak_sales_chf_m is Idorsia-recognised net sales (NOT gross
+# market value).
+#
+# 2026 development spend calibration (see calibration_2026):
+#   The sum of per-product development curves in 2026 is calibrated to the
+#   2026 non-GAAP guidance decomposition (CHF 60 M dev = 330 total - 39 COGS
+#   - 143 selling - 54 G&A - 34 upstream research). Lucerastat Phase 3 remains
+#   anchored on the DiMasi orphan Phase 3 estimate (CHF 100 M); the three
+#   Phase 2 PoC programs (CCR6, CXCR3, CXCR7) are calibrated downward from
+#   DiMasi Phase 2 averages because the public disclosure (H1 p.7) attributes
+#   the 2026 clinical dev to the late-stage daridorexant and lucerastat
+#   programs. QUVIVIQ lifecycle R&D (pediatric 2024-2026, dosage optimisation)
+#   is NOT modelled as a separate product and is implicitly covered by this
+#   calibrated 2026 total.
 
 PRODUCTS: dict[str, dict] = {
     # -------------------------------------------------------------------------
@@ -314,41 +377,27 @@ PRODUCTS: dict[str, dict] = {
         "name":            "QUVIVIQ (daridorexant)",
         "indication":      "chronic insomnia",
         "phase":           "marketed",
-        "pos":             1.00,                            # source: approved FDA Jan 2022, EMA Apr 2022
+        "pos":             1.00,
         "launch_year":     2022,
-        "readout_year":    2022,                            # already marketed
-        # Historical Idorsia-recognized net sales, CHF M:
-        #   2023: 31 / 2024: 61 (+97 %) / 2025: 134 (+120 %) / 2026 guidance: 200 (+49 %)
-        # source: 2025 results release and June 2026 investor presentation p.4
-        # https://www.biospace.com/press-releases/idorsia-reports-strong-2025-results-with-quviviq-sales-more-than-doubling-further-sales-growth-ahead-with-multiple-pipeline-catalysts-in-2026
+        "readout_year":    2022,
         "historical_sales_chf_m": {2023: 31, 2024: 61, 2025: 134, 2026: 200},
         "peak_sales_chf_m": 600,
-        # Rationale for CHF 600 M peak:
-        #   - Belsomra plateaued at ~USD 300 M globally (Pharmaphorum, 2020).
-        #   - GlobalData/ClinicalTrialsArena project DORA class in 7MM to reach
-        #     USD 4.1 bn by 2032 (multiple DORAs sharing).
-        #   - QUVIVIQ carries best-in-class positioning (daytime functioning
-        #     benefit). DEA proposed 11 Aug 2026 to reclassify DORAs from
-        #     Schedule IV to Schedule V (not full descheduling); see:
-        #     https://www.marktpuls.ch/artikel/permalink/675639
-        #   - 2026 guidance CHF 200 M; growth 2024->2025->2026: +120 %, +49 %.
-        # CHF 600 M peak is a mid-range blockbuster trajectory (blockbuster
-        # threshold = USD 1 bn global; CHF 600 M Idorsia-recognized ~ USD 700 M).
-        "peak_sales_source": "Bottom-up bracket vs Belsomra/Dayvigo comps and GlobalData 7MM DORA forecast",
-        "ramp_years":      8,                               # 2022 launch -> peak ~2030
-        "patent_expiry":   2036,                            # US binding; EU 2037
-        # Operating margin trajectory: 5 % in 2026 (first year of commercial
-        # profitability per Idorsia's 2026 target) ramping linearly to 30 %
-        # at peak (2030). source for 5 % 2026 anchor: Idorsia June 2026
-        # investor presentation p.45 ("commercial profitability targeted in 2026").
-        "op_margin_at_launch": 0.05,
-        "op_margin_at_peak":   0.30,
-        "op_margin_launch_anchor_year": 2026,               # year when op_margin_at_launch applies
+        "peak_sales_source": "Bracket vs Belsomra/Dayvigo comps + GlobalData 7MM DORA class forecast",
+        "ramp_years":      8,
+        "patent_expiry":   2036,
+        # Contribution margin trajectory.
+        # 2026 (anchor): H1 2026 actuals (H1 p.3, p.6) =>
+        #   sales 97, COGS 19, Selling 69, contribution 9, margin ~9 %.
+        #   Note: group Selling (69 M) is attributed entirely to QUVIVIQ
+        #   because TRYVIO only generated CHF 0.3 M of sales at H1 2026
+        #   (H1 p.53); the attribution choice is documented here.
+        # 2030 (peak): 55 % contribution margin (COGS 12-20 %, Selling 25-30 %
+        #   at maturity). Status: assumption.
+        # Linear interpolation 2026 -> 2030; held at 55 % post-patent-cliff.
+        "op_margin_at_launch": 0.09,          # sourced via H1 2026 actuals
+        "op_margin_at_peak":   0.55,          # assumption
+        "op_margin_launch_anchor_year": 2026,
         "op_margin_peak_anchor_year":   2030,
-        # J&J contingent liability: 3-5% of net sales + 10% contract revenue,
-        # up to CHF 277 m combined with SARL. Approximate as -4 % on peak sales.
-        # source: June 2026 presentation p.46 footnote.
-        "jj_royalty_haircut": 0.04,
         "remaining_current_phase_cost_chf_m": 0.0,
         "include": True,
     },
@@ -357,25 +406,22 @@ PRODUCTS: dict[str, dict] = {
         "name":            "Lucerastat",
         "indication":      "Fabry disease (oral, all mutations)",
         "phase":           "phase3",
-        "pos":             cumulative_pos("phase3"),         # 0.5237 (BIO 2021)
+        "pos":             cumulative_pos("phase3"),
         "launch_year":     2031,
-        "readout_year":    2028,                             # P3 primary endpoint ~2028, filing 2029
+        "readout_year":    2028,
         "historical_sales_chf_m": {},
         "peak_sales_chf_m": 400,
         "peak_sales_source": "Company-cited $4 B market + Fabrazyme/Galafold comparables",
         "ramp_years":      4,
         "patent_expiry":   2042,
-        "op_margin_at_launch": 0.35,
-        "op_margin_at_peak":   0.35,
+        # Orphan Fabry oral: small specialty force (lower Selling %), slightly
+        # higher COGS vs small molecules (API complexity).
+        "op_margin_at_launch": 0.25,          # assumption
+        "op_margin_at_peak":   0.65,          # assumption (orphan, small sales force)
         "op_margin_launch_anchor_year": 2031,
         "op_margin_peak_anchor_year":   2035,
-        "jj_royalty_haircut": 0.0,
-        # Phase 3 registrational study launched Q3 2026; cost through readout
-        # is CERTAIN. Orphan Fabry registrational trials run smaller than
-        # DiMasi avg (~USD 255 M); Idorsia-scale estimate CHF 100 M remaining
-        # Phase 3 + support. status: assumption, listed in TODO_DATA.md.
         "remaining_current_phase_cost_chf_m": 100.0,
-        "phase3_cost_override_chf_m": None,                  # already current phase; no "future P3"
+        "phase3_cost_override_chf_m": None,
         "include": True,
     },
     # -------------------------------------------------------------------------
@@ -383,23 +429,23 @@ PRODUCTS: dict[str, dict] = {
         "name":            "IDOR-1117-2520 (CCR6 antagonist)",
         "indication":      "psoriasis (PoC) -> Th17 immune disorders",
         "phase":           "phase2",
-        "pos":             cumulative_pos("phase2"),         # 0.1513 (BIO 2021)
-        "launch_year":     2033,                             # PoC 2026 -> Ph3 -> filing ~2031 -> launch 2033
-        "readout_year":    2026,                             # Phase 2 PoC readout Q4 2026 (June 2026 pres. p.29)
+        "pos":             cumulative_pos("phase2"),
+        "launch_year":     2033,
+        "readout_year":    2026,
         "historical_sales_chf_m": {},
         "peak_sales_chf_m": 300,
         "peak_sales_source": "PLACEHOLDER, Th17 immune disorder space, first-in-class oral; refine post PoC",
         "ramp_years":      5,
-        "patent_expiry":   2046,                             # June 2026 pres. p.40
-        "op_margin_at_launch": 0.30,
-        "op_margin_at_peak":   0.30,
+        "patent_expiry":   2046,
+        "op_margin_at_launch": 0.15,          # assumption (early commercial)
+        "op_margin_at_peak":   0.55,          # assumption
         "op_margin_launch_anchor_year": 2033,
         "op_margin_peak_anchor_year":   2037,
-        "jj_royalty_haircut": 0.0,
-        # Remaining Phase 2 cost through Q4 2026 readout: Idorsia historical
-        # burn ~CHF 24 M/year on P2 PoC studies, 0.75 years remaining = CHF 18 M.
-        # status: placeholder, see TODO_DATA.md.
-        "remaining_current_phase_cost_chf_m": 18.0,
+        # Phase 2 PoC/PoM trial, calibrated to 2026 guidance (H1 p.7 cites late-stage
+        # daridorexant + lucerastat as the main 2026 clinical dev spend). DiMasi Phase 2
+        # averages apply to full programs, not single-indication PoCs.
+        "remaining_current_phase_cost_chf_m": 10.0,
+        "remaining_phase_cost_status": "calibrated_to_2026_guidance",
         "include": True,
     },
     # -------------------------------------------------------------------------
@@ -408,20 +454,20 @@ PRODUCTS: dict[str, dict] = {
         "indication":      "progressive multiple sclerosis",
         "phase":           "phase2",
         "pos":             cumulative_pos("phase2"),
-        "launch_year":     2034,                             # PoC 2028 -> Ph3 -> launch ~2034
-        "readout_year":    2028,                             # Q2 2028 readout (June 2026 pres. p.29)
+        "launch_year":     2034,
+        "readout_year":    2028,
         "historical_sales_chf_m": {},
         "peak_sales_chf_m": 400,
         "peak_sales_source": "PLACEHOLDER, progressive MS, first-in-class remyelination; refine post PoC",
         "ramp_years":      6,
         "patent_expiry":   2042,
-        "op_margin_at_launch": 0.30,
-        "op_margin_at_peak":   0.30,
+        "op_margin_at_launch": 0.15,
+        "op_margin_at_peak":   0.55,
         "op_margin_launch_anchor_year": 2034,
         "op_margin_peak_anchor_year":   2038,
-        "jj_royalty_haircut": 0.0,
-        # Burn ~CHF 24 M/year, 2 years remaining to Q2 2028 readout = CHF 48 M.
-        "remaining_current_phase_cost_chf_m": 48.0,
+        # Phase 2 PoC/PoM trial calibrated to 2026 guidance (see CCR6 note above).
+        "remaining_current_phase_cost_chf_m": 24.0,
+        "remaining_phase_cost_status": "calibrated_to_2026_guidance",
         "include": True,
     },
     # -------------------------------------------------------------------------
@@ -431,19 +477,19 @@ PRODUCTS: dict[str, dict] = {
         "phase":           "phase2",
         "pos":             cumulative_pos("phase2"),
         "launch_year":     2033,
-        "readout_year":    2027,                             # readout 2027 (June 2026 pres. p.29)
+        "readout_year":    2027,
         "historical_sales_chf_m": {},
         "peak_sales_chf_m": 250,
-        "peak_sales_source": "PLACEHOLDER, vitiligo (34 M diagnosed cases per June 2026 pres. p.42); refine post PoC",
+        "peak_sales_source": "PLACEHOLDER, vitiligo (34 M diagnosed cases); refine post PoC",
         "ramp_years":      5,
         "patent_expiry":   2041,
-        "op_margin_at_launch": 0.30,
-        "op_margin_at_peak":   0.30,
+        "op_margin_at_launch": 0.15,
+        "op_margin_at_peak":   0.55,
         "op_margin_launch_anchor_year": 2033,
         "op_margin_peak_anchor_year":   2037,
-        "jj_royalty_haircut": 0.0,
-        # Burn ~CHF 24 M/year, 1.5 years remaining to 2027 readout = CHF 36 M.
-        "remaining_current_phase_cost_chf_m": 36.0,
+        # Phase 2 PoC/PoM trial calibrated to 2026 guidance (see CCR6 note above).
+        "remaining_current_phase_cost_chf_m": 18.0,
+        "remaining_phase_cost_status": "calibrated_to_2026_guidance",
         "include": True,
     },
     # -------------------------------------------------------------------------
@@ -451,7 +497,7 @@ PRODUCTS: dict[str, dict] = {
         "name":            "IDOR-1134-2831 (C. diff synthetic glycan vaccine)",
         "indication":      "C. difficile infection prevention",
         "phase":           "phase1",
-        "pos":             cumulative_pos("phase1"),         # 0.0786 (BIO 2021)
+        "pos":             cumulative_pos("phase1"),
         "launch_year":     2035,
         "readout_year":    2027,
         "historical_sales_chf_m": {},
@@ -459,167 +505,203 @@ PRODUCTS: dict[str, dict] = {
         "peak_sales_source": "PLACEHOLDER, assumed partnered; value to Idorsia = royalty/milestone stream",
         "ramp_years":      5,
         "patent_expiry":   2040,
-        "op_margin_at_launch": 0.20,
-        "op_margin_at_peak":   0.20,
+        "op_margin_at_launch": 0.15,
+        "op_margin_at_peak":   0.40,          # lower if partnered (royalty net)
         "op_margin_launch_anchor_year": 2035,
         "op_margin_peak_anchor_year":   2039,
-        "jj_royalty_haircut": 0.0,
         "remaining_current_phase_cost_chf_m": 10.0,
-        "include": False,                                    # partnership terms unknown
+        "include": False,
     },
-    # -------------------------------------------------------------------------
-    # SARL assets (aprocitentan / selatogrel / cenerimod), deliberately NOT
-    # included in the base case per the structural note at the top of this file.
-    # They are held at Idorsia Investments SARL and service the CHF 762 M
-    # ring-fenced notes; residual value reverts to parent only after full debt
-    # repayment. See methodology.qmd for how this is discussed.
 }
 
 
 # =============================================================================
-# 9. SARL reversion, option-like residual claim (base case = 0)
+# 9. SARL reversion
 # =============================================================================
-# source: June 2026 presentation p.46, "Rights return to Idorsia once debt
-# and interest are repaid delivering long-term value". Deep OTM option.
 SARL_RESIDUAL_VALUE_CHF_M = 0.0
 
 
 # =============================================================================
-# 10. Convenience: net cash bridge for the parent equity holder
+# 10. 2026 ACTUALS (H1 x 2, non-GAAP) and GUIDANCE 2026 — used by the
+# calibration table in results.qmd and the notebook.
+# source: H1 2026 Report p.3, p.6-7; press release 30 Jul 2026 for guidance.
+# =============================================================================
+H1_2026_ACTUALS_CHF_M = {
+    "sales_quviviq":        97.0,     # H1 p.3
+    "sales_tryvio":          0.3,     # H1 p.53 (SARL; separate line)
+    "contract_revenue":      8.0,     # H1 p.3 (collaboration / contract income, not modelled)
+    "cogs":                 19.0,     # H1 p.3 / p.6
+    "selling":              69.0,     # H1 p.6
+    "general_admin":        27.0,     # H1 p.6
+    "research":             17.0,     # H1 p.7 (preclinical / biology / chemistry)
+    "development":          28.0,     # H1 p.7 (clinical development; late-stage daridorexant + lucerastat)
+    "total_expenses":      160.0,     # H1 p.6 (= 19 + 69 + 27 + 17 + 28)
+    "operating_result":    -54.0,     # H1 p.6 (non-GAAP, sourced; = revenue - 160)
+}
+GUIDANCE_2026 = {
+    "opex_total_nongaap_chf_m":  330.0,
+    "operating_loss_nongaap_chf_m": 120.0,
+    "sales_quviviq_chf_m":       200.0,
+    "source": "Idorsia press release, 30 July 2026",
+}
+# Pytest test cap (opex ceiling): 330 * 1.05 = 346.5 M
+OPEX_2026_CEILING_CHF_M = GUIDANCE_2026["opex_total_nongaap_chf_m"] * 1.05
+
+
+# =============================================================================
+# 11. Convenience: net cash bridge for the parent equity holder
 # =============================================================================
 def parent_net_cash_chf_m() -> float:
     """Net cash attributable to parent equity holders (CHF M).
 
-    Excludes ring-fenced SARL debt (non-recourse) and SARL cash (currently
-    not separately disclosed; using group cash as upper bound, see
-    TODO_DATA.md).
+    Includes warrant cash-in (assumed exercised, since strike CHF 1.49 is
+    well below any plausible V/share). Excludes SARL cash (not disclosed
+    separately; group cash is an upper bound).
     """
     return PARENT_ATTRIBUTABLE_CASH_CHF_M - PARENT_ATTRIBUTABLE_DEBT_CHF_M
 
 
 # =============================================================================
-# 11. Programmatic display of key assumptions (used by results.qmd)
+# 12. DILUTED SHARE COUNT (dynamic on V/share for options and CB 2034)
+# =============================================================================
+def diluted_shares_m(value_per_share_chf: float | None = None) -> dict:
+    """Return the diluted share count detail (and total) given a V/share.
+
+    V/share drives two conditional buckets:
+      - CB 2034 converts if V/share > CHF 6.00 (adds 2.72 M shares).
+      - Options are in-the-money if V/share > CHF 10.97 (adds 7.1 M shares).
+
+    If V/share is None, use the current market price.
+    """
+    v = SHARE_PRICE_CURRENT_CHF if value_per_share_chf is None else float(value_per_share_chf)
+    buckets = {
+        "issued (30 Jun 2026)":     SHARES_ISSUED_M,
+        "J&J loan settlement":      SHARES_JJ_CONVERSION_M,     # mandatory
+        "warrants (CHF 1.49)":      SHARES_WARRANTS_M,          # always in-money
+        "unvested free shares":     SHARES_UNVESTED_FREE_M,
+    }
+    if v > CB_2034_STRIKE_CHF:
+        buckets["CB 2034 if-converted (CHF 6.00)"] = SHARES_CB_2034_IFCONVERTED_M
+    if v > SHARES_OPTIONS_STRIKE_CHF:
+        buckets["options (avg CHF 10.97)"] = SHARES_OPTIONS_M
+    buckets["total"] = sum(buckets.values())
+    return buckets
+
+
+# =============================================================================
+# 13. Programmatic display of key assumptions (used by results.qmd)
 # =============================================================================
 def key_assumptions() -> list[dict]:
-    """Return the key inputs that dominate the valuation, each with name,
-    value, status (sourced / assumption / placeholder), and source note.
-    results.qmd and the notebook consume this list to render a table.
-    """
+    """Return the key inputs that dominate the valuation."""
     quviviq = PRODUCTS["quviviq"]
     lucerastat = PRODUCTS["lucerastat"]
     return [
         {
-            "input": "Discount rate (mid-year)",
+            "input": "Valuation date",
+            "value": VALUATION_DATE,
+            "status": "sourced",
+            "source": "H1 2026 Report (30 Jun 2026 balance sheet)",
+        },
+        {
+            "input": "Discount rate (mid-year, from 30 Jun 2026)",
             "value": f"{DISCOUNT_RATE:.0%}",
             "status": DISCOUNT_RATE_STATUS,
-            "source": "Standard biotech WACC 11-13 %; sensitivity 10 % / 14 %",
+            "source": "Biotech WACC 11-13 %",
         },
         {
             "input": "PoS transitions set",
             "value": "BIO 2011-2020",
             "status": "sourced",
-            "source": "BIO/Informa/QLS 'Clinical Development Success Rates 2011-2020' (2021)",
-        },
-        {
-            "input": "PoS cumulative, Phase 2 -> approval",
-            "value": f"{cumulative_pos('phase2')*100:.1f} %",
-            "status": "sourced",
-            "source": "Derived from BIO 2021 transitions (0.289 * 0.578 * 0.906)",
-        },
-        {
-            "input": "PoS cumulative, Phase 3 -> approval",
-            "value": f"{cumulative_pos('phase3')*100:.1f} %",
-            "status": "sourced",
-            "source": "Derived from BIO 2021 (0.578 * 0.906)",
+            "source": "BIO/Informa/QLS 2021",
         },
         {
             "input": "QUVIVIQ peak sales",
             "value": f"CHF {quviviq['peak_sales_chf_m']:.0f} M",
             "status": "assumption",
-            "source": "Bracket vs Belsomra/Dayvigo comps + GlobalData 7MM DORA class forecast",
+            "source": "Belsomra/Dayvigo comps + GlobalData 7MM DORA",
         },
         {
-            "input": "QUVIVIQ op margin at launch (2026)",
+            "input": "QUVIVIQ contribution margin at launch (2026)",
             "value": f"{quviviq['op_margin_at_launch']:.0%}",
-            "status": "assumption",
-            "source": "Idorsia 2026 commercial-profitability target (June 2026 pres. p.45)",
+            "status": "sourced",
+            "source": "H1 2026 Report p.3, p.6 (97-19-69)/97",
         },
         {
-            "input": "QUVIVIQ op margin at peak (2030)",
+            "input": "QUVIVIQ contribution margin at peak (2030)",
             "value": f"{quviviq['op_margin_at_peak']:.0%}",
             "status": "assumption",
-            "source": "Specialty biotech mature range 25-40 %",
-        },
-        {
-            "input": "QUVIVIQ ramp (launch -> peak)",
-            "value": f"{quviviq['ramp_years']} years (peak {quviviq['launch_year'] + quviviq['ramp_years']})",
-            "status": "assumption",
-            "source": "Consistent with +120 % (2024->2025) and +49 % (2025->2026 guided) growth",
-        },
-        {
-            "input": "QUVIVIQ 2026 revenue guidance",
-            "value": "CHF 200 M",
-            "status": "sourced",
-            "source": "Idorsia June 2026 investor presentation p.45",
-        },
-        {
-            "input": "QUVIVIQ US / EU exclusivity",
-            "value": "2036 / 2037",
-            "status": "sourced",
-            "source": "Idorsia June 2026 investor presentation p.15",
+            "source": "COGS 12-20 % + Selling 25-30 % at maturity",
         },
         {
             "input": "Lucerastat peak sales",
             "value": f"CHF {lucerastat['peak_sales_chf_m']:.0f} M",
             "status": "assumption",
-            "source": "Fabrazyme (~USD 1 bn) / Galafold (~USD 450 M) comparables",
+            "source": "Fabrazyme/Galafold comparables",
         },
         {
             "input": "Lucerastat Phase 3 remaining cost",
             "value": f"CHF {lucerastat['remaining_current_phase_cost_chf_m']:.0f} M",
             "status": "assumption",
-            "source": "Orphan Fabry registrational trial estimate (vs DiMasi avg CHF 322 M, inapplicable)",
+            "source": "Orphan Fabry registrational trial estimate",
         },
         {
-            "input": "Group cash YE 2025 (upper bound at 30/06/26)",
-            "value": f"CHF {CASH_YE2025_CHF_M:.0f} M",
-            "status": PARENT_ATTRIBUTABLE_CASH_STATUS,
-            "source": "AR 2025 p.145; SARL-only sub-balance not disclosed, see TODO_DATA.md",
-        },
-        {
-            "input": "Parent-attributable debt",
-            "value": f"CHF {PARENT_ATTRIBUTABLE_DEBT_CHF_M:.0f} M",
+            "input": "Group cash (30 Jun 2026, upper bound)",
+            "value": f"CHF {CASH_30JUN2026_CHF_M:.1f} M",
             "status": "sourced",
-            "source": "AR 2025 p.145 + Pharmakon media release 9/26 Jun 2026",
+            "source": "H1 2026 Report p.22",
         },
         {
-            "input": "J&J convertible loan (treated as debt in base case)",
-            "value": f"CHF {JJ_CONVERTIBLE_PRINCIPAL_CHF_M:.0f} M, strike CHF {JJ_CONVERTIBLE_STRIKE_CHF:.2f}",
+            "input": "Pharmakon term loan",
+            "value": f"CHF {DEBT_PHARMAKON_LOAN_CHF_M:.0f} M, 7 %, mat. 25 Jun 2031",
             "status": "sourced",
-            "source": "Idorsia media release 9 Jun 2026; matures 15 Jun 2027",
+            "source": "H1 2026 Report p.43-44",
+        },
+        {
+            "input": "Convertible bonds (CB 2034 + CB 2038)",
+            "value": f"CHF {DEBT_CONVERTIBLE_BONDS_CHF_M:.1f} M",
+            "status": "sourced",
+            "source": "H1 2026 Report p.39-40",
+        },
+        {
+            "input": "Sale-and-leaseback debt",
+            "value": f"CHF {DEBT_SALE_LEASEBACK_CHF_M:.0f} M",
+            "status": "sourced",
+            "source": "H1 2026 Report p.42",
+        },
+        {
+            "input": "J&J convertible loan (settlement in shares, no debt)",
+            "value": f"CHF {JJ_CONVERTIBLE_PRINCIPAL_REMAINING_CHF_M:.0f} M -> {SHARES_JJ_CONVERSION_M:.1f} M shares @ CHF {JJ_CONVERTIBLE_STRIKE_CHF:.2f}",
+            "status": "sourced",
+            "source": "H1 2026 Report p.38-39, 44 (Pharmakon covenant forbids cash repayment)",
+        },
+        {
+            "input": "J&J residual royalty (all products)",
+            "value": f"{JJ_RESIDUAL_ROYALTY_RATE:.0%} of net sales, cap CHF {JJ_RESIDUAL_ROYALTY_CAP_REMAINING_CHF_M:.0f} M remaining",
+            "status": f"rate {JJ_RESIDUAL_ROYALTY_RATE_STATUS} / cap {JJ_RESIDUAL_ROYALTY_CAP_STATUS}",
+            "source": "H1 2026 Report note 4, p.32",
         },
         {
             "input": "Central costs: G&A year 1",
             "value": f"CHF {CENTRAL_COSTS_GA_YEAR_1_CHF_M:.0f} M/year",
             "status": CENTRAL_COSTS_STATUS_GA,
-            "source": "AR 2025 non-GAAP SG&A: G&A line (CHF 71 M, excluding commercial)",
+            "source": "H1 2026 Report p.6 (H1 CHF 27 M x 2)",
         },
         {
             "input": "Central costs: upstream research year 1",
             "value": f"CHF {CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M:.0f} M/year",
             "status": CENTRAL_COSTS_STATUS_UPSTREAM,
-            "source": "~27 % of AR 2025 R&D (non-program-specific), see TODO_DATA.md",
+            "source": "H1 2026 Report p.7 (H1 CHF 17 M x 2, preclinical/biology/chemistry)",
         },
         {
-            "input": "Shares outstanding",
-            "value": f"{SHARES_OUTSTANDING_M:.1f} M (Q1 2026)",
+            "input": "Shares issued (30 Jun 2026)",
+            "value": f"{SHARES_ISSUED_M:.1f} M",
             "status": "sourced",
-            "source": "Idorsia Q1 2026 Financial Report, 31 Mar 2026",
+            "source": "H1 2026 Report p.12",
         },
         {
             "input": "Current share price",
             "value": f"CHF {SHARE_PRICE_CURRENT_CHF:.2f} ({SHARE_PRICE_CURRENT_AS_OF})",
             "status": SHARE_PRICE_STATUS,
-            "source": "yfinance IDIA.SW latest close via scripts/update_price.py",
+            "source": "yfinance IDIA.SW via scripts/update_price.py",
         },
     ]

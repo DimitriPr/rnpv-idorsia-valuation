@@ -1,11 +1,17 @@
-"""rNPV engine for the Idorsia valuation.
+"""rNPV engine for the Idorsia valuation (v1.2).
 
-Pure functions that take the assumption dicts from `assumptions.py` and
-return revenue curves, per-product risk-adjusted NPVs, central costs, and
-aggregated per-share fair value. Nothing here reads from disk or writes
-files.
+Pure functions. Convention changes vs v1.1:
+  * Valuation date is 30 June 2026, not 1 Jan 2026.
+    - 2026 CF is prorated to H2 only (x 0.5) and discounted at exponent 0.25.
+    - Year t >= 2027 CF is discounted at exponent (t - 2026) (standard
+      mid-year distance from 30 Jun 2026).
+  * `op_margin_*` fields are now CONTRIBUTION MARGIN = (sales - COGS - Selling) / sales.
+    G&A and R&D are deducted ONCE elsewhere (central costs, dev costs).
+  * J&J royalty is modelled centrally on the aggregate PoS-weighted sales
+    stream with a CHF 272 M cumulative cap (removes per-product
+    jj_royalty_haircut).
 
-Convention: all cash figures in CHF millions, all years are integers.
+All cash figures in CHF millions, all years are integers.
 """
 
 from __future__ import annotations
@@ -19,7 +25,7 @@ from . import assumptions as A
 
 
 # ---------------------------------------------------------------------------
-# Revenue and operating-margin curves
+# Revenue, margin and operating cash flow
 # ---------------------------------------------------------------------------
 
 def revenue_curve(
@@ -27,12 +33,11 @@ def revenue_curve(
     valuation_year: int = 2026,
     horizon_year: int = 2050,
 ) -> pd.Series:
-    """Annual sales projection for a single product, CHF millions.
+    """Annual gross-sales projection for a single product (CHF M).
 
-    Shape: prelaunch = 0, ramp = linear from last known year sales (or 0)
-    to `peak_sales_chf_m` by `launch_year + ramp_years`, then flat plateau
-    to `patent_expiry`, then a -85 % cliff in the year after expiry with
-    30 % annual decay thereafter.
+    The curve is NOT prorated to H2 2026 here — proration is applied once,
+    in `_h2_prorate`, so operating cash flow, dev costs and central costs
+    all share the same stub logic.
     """
     years = np.arange(valuation_year, horizon_year + 1)
     sales = pd.Series(0.0, index=years, name=product["name"])
@@ -86,14 +91,13 @@ def product_margin_curve(
     valuation_year: int = 2026,
     horizon_year: int = 2050,
 ) -> pd.Series:
-    """Per-year operating margin for a single product.
+    """Per-year CONTRIBUTION margin for a single product.
 
     Interpolates linearly from `op_margin_at_launch` at
     `op_margin_launch_anchor_year` to `op_margin_at_peak` at
     `op_margin_peak_anchor_year`, then holds at the peak margin.
 
-    Backwards-compatibility: if a product dict only has the old
-    scalar `op_margin` key, the margin is flat at that value.
+    Backwards-compat: a scalar `op_margin` key still produces a flat curve.
     """
     years = np.arange(valuation_year, horizon_year + 1)
     if "op_margin_at_launch" in product and "op_margin_at_peak" in product:
@@ -122,11 +126,28 @@ def operating_cash_flow_curve(
     valuation_year: int = 2026,
     horizon_year: int = 2050,
 ) -> pd.Series:
-    """Sales x (margin curve) minus J&J contingent royalty haircut on sales."""
+    """Sales x contribution-margin (no royalty haircut; J&J royalty is now
+    modelled centrally, see `jj_residual_royalty_series`)."""
     sales = revenue_curve(product, valuation_year, horizon_year)
     margin = product_margin_curve(product, valuation_year, horizon_year)
-    jj = float(product.get("jj_royalty_haircut", 0.0))
-    return sales * (margin - jj)
+    return sales * margin
+
+
+# ---------------------------------------------------------------------------
+# H2 2026 proration (shared by all cash-flow curves)
+# ---------------------------------------------------------------------------
+
+def _h2_prorate(series: pd.Series, valuation_year: int = 2026) -> pd.Series:
+    """Multiply the valuation-year value by 0.5 (H2 2026 stub).
+
+    All years after `valuation_year` are left untouched. The matching
+    discount factor is 0.25 for the stub year, 1.0+(t-2027) for later years
+    (see `discount_factors`).
+    """
+    out = series.copy()
+    if valuation_year in out.index:
+        out[valuation_year] = out[valuation_year] * 0.5
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -137,19 +158,9 @@ def development_cost_curve(
     product: dict,
     valuation_year: int = 2026,
 ) -> pd.Series:
-    """Remaining prelaunch development spend, scheduled by phase.
-
-    rNPV convention revised from v1.0:
-      - Current-phase remaining cost is CERTAIN (spread 1-to-1 over years
-        up to `readout_year`).
-      - Each subsequent phase cost is weighted by the CUMULATIVE probability
-        of reaching that phase (product of BIO 2021 transitions). Spending
-        on a next phase does not start until after the current phase readout.
-      - Phase 3 / filing costs can be overridden per-product via
-        `phase3_cost_override_chf_m` / `filing_cost_override_chf_m`.
-
-    For `marketed` products this returns an empty Series.
-    """
+    """Prelaunch dev spend. Current phase CERTAIN, future phases weighted
+    by cumulative PoS. Years are integers; `_h2_prorate` is applied by
+    callers that discount."""
     phase = product["phase"]
     if phase == "marketed":
         return pd.Series(dtype=float)
@@ -163,7 +174,6 @@ def development_cost_curve(
 
     schedule: dict[int, float] = {}
 
-    # 1) Current-phase remaining (CERTAIN)
     cur_cost = float(product.get("remaining_current_phase_cost_chf_m", 0.0))
     cur_phase_years = [y for y in range(valuation_year, min(readout, launch - 1) + 1)]
     if cur_phase_years and cur_cost > 0.0:
@@ -171,7 +181,6 @@ def development_cost_curve(
         for y in cur_phase_years:
             schedule[y] = schedule.get(y, 0.0) + per_year
 
-    # 2) Subsequent phases, weighted by cumulative transition probability
     phase_idx = A.PHASE_ORDER.index(phase)
     cumulative_prob = 1.0
     next_phase_start = readout + 1
@@ -181,7 +190,6 @@ def development_cost_curve(
         if i + 1 < len(A.PHASE_ORDER):
             to_phase = A.PHASE_ORDER[i + 1]
         else:
-            # last transition is filing -> approval; no further cost to spend
             break
 
         trans_prob = A.POS_TRANSITIONS[f"{from_phase}_to_{to_phase}"]
@@ -192,7 +200,6 @@ def development_cost_curve(
         if ov_key in product and product[ov_key] is not None:
             full_cost = float(product[ov_key])
         if full_cost <= 0.0:
-            # advance scheduling cursor by the phase's default duration anyway
             next_phase_start += A.DEV_PHASE_DURATION_YEARS.get(to_phase, 1)
             continue
 
@@ -204,8 +211,6 @@ def development_cost_curve(
             if y < launch
         ]
         if not phase_years:
-            # Phase would start at or after launch; squeeze into the last
-            # prelaunch year rather than drop the cost.
             phase_years = [launch - 1]
 
         per_year = weighted_cost / len(phase_years)
@@ -222,7 +227,7 @@ def development_cost_curve(
 
 
 # ---------------------------------------------------------------------------
-# Central costs (unallocated G&A + upstream research)
+# Central costs
 # ---------------------------------------------------------------------------
 
 def _weighted_revenue_series(
@@ -230,8 +235,7 @@ def _weighted_revenue_series(
     valuation_year: int,
     horizon_year: int,
 ) -> pd.Series:
-    """PoS-weighted revenue, summed across included products. Used to scale
-    central costs beyond `CENTRAL_COSTS_PLATEAU_END_YEAR`."""
+    """PoS-weighted revenue summed across included products."""
     products = products if products is not None else A.PRODUCTS
     years = np.arange(valuation_year, horizon_year + 1)
     out = pd.Series(0.0, index=years)
@@ -251,15 +255,7 @@ def central_costs_series(
     ga_year_1: float | None = None,
     upstream_year_1: float | None = None,
 ) -> pd.Series:
-    """Annual CHF M series of unallocated central costs (G&A + upstream R&D).
-
-    Shape:
-      * Years [valuation, PLATEAU_END]: start at `(ga + upstream)`, decline
-        10 %/year until the floor CHF 50 M, then plateau at the floor.
-      * Years [PLATEAU_END+1, HORIZON]: proportional to the model's PoS-
-        weighted revenue (scaled from the plateau year), with a hard floor
-        at CHF 10 M.
-    """
+    """Annual CHF M of unallocated central costs (G&A + upstream R&D)."""
     ga_1 = A.CENTRAL_COSTS_GA_YEAR_1_CHF_M if ga_year_1 is None else float(ga_year_1)
     up_1 = A.CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M if upstream_year_1 is None else float(upstream_year_1)
     year_1 = ga_1 + up_1
@@ -269,21 +265,16 @@ def central_costs_series(
     years = np.arange(valuation_year, horizon + 1)
     series = pd.Series(0.0, index=years, name="central_costs")
 
-    # Decay to floor over 2026 -> plateau_end
     v = year_1
     for y in range(valuation_year, plateau_end + 1):
         v_use = max(v, A.CENTRAL_COSTS_FLOOR_CHF_M)
         series[y] = v_use
         v = v * (1.0 - A.CENTRAL_COSTS_DECAY)
 
-    # Proportional to weighted revenue beyond plateau_end
     weighted_rev = _weighted_revenue_series(products, valuation_year, horizon)
     anchor_cost = series.get(plateau_end, A.CENTRAL_COSTS_FLOOR_CHF_M)
     anchor_rev = float(weighted_rev.get(plateau_end, 0.0))
-    if anchor_rev > 0:
-        ratio = anchor_cost / anchor_rev
-    else:
-        ratio = 0.0
+    ratio = (anchor_cost / anchor_rev) if anchor_rev > 0 else 0.0
 
     for y in range(plateau_end + 1, horizon + 1):
         if y in weighted_rev.index:
@@ -301,11 +292,12 @@ def central_costs_pv(
     ga_year_1: float | None = None,
     upstream_year_1: float | None = None,
 ) -> float:
-    """Present value of the central-cost series at `discount_rate`, mid-year."""
+    """PV of the central-cost series. Applies the H2 2026 stub proration."""
     horizon = A.CENTRAL_COSTS_HORIZON_END_YEAR if horizon_year is None else horizon_year
     r = A.DISCOUNT_RATE if discount_rate is None else discount_rate
-    series = central_costs_series(
-        products, valuation_year, horizon, ga_year_1, upstream_year_1,
+    series = _h2_prorate(
+        central_costs_series(products, valuation_year, horizon, ga_year_1, upstream_year_1),
+        valuation_year,
     )
     df = discount_factors(valuation_year, horizon, r)
     df = df.reindex(series.index, fill_value=0.0)
@@ -313,37 +305,94 @@ def central_costs_pv(
 
 
 # ---------------------------------------------------------------------------
-# Discounting and rNPV per product
+# J&J residual royalty (post-SARL, central, cumulative-capped)
+# ---------------------------------------------------------------------------
+
+def jj_residual_royalty_series(
+    products: dict[str, dict] | None = None,
+    valuation_year: int = 2026,
+    horizon_year: int = 2050,
+) -> pd.Series:
+    """Annual J&J royalty cash outflow (CHF M), applied on the aggregate
+    PoS-weighted sales stream, capped at `JJ_RESIDUAL_ROYALTY_CAP_REMAINING_CHF_M`
+    cumulatively."""
+    weighted_rev = _h2_prorate(
+        _weighted_revenue_series(products, valuation_year, horizon_year),
+        valuation_year,
+    )
+    rate = A.JJ_RESIDUAL_ROYALTY_RATE
+    cap_remaining = A.JJ_RESIDUAL_ROYALTY_CAP_REMAINING_CHF_M
+    out = pd.Series(0.0, index=weighted_rev.index, name="jj_royalty")
+    for y in weighted_rev.index:
+        raw = float(weighted_rev[y]) * rate
+        pay = min(raw, cap_remaining)
+        out[y] = pay
+        cap_remaining -= pay
+        if cap_remaining <= 0:
+            break
+    return out
+
+
+def jj_residual_royalty_pv(
+    products: dict[str, dict] | None = None,
+    valuation_year: int = 2026,
+    horizon_year: int = 2050,
+    discount_rate: float | None = None,
+) -> float:
+    r = A.DISCOUNT_RATE if discount_rate is None else discount_rate
+    series = jj_residual_royalty_series(products, valuation_year, horizon_year)
+    df = discount_factors(valuation_year, horizon_year, r)
+    df = df.reindex(series.index, fill_value=0.0)
+    return float((series * df).sum())
+
+
+# ---------------------------------------------------------------------------
+# Discounting
 # ---------------------------------------------------------------------------
 
 def discount_factors(
     valuation_year: int,
     horizon_year: int,
     rate: float,
-    convention: str = "mid_year",
+    convention: str = "mid_year_valuation_date",
 ) -> pd.Series:
-    """Discount factors for each year t in [valuation_year, horizon_year].
+    """Discount factors for year t in [valuation_year, horizon_year].
 
     convention:
-      - "mid_year"      -> 1/(1+r)^(t - t0 + 0.5)   [textbook rNPV default]
-      - "start_of_year" -> 1/(1+r)^(t - t0)         [no discount on t0 CF]
-      - "end_of_year"   -> 1/(1+r)^(t - t0 + 1)     [full year of discount on t0 CF]
+      - "mid_year_valuation_date" (default, v1.2):
+            valuation date is mid-year (30 Jun) of `valuation_year`.
+            year  valuation_year  -> exponent 0.25 (H2 stub midpoint)
+            year  valuation_year+1 -> exponent 1.0
+            year  valuation_year+n -> exponent n
+      - "mid_year"                 : textbook rNPV default, offset 0.5
+      - "start_of_year"            : offset 0.0
+      - "end_of_year"              : offset 1.0
     """
     years = np.arange(valuation_year, horizon_year + 1)
-    if convention == "mid_year":
-        offset = 0.5
-    elif convention == "start_of_year":
-        offset = 0.0
-    elif convention == "end_of_year":
-        offset = 1.0
-    else:
-        raise ValueError(f"Unknown discount convention: {convention}")
-    return pd.Series(
-        1.0 / (1.0 + rate) ** (years - valuation_year + offset),
-        index=years,
-        name="dcf",
-    )
 
+    if convention == "mid_year_valuation_date":
+        exponents = np.where(
+            years == valuation_year,
+            0.25,
+            years - valuation_year,
+        )
+    else:
+        if convention == "mid_year":
+            offset = 0.5
+        elif convention == "start_of_year":
+            offset = 0.0
+        elif convention == "end_of_year":
+            offset = 1.0
+        else:
+            raise ValueError(f"Unknown discount convention: {convention}")
+        exponents = (years - valuation_year + offset).astype(float)
+
+    return pd.Series(1.0 / (1.0 + rate) ** exponents, index=years, name="dcf")
+
+
+# ---------------------------------------------------------------------------
+# Product rNPV
+# ---------------------------------------------------------------------------
 
 @dataclass(frozen=True)
 class ProductValuation:
@@ -351,9 +400,9 @@ class ProductValuation:
     name: str
     phase: str
     pos: float
-    pv_operating_cf: float         # Σ CF_t × df_t (before PoS)
-    pv_dev_costs: float            # Σ DevCost_t × df_t (phase-weighted)
-    rnpv: float                    # pos × pv_operating_cf - pv_dev_costs
+    pv_operating_cf: float
+    pv_dev_costs: float
+    rnpv: float
 
 
 def product_rnpv(
@@ -363,19 +412,18 @@ def product_rnpv(
     horizon_year: int = 2050,
     discount_rate: float | None = None,
 ) -> ProductValuation:
-    """Risk-adjusted NPV of a single product.
-
-    rNPV = PoS × Σ_t CF_t × df_t  -  Σ_t DevCost_t × df_t
-
-    DevCost_t is phase-weighted and scheduled by `development_cost_curve`:
-    the current phase is CERTAIN, future phases are weighted by cumulative
-    transition probability.
-    """
+    """Risk-adjusted NPV. Contribution-margin convention, H2 2026 proration."""
     r = A.DISCOUNT_RATE if discount_rate is None else discount_rate
     df = discount_factors(valuation_year, horizon_year, r)
 
-    ocf = operating_cash_flow_curve(product, valuation_year, horizon_year)
-    dev = development_cost_curve(product, valuation_year)
+    ocf = _h2_prorate(
+        operating_cash_flow_curve(product, valuation_year, horizon_year),
+        valuation_year,
+    )
+    dev = _h2_prorate(
+        development_cost_curve(product, valuation_year),
+        valuation_year,
+    )
 
     pv_ocf = float((ocf * df).sum())
     pv_dev = float((dev * df.reindex(dev.index, fill_value=0.0)).sum())
@@ -393,17 +441,12 @@ def product_rnpv(
     )
 
 
-# ---------------------------------------------------------------------------
-# Aggregation -> equity value -> per share
-# ---------------------------------------------------------------------------
-
 def all_product_rnpvs(
     products: dict[str, dict] | None = None,
     valuation_year: int = 2026,
     horizon_year: int = 2050,
     discount_rate: float | None = None,
 ) -> list[ProductValuation]:
-    """rNPV for every included product."""
     products = products if products is not None else A.PRODUCTS
     return [
         product_rnpv(k, p, valuation_year, horizon_year, discount_rate)
@@ -411,6 +454,10 @@ def all_product_rnpvs(
         if p.get("include", True)
     ]
 
+
+# ---------------------------------------------------------------------------
+# Equity value bridge and per-share
+# ---------------------------------------------------------------------------
 
 def equity_value_bridge(
     products: dict[str, dict] | None = None,
@@ -422,9 +469,10 @@ def equity_value_bridge(
 ) -> dict:
     """Bridge from product rNPVs to parent-attributable equity value.
 
-    EQUITY_VALUE(parent) = Σ rNPV(product) + parent net cash
-                           + (SARL residual, if any)
-                           - PV(central costs)
+    EquityValue(parent) = Sum rNPV(product) + parent net cash
+                          + (SARL residual, if included)
+                          - PV(central costs)
+                          - PV(J&J residual royalty)
     """
     valuations = all_product_rnpvs(products, valuation_year, horizon_year, discount_rate)
     sum_rnpv = sum(v.rnpv for v in valuations)
@@ -434,19 +482,22 @@ def equity_value_bridge(
         central_costs_pv(products, valuation_year, horizon_year, discount_rate)
         if include_central_costs else 0.0
     )
-    equity_value = sum_rnpv + net_cash + sarl - central_pv
+    jj_royalty_pv = jj_residual_royalty_pv(
+        products, valuation_year, horizon_year, discount_rate,
+    )
+    equity_value = sum_rnpv + net_cash + sarl - central_pv - jj_royalty_pv
     return {
         "products": valuations,
         "sum_rnpv_chf_m": sum_rnpv,
         "parent_net_cash_chf_m": net_cash,
         "sarl_residual_chf_m": sarl,
         "central_costs_pv_chf_m": central_pv,
+        "jj_royalty_pv_chf_m": jj_royalty_pv,
         "equity_value_chf_m": equity_value,
     }
 
 
-# Backwards-compatibility alias (deprecated, kept so stale notebooks/plots
-# don't break during the transition to equity_value_bridge).
+# Backwards-compatibility alias
 def enterprise_value(*args, **kwargs) -> dict:
     bridge = equity_value_bridge(*args, **kwargs)
     bridge["ev_chf_m"] = bridge["equity_value_chf_m"]
@@ -459,21 +510,21 @@ def value_per_share(
     horizon_year: int = 2050,
     discount_rate: float | None = None,
     shares_m: float | None = None,
-    diluted: bool = False,
+    diluted: bool = False,            # kept for backwards compat; no-op in v1.2
     include_sarl_residual: bool = False,
     include_central_costs: bool = True,
     floor_at_zero: bool = True,
 ) -> dict:
     """Per-share fair value in CHF, plus the full bridge.
 
-    `floor_at_zero=True` enforces limited liability: the reported
-    `value_per_share_chf` is max(0, raw). The raw (potentially negative)
-    value is kept under `value_per_share_raw_chf` for display in notes.
+    v1.2 denominator convention: the "valuation-basis diluted" share count,
+      issued + J&J (mandatory) + warrants + unvested free shares
+      = 263.1 + 21.7 + 10.85 + 9.5
+      = 305.15 M shares.
+    CB 2034 (+2.72 M) is applied by `apply_if_converted` when V/share > CHF 6.
+    Options (7.1 M at CHF 10.97) are informational, NOT added to the valuation
+    denominator (deliberate conservatism; strike well above base case).
     """
-    if shares_m is None:
-        shares_m = (
-            A.POTENTIAL_SHARES_FULLY_DILUTED_M if diluted else A.SHARES_OUTSTANDING_M
-        )
     bridge = equity_value_bridge(
         products=products,
         valuation_year=valuation_year,
@@ -482,9 +533,22 @@ def value_per_share(
         include_sarl_residual=include_sarl_residual,
         include_central_costs=include_central_costs,
     )
-    raw = bridge["equity_value_chf_m"] / shares_m
+
+    if shares_m is not None:
+        shares = float(shares_m)
+    else:
+        # Valuation-basis diluted share count.
+        shares = (
+            A.SHARES_ISSUED_M
+            + A.SHARES_JJ_CONVERSION_M
+            + A.SHARES_WARRANTS_M
+            + A.SHARES_UNVESTED_FREE_M
+        )
+
+    raw = bridge["equity_value_chf_m"] / shares
     floored = max(0.0, raw) if floor_at_zero else raw
-    bridge["shares_m"] = shares_m
+    bridge["shares_m"] = shares
+    bridge["shares_issued_m"] = A.SHARES_ISSUED_M
     bridge["value_per_share_raw_chf"] = raw
     bridge["value_per_share_chf"] = floored
     bridge["value_per_share_floored"] = (raw < 0.0 and floor_at_zero)
@@ -492,13 +556,12 @@ def value_per_share(
     bridge["market_price_as_of"] = A.SHARE_PRICE_CURRENT_AS_OF
     denom = A.SHARE_PRICE_CURRENT_CHF if A.SHARE_PRICE_CURRENT_CHF > 0 else float("nan")
     bridge["upside_pct"] = (floored / denom - 1.0) * 100.0
-    # Backwards-compat alias
     bridge["ev_chf_m"] = bridge["equity_value_chf_m"]
     return bridge
 
 
 # ---------------------------------------------------------------------------
-# J&J convertible: if-converted test
+# If-converted test (now used for CB 2034 only; J&J is mandatory in base)
 # ---------------------------------------------------------------------------
 
 def apply_if_converted(
@@ -507,43 +570,23 @@ def apply_if_converted(
     converted_shares_m: float | None = None,
     principal_chf_m: float | None = None,
 ) -> dict:
-    """If V/share > strike, treat the J&J convertible as converted.
+    """CB 2034 if-converted: if V/share > strike, remove principal from debt
+    and add converted_shares_m to the diluted count.
 
-    Modifies a bridge dict (as returned by `value_per_share`) by removing the
-    CHF 335 M principal from parent debt (so equity value goes UP by that
-    amount) and adding 29.1 M shares (so per-share goes DOWN with dilution).
-
-    The option belongs to J&J, so this is a cost to the equity holder - it
-    is never an upside. We toggle it on only when V/share exceeds strike,
-    representing J&J's rational conversion decision.
-
-    Returns a new dict with the post-conversion equity value, share count,
-    and per-share value exposed under `_post_conversion_` keys, and a
-    `jj_converted` flag indicating whether the test triggered.
+    Defaults: CHF 6.00 strike, 2.72 M shares, CHF 16.5 M principal (CB 2034).
     """
-    strike = A.JJ_CONVERTIBLE_STRIKE_CHF if strike_chf is None else float(strike_chf)
-    conv_shares = (
-        A.JJ_CONVERTIBLE_SHARES_ON_CONVERSION_M if converted_shares_m is None
-        else float(converted_shares_m)
-    )
-    principal = (
-        A.JJ_CONVERTIBLE_PRINCIPAL_CHF_M if principal_chf_m is None
-        else float(principal_chf_m)
-    )
+    strike = A.CB_2034_STRIKE_CHF if strike_chf is None else float(strike_chf)
+    conv_shares = A.SHARES_CB_2034_IFCONVERTED_M if converted_shares_m is None else float(converted_shares_m)
+    principal = A.DEBT_CB_2034_CHF_M if principal_chf_m is None else float(principal_chf_m)
 
     out = dict(bridge)
-    out["jj_strike_chf"] = strike
+    out["cb2034_strike_chf"] = strike
 
-    v_pre = bridge.get("value_per_share_chf", 0.0)
-    # Use the raw (pre-floor) value for the conversion trigger: J&J will
-    # convert iff the underlying asset value per share exceeds the strike,
-    # regardless of the limited-liability display floor.
-    v_raw = bridge.get("value_per_share_raw_chf", v_pre)
+    v_raw = bridge.get("value_per_share_raw_chf", bridge.get("value_per_share_chf", 0.0))
     triggered = v_raw > strike
-
-    out["jj_converted"] = triggered
+    out["cb2034_converted"] = triggered
     if not triggered:
-        out["value_per_share_post_conversion_chf"] = v_pre
+        out["value_per_share_post_conversion_chf"] = bridge.get("value_per_share_chf", 0.0)
         return out
 
     new_equity = bridge["equity_value_chf_m"] + principal
@@ -554,15 +597,16 @@ def apply_if_converted(
     out["shares_post_conversion_m"] = new_shares
     out["value_per_share_post_conversion_raw_chf"] = new_raw
     out["value_per_share_post_conversion_chf"] = new_floored
+    # Legacy alias used by sensitivity.scenarios()
+    out["jj_converted"] = triggered
     return out
 
 
 # ---------------------------------------------------------------------------
-# Helpers for display
+# Display helpers
 # ---------------------------------------------------------------------------
 
 def gap_covered_pct(scenario_v: float, base_v: float, market_v: float) -> float:
-    """Fraction of the base->market gap covered by a given scenario, in %."""
     denom = (market_v - base_v)
     if abs(denom) < 1e-9:
         return float("nan")
@@ -574,7 +618,6 @@ def revenue_table(
     valuation_year: int = 2026,
     horizon_year: int = 2050,
 ) -> pd.DataFrame:
-    """Wide DataFrame: rows = year, columns = product, values = sales CHF M."""
     products = products if products is not None else A.PRODUCTS
     cols = {
         k: revenue_curve(p, valuation_year, horizon_year)
@@ -585,7 +628,6 @@ def revenue_table(
 
 
 def valuation_summary(bridge: dict) -> pd.DataFrame:
-    """One line per product summary DataFrame."""
     rows = []
     for v in bridge["products"]:
         rows.append(
@@ -599,3 +641,80 @@ def valuation_summary(bridge: dict) -> pd.DataFrame:
             }
         )
     return pd.DataFrame(rows)
+
+
+# ---------------------------------------------------------------------------
+# 2026 calibration (per the v1.2 prompt): line-by-line opex vs guidance.
+# ---------------------------------------------------------------------------
+
+def calibration_2026(
+    products: dict[str, dict] | None = None,
+) -> pd.DataFrame:
+    """Three columns:
+      - Model (full-year 2026, PRE H2 proration): internal consistency.
+      - Actual H1 2026 x 2 (from H1_2026_ACTUALS_CHF_M, non-GAAP).
+      - Guidance 2026 (press release 30 Jul 2026).
+
+    H1 x 2 is the H1 2026 non-GAAP income statement doubled; it understates
+    the full-year because Q4 selling scales with QUVIVIQ ramp, but the opex
+    total (CHF 320 M) sits BELOW the full-year guidance ceiling (CHF 330 M),
+    so Idorsia is on track with its guidance at H1 2026.
+    """
+    products = products if products is not None else A.PRODUCTS
+    quviviq = products["quviviq"]
+
+    # Model full-year 2026 (pre-H2 proration): COGS + Selling allocation from
+    # QUVIVIQ 2026 sales at 2026 contribution margin.
+    sales_qv = float(quviviq["historical_sales_chf_m"].get(2026, 0.0))
+    cm_2026 = float(quviviq["op_margin_at_launch"])
+    total_cogs_sell = sales_qv * (1.0 - cm_2026)
+    # Split COGS vs Selling using H1 2026 actual ratios (19/88 vs 69/88).
+    h1 = A.H1_2026_ACTUALS_CHF_M
+    cogs_ratio = h1["cogs"] / max(h1["cogs"] + h1["selling"], 1e-9)
+    model_cogs = total_cogs_sell * cogs_ratio
+    model_selling = total_cogs_sell * (1.0 - cogs_ratio)
+    model_ga = A.CENTRAL_COSTS_GA_YEAR_1_CHF_M
+    model_research = A.CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M
+    # Development: sum full-year dev cost for each product
+    model_dev = 0.0
+    for p in products.values():
+        if not p.get("include", True):
+            continue
+        dev = development_cost_curve(p, valuation_year=2026)
+        if 2026 in dev.index:
+            model_dev += float(dev[2026])
+    model_total_opex = model_cogs + model_selling + model_ga + model_research + model_dev
+    # Model excludes contract revenue by design.
+    model_op_result = sales_qv - model_total_opex
+
+    # H1 2026 x 2 (figures from H1 p.3/p.6/p.7).
+    h1x2_cogs = h1["cogs"] * 2
+    h1x2_selling = h1["selling"] * 2
+    h1x2_ga = h1["general_admin"] * 2
+    h1x2_research = h1["research"] * 2
+    h1x2_dev = h1["development"] * 2
+    h1x2_total = h1x2_cogs + h1x2_selling + h1x2_ga + h1x2_research + h1x2_dev
+    h1x2_sales = h1["sales_quviviq"] * 2
+    h1x2_contract = h1["contract_revenue"] * 2
+    # H1 op result is reported directly; x 2 avoids re-deriving it.
+    h1x2_op = h1["operating_result"] * 2
+
+    # Guidance
+    g = A.GUIDANCE_2026
+    g_sales = g["sales_quviviq_chf_m"]
+    g_total = g["opex_total_nongaap_chf_m"]
+    g_op = -g["operating_loss_nongaap_chf_m"]  # negative
+
+    rows = [
+        ("QUVIVIQ net sales",             sales_qv,       h1x2_sales,    g_sales),
+        ("Contract revenue (not modelled)", None,         h1x2_contract, None),
+        ("Cost of sales",                 model_cogs,     h1x2_cogs,     None),
+        ("Selling",                       model_selling,  h1x2_selling,  None),
+        ("General and admin",             model_ga,       h1x2_ga,       None),
+        ("Research (upstream)",           model_research, h1x2_research, None),
+        ("Development",                   model_dev,      h1x2_dev,      None),
+        ("Total non-GAAP opex",           model_total_opex, h1x2_total,  g_total),
+        ("Non-GAAP op result",            model_op_result, h1x2_op,      g_op),
+    ]
+    df = pd.DataFrame(rows, columns=["Line", "Model 2026 (full year)", "Actual H1 x 2", "Guidance 2026"])
+    return df

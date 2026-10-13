@@ -89,17 +89,19 @@ def _value_per_share(
     discount_rate: float | None = None,
     include_sarl_residual: bool = False,
     sarl_residual_chf_m: float | None = None,
-    central_upstream_year_1_chf_m: float | None = None,
-    floor_at_zero: bool = True,
+    central_total_scale: float | None = None,
+    floor_at_zero: bool = False,          # v1.2: default RAW for tornado/heatmap
 ) -> float:
-    """Wrapper that returns just the per-share value (CHF)."""
+    """Wrapper returning the per-share value (CHF), RAW by default."""
     products = A.PRODUCTS if not product_overrides else _with_overrides(product_overrides)
     original_sarl = A.SARL_RESIDUAL_VALUE_CHF_M
-    original_upstream = A.CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M
+    original_ga = A.CENTRAL_COSTS_GA_YEAR_1_CHF_M
+    original_up = A.CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M
     if sarl_residual_chf_m is not None:
         A.SARL_RESIDUAL_VALUE_CHF_M = sarl_residual_chf_m
-    if central_upstream_year_1_chf_m is not None:
-        A.CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M = central_upstream_year_1_chf_m
+    if central_total_scale is not None:
+        A.CENTRAL_COSTS_GA_YEAR_1_CHF_M = original_ga * central_total_scale
+        A.CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M = original_up * central_total_scale
     try:
         bridge = rnpv.value_per_share(
             products=products,
@@ -110,7 +112,8 @@ def _value_per_share(
         return bridge["value_per_share_chf"]
     finally:
         A.SARL_RESIDUAL_VALUE_CHF_M = original_sarl
-        A.CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M = original_upstream
+        A.CENTRAL_COSTS_GA_YEAR_1_CHF_M = original_ga
+        A.CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M = original_up
 
 
 # ---------------------------------------------------------------------------
@@ -148,10 +151,11 @@ def plot_heatmap(df: pd.DataFrame, out: Path = FIG_DIR / "sensitivity_heatmap.pn
             df.index.min() - 50,
             df.index.max() + 50,
         ],
-        vmin=0,
+        vmin=min(df.values.min(), 0.0),
         vmax=max(df.values.max(), A.SHARE_PRICE_CURRENT_CHF * 1.5),
     )
-    # Annotate
+    # Annotate (use the heatmap median as the colour-flip threshold)
+    _median = float(np.median(df.values))
     for i, peak in enumerate(df.index):
         for j, rate in enumerate(df.columns):
             ax.text(
@@ -160,12 +164,12 @@ def plot_heatmap(df: pd.DataFrame, out: Path = FIG_DIR / "sensitivity_heatmap.pn
                 f"{df.iloc[i, j]:.2f}",
                 ha="center",
                 va="center",
-                color="black" if df.iloc[i, j] > 2.0 else "white",
+                color="black" if df.iloc[i, j] > _median else "white",
                 fontsize=8,
             )
     ax.set_xlabel("Discount rate")
     ax.set_ylabel("QUVIVIQ peak sales (CHF M)")
-    ax.set_title("Value / share (CHF), QUVIVIQ peak × discount rate",
+    ax.set_title("Value / share (CHF, pre-floor), QUVIVIQ peak x discount rate",
                  fontsize=11, fontweight="semibold", pad=14)
     ax.axhline(A.PRODUCTS["quviviq"]["peak_sales_chf_m"], color=FG, linestyle="--", linewidth=0.7, alpha=0.6)
     ax.axvline(A.DISCOUNT_RATE, color=FG, linestyle="--", linewidth=0.7, alpha=0.6)
@@ -217,32 +221,38 @@ def tornado_data() -> pd.DataFrame:
         _value_per_share(discount_rate=0.14),
         _value_per_share(discount_rate=0.10),
     )
-    # d) QUVIVIQ op margin at peak +/-5 pp
+    # d) QUVIVIQ contribution margin at peak +/-10 pp (v1.2)
     m_peak = A.PRODUCTS["quviviq"]["op_margin_at_peak"]
     _row(
-        "QUVIVIQ op margin at peak (+/-5 pp)",
-        _value_per_share({"quviviq": {"op_margin_at_peak": m_peak - 0.05}}),
-        _value_per_share({"quviviq": {"op_margin_at_peak": m_peak + 0.05}}),
+        "QUVIVIQ peak contribution margin (+/-10 pp)",
+        _value_per_share({"quviviq": {"op_margin_at_peak": max(0.0, m_peak - 0.10)}}),
+        _value_per_share({"quviviq": {"op_margin_at_peak": min(1.0, m_peak + 0.10)}}),
     )
-    # e) Lucerastat PoS +/-20 %
+    # e) Lucerastat contribution margin at peak +/-10 pp (v1.2 addition)
+    luc_m = A.PRODUCTS["lucerastat"]["op_margin_at_peak"]
+    _row(
+        "Lucerastat peak contribution margin (+/-10 pp)",
+        _value_per_share({"lucerastat": {"op_margin_at_peak": max(0.0, luc_m - 0.10)}}),
+        _value_per_share({"lucerastat": {"op_margin_at_peak": min(1.0, luc_m + 0.10)}}),
+    )
+    # f) Lucerastat PoS +/-20 %
     lpos = A.PRODUCTS["lucerastat"]["pos"]
     _row(
         "Lucerastat PoS (+/-20 %)",
         _value_per_share({"lucerastat": {"pos": lpos * 0.8}}),
         _value_per_share({"lucerastat": {"pos": lpos * 1.2}}),
     )
-    # f) SARL residual value (0 -> 400 M CHF)
+    # g) SARL residual value (0 -> 400 M CHF)
     _row(
         "SARL residual (0 vs CHF 400 M)",
         _value_per_share(sarl_residual_chf_m=0.0, include_sarl_residual=True),
         _value_per_share(sarl_residual_chf_m=400.0, include_sarl_residual=True),
     )
-    # g) Central costs upstream (+/-50 %) - placeholder sensitivity
-    u = A.CENTRAL_COSTS_UPSTREAM_YEAR_1_CHF_M
+    # h) Total central costs (G&A + upstream) +/-25 % (v1.2: replaces upstream-only +/-50 %)
     _row(
-        "Central costs: upstream R&D (+/-50 %)",
-        _value_per_share(central_upstream_year_1_chf_m=u * 1.5),  # higher cost = lower value
-        _value_per_share(central_upstream_year_1_chf_m=u * 0.5),
+        "Total central costs (+/-25 %)",
+        _value_per_share(central_total_scale=1.25),  # higher cost = lower value
+        _value_per_share(central_total_scale=0.75),
     )
     df = pd.DataFrame(rows).sort_values("swing", ascending=True).reset_index(drop=True)
     return df
@@ -273,9 +283,9 @@ def plot_tornado(df: pd.DataFrame, out: Path = FIG_DIR / "tornado.png") -> Path:
                label=f"Market (CHF {A.SHARE_PRICE_CURRENT_CHF:.2f})")
     ax.set_yticks(y)
     ax.set_yticklabels(df["variable"], color=FG)
-    ax.set_xlabel("Value / share (CHF)")
+    ax.set_xlabel("Value / share (CHF, pre-floor)")
     ax.set_title(
-        f"Tornado, base case CHF {base:.2f}/share",
+        f"Tornado (pre-floor), base case CHF {base:.2f}/share",
         fontsize=11, fontweight="semibold", pad=14,
     )
     ax.legend(facecolor=BG_PANEL, edgecolor=MUTED, labelcolor=FG, fontsize=9, loc="lower right")
@@ -386,6 +396,7 @@ def plot_waterfall(out: Path = FIG_DIR / "waterfall_ev.png") -> Path:
         steps.append((v.name.split(" (")[0], v.rnpv))
     steps.append(("SARL residual", bridge["sarl_residual_chf_m"]))
     steps.append(("- PV central costs", -bridge["central_costs_pv_chf_m"]))
+    steps.append(("- PV J&J royalty", -bridge["jj_royalty_pv_chf_m"]))
     steps.append(("Equity value (parent)", bridge["equity_value_chf_m"]))
 
     labels = [s[0] for s in steps]
@@ -436,6 +447,11 @@ def plot_waterfall(out: Path = FIG_DIR / "waterfall_ev.png") -> Path:
 # ---------------------------------------------------------------------------
 
 def scenarios() -> pd.DataFrame:
+    """Four scenarios. v1.2 changes:
+      - J&J is NO LONGER if-converted: it is always settled in shares,
+        already in the diluted base.
+      - CB 2034 gets the if-converted test (strike CHF 6.00).
+    """
     rows = [
         ("Bear",
          {"quviviq": {"peak_sales_chf_m": 400},
@@ -464,8 +480,7 @@ def scenarios() -> pd.DataFrame:
                 discount_rate=r,
                 include_sarl_residual=sarl_on,
             )
-            # Apply the if-converted test: J&J converts iff V/share > strike.
-            converted = rnpv.apply_if_converted(bridge)
+            converted = rnpv.apply_if_converted(bridge)   # CB 2034 only
         finally:
             A.SARL_RESIDUAL_VALUE_CHF_M = original_sarl
         data.append({
@@ -475,7 +490,9 @@ def scenarios() -> pd.DataFrame:
                 bridge["value_per_share_chf"],
             ),
             "value_per_share_pre_conversion": bridge["value_per_share_chf"],
-            "jj_converted": converted.get("jj_converted", False),
+            "cb2034_converted": converted.get("cb2034_converted", False),
+            # Legacy alias (used by old notebook texts if any)
+            "jj_converted": converted.get("cb2034_converted", False),
         })
     return pd.DataFrame(data)
 
@@ -490,17 +507,17 @@ def plot_fair_value_vs_market(out: Path = FIG_DIR / "fair_value_vs_market.png") 
                label=f"Market (CHF {A.SHARE_PRICE_CURRENT_CHF:.2f})")
     ax.set_xticks(x)
     ax.set_xticklabels(df["scenario"], color=FG, fontsize=9)
-    ax.set_ylabel("Value / share (CHF, post J&J if-converted)")
+    ax.set_ylabel("Value / share (CHF, post-floor; CB 2034 if-converted applied)")
     ax.set_title("Fair value scenarios vs current market price",
                  fontsize=11, fontweight="semibold", pad=14)
-    for xi, val, converted in zip(x, df["value_per_share"], df["jj_converted"]):
+    for xi, val, converted in zip(x, df["value_per_share"], df["cb2034_converted"]):
         suffix = " *" if converted else ""
         ax.text(xi, val, f"CHF {val:.2f}{suffix}", ha="center", va="bottom", color=FG, fontsize=9)
     ax.legend(facecolor=BG_PANEL, edgecolor=MUTED, labelcolor=FG, fontsize=9, loc="upper left")
-    if df["jj_converted"].any():
+    if df["cb2034_converted"].any():
         ax.text(
             0.98, 0.02,
-            "* J&J convertible converted (29.1 M shares added, CHF 335 M debt removed)",
+            "* CB 2034 converted (+2.72 M shares, -CHF 16.5 M debt)",
             transform=ax.transAxes, ha="right", va="bottom",
             color=MUTED, fontsize=7, style="italic",
         )
